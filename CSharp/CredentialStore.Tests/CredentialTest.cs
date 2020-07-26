@@ -14,7 +14,7 @@
 using System;
 using NUnit.Framework;
 
-namespace Moreland.Security.Win32.CredentialStore.Test
+namespace Moreland.Security.Win32.CredentialStore.Tests
 {
     [TestFixture]
     public class CredentialTest

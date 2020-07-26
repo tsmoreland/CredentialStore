@@ -15,7 +15,7 @@ using Moq;
 using NUnit.Framework;
 using System;
 
-namespace Moreland.Security.Win32.CredentialStore.Test
+namespace Moreland.Security.Win32.CredentialStore.Tests
 {
     [TestFixture]
     public class CredentialManagerTest 
