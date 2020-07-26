@@ -70,7 +70,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 CredentialBlobSize = credentialSize,
                 Flags = (uint)credential.Characteristics,
                 Type = (uint)credential.Type,
-                Persist = (uint)credential.PersistanceType,
+                Persist = (uint)credential.PeristenceType,
                 AttributeCount = 0,
                 Attributes = IntPtr.Zero,
                 TargetAlias = IntPtr.Zero,

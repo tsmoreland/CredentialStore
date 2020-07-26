@@ -42,12 +42,27 @@ namespace Moreland.Security.Win32.CredentialStore.Test
         [Test]
         public void ConstructorShould_ThrowArgumentException_WhenIdIsNull()
         {
-            Assert.Throws<ArgumentException>(() => _ = new Credential(null!, _username, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistance.LocalMachine, DateTime.Now));
+            Assert.Throws<ArgumentException>(() => _ = new Credential(null!, _username, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
         }
         [Test]
         public void ConstructorShould_ThrowArgumentException_WhenUserNameIsNull()
         {
-            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, null!, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistance.LocalMachine, DateTime.Now));
+            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, null!, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
+        }
+        [Test]
+        public void ConstructorShould_ThrowArgumentException_WhenCharacteristicsAreNone()
+        {
+            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, _username, _secret, CredentialFlag.None, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
+        }
+        [Test]
+        public void ConstructorShould_ThrowArgumentException_WhenTypeIsUnknown()
+        {
+            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, _username, _secret, CredentialFlag.PromptNow, CredentialType.Unknown, CredentialPeristence.LocalMachine, DateTime.Now));
+        }
+        [Test]
+        public void ConstructorShould_ThrowArgumentException_WhenPersistentTypeIsUnknown()
+        {
+            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, _username, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Unknown, DateTime.Now));
         }
 
         #region Teardown
