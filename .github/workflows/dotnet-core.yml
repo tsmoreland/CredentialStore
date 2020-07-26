@@ -3,12 +3,14 @@ name: C# Continuous Integration
 on:   
   push:
     branches: [ master, develop ]
-    paths:
-      - CSharp/**
+    # if/when C++ implementation is added
+    #paths-ignore:
+      #- cpp/**
   pull_request:
     branches: [ master, develop ]
-    paths:
-      - CSharp/**
+    # if/when C++ implementation is added
+    #paths-ignore:
+      #- cpp/**
 
 jobs:
   build:
