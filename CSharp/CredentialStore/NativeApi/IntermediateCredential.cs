@@ -54,7 +54,9 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 throw new ArgumentException("UserName cannot be empty");
 
             _targetName = Marshal.StringToCoTaskMemUni(credential.Id);
-            _userName = Marshal.StringToCoTaskMemUni(credential.UserName);
+            _userName = !string.IsNullOrEmpty(credential.UserName)
+                ? Marshal.StringToCoTaskMemUni(credential.UserName)
+                : IntPtr.Zero;
 
             _credentialBlob = Marshal.StringToCoTaskMemUni(credential.Secret);
             var credentialSize = credential.Secret == null

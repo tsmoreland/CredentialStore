@@ -45,14 +45,14 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.Throws<ArgumentException>(() => _ = new Credential(null!, _username, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
         }
         [Test]
-        public void ConstructorShould_ThrowArgumentException_WhenUserNameIsNull()
+        public void ConstructorShouldNot_ThrowArgumentException_WhenUserNameIsNull()
         {
-            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, null!, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
+            Assert.DoesNotThrow(() => _ = new Credential(_id, null!, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
         }
         [Test]
-        public void ConstructorShould_ThrowArgumentException_WhenCharacteristicsAreNone()
+        public void ConstructorShouldNot_ThrowArgumentException_WhenCharacteristicsAreNone()
         {
-            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, _username, _secret, CredentialFlag.None, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
+            Assert.DoesNotThrow(() => _ = new Credential(_id, _username, _secret, CredentialFlag.None, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
         }
         [Test]
         public void ConstructorShould_ThrowArgumentException_WhenTypeIsUnknown()

@@ -63,7 +63,7 @@ namespace Moreland.Security.Win32.CredentialStore
         public Credential(string id, string username, string secret, CredentialFlag characteristics, CredentialType type, CredentialPeristence persistanceType, DateTime lastUpdated)
         {
             Id = id;
-            UserName = username;
+            UserName = username ?? string.Empty;
             Secret = secret ?? string.Empty;
             Characteristics = characteristics;
             Type = type;
