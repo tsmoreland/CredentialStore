@@ -17,12 +17,13 @@ jobs:
     runs-on: windows-latest
     env:
       working-directory: ./CSharp
+      gibhub-ref: ${{ github.base_ref }}
 
     steps:
     - name: Git checkout
       uses: actions/checkout@v2
     - name: Branch name
-      run: echo running on branch ${GITHUB_REF##*/}
+      run: echo running on branch ${{github-ref}}
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
