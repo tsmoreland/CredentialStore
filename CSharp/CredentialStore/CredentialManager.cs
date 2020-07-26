@@ -95,7 +95,7 @@ namespace Moreland.Security.Win32.CredentialStore
                 : NativeApi.EnumerateFlag.None);
 
         /// <summary>
-        /// Attemtps to Save <paramref name="credential"/> to Win32 
+        /// Adds <paramref name="credential"/> to Win32 
         /// Credential Manager
         /// </summary>
         /// <param name="credential">credential to be saved</param>
@@ -107,7 +107,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// if <see cref="Credential.Id"/> or 
         /// <see cref="Credential.UserName"/> are null or empty
         /// </exception>
-        public bool Save(Credential credential)
+        public bool Add(Credential credential)
         {
             if (credential == null)
                 throw new ArgumentNullException(nameof(credential));
@@ -138,7 +138,14 @@ namespace Moreland.Security.Win32.CredentialStore
             if (credential == null)
                 throw new ArgumentNullException(nameof(credential));
 
-            throw new NotImplementedException();
+            if (NativeApi.Credential.CredDelete(credential.Id, credential.Type, 0))
+            {
+                _logger.Info($"{credential.Id} successfully deleted");
+                return true;
+            }
+
+            LogLastWin32Error(_logger, new [] { NotFound });
+            return false;
         }
 
         private IEnumerable<Credential> GetCredentials(string? filter, NativeApi.EnumerateFlag flag, [CallerMemberName] string callerMemberName = "")
@@ -153,13 +160,16 @@ namespace Moreland.Security.Win32.CredentialStore
             {
                 for (int i = 0; i < count; i++)
                 {
-                    var nextPtr = (Environment.Is64BitProcess)
-                        ? new IntPtr(credentialsPtr.ToInt64() + i)
-                        : new IntPtr(credentialsPtr.ToInt32() + i);
-                    var credential = GetCredentialFromPtr(nextPtr);
-                    if (credential == null)
+                    var nextPtr = IntPtr.Add(credentialsPtr, IntPtr.Size * i);
+                    var currentPtr = Marshal.ReadIntPtr(nextPtr);
+                    var nativeCredential = Marshal.PtrToStructure<NativeApi.Credential>(currentPtr);
+                    if (nativeCredential == null)
+                    {
+                        _logger.Error($"pointer failed to pin to structure at index {i}", callerMemberName: callerMemberName);
                         yield break;
-                    yield return credential;
+                    }
+
+                    yield return new Credential(nativeCredential);
                 }
             }
             finally
@@ -177,7 +187,7 @@ namespace Moreland.Security.Win32.CredentialStore
             }
 
             using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr);
-            if (handle.NativeCredential != null)
+            if (handle.IsValid && handle.NativeCredential != null)
                 return new Credential(handle.NativeCredential);
 
             _logger.Warning("Unable to get structure from credential pointer");

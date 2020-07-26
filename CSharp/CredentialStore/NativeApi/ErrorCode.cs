@@ -24,12 +24,18 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         {
             { NotFound, $"Element not found. {NotFound:x}" },
             { NoSuchLogonSession, $"A specified logon session does not exist. It might already have been terminated. {NoSuchLogonSession:x}" },
-            { InvalidFlags, $"Invalid Flags {InvalidFlags:x}" }
+            { InvalidFlags, $"Invalid Flags {InvalidFlags:x}" },
+            { InvalidArgument, $"Invalid Argument {InvalidFlags:x}" }
         };
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public const int NotFound = 0x00000490;
+        // ReSharper disable once MemberCanBePrivate.Global
         public const int NoSuchLogonSession = 0x00000520;
-        public const int InvalidFlags = 0x000003EC;
+        // ReSharper disable once MemberCanBePrivate.Global
+        public const int InvalidFlags = 0x000003EC; 
+        // ReSharper disable once MemberCanBePrivate.Global
+        public const int InvalidArgument = 87; 
 
         /// <summary>
         /// Returns the error message for <paramref name="errorCode"/> if found, or a message
