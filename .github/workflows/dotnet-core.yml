@@ -1,0 +1,38 @@
+name: C# Continuous Integration
+
+on:   
+  push:
+    branches: 
+      - master
+    paths:
+      - CSharp/**
+  pull_request:
+    branches: 
+      - master
+    paths:
+      - CSharp/**
+
+jobs:
+  build:
+    name: ${GITHUB_REF##*/}-CI
+    runs-on: windows-latest
+    env:
+      working-directory: ./CSharp
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+         ref: ${GITHUB_REF##*/}
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.301
+    - name: Install dependencies
+      run: dotnet restore
+      working-directory: ${{env.working-directory}}
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+      working-directory: ${{env.working-directory}}
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal  
+      working-directory: ${{env.working-directory}}
