@@ -50,43 +50,28 @@ namespace Moreland.Security.Win32.CredentialStore
             Type = Enum.IsDefined(typeof(CredentialType), credential.Type)
                 ? (CredentialType)credential.Type
                 : CredentialType.Unknown;
-            PersistanceType = Enum.IsDefined(typeof(CredentialPersistance), credential.Persist)
-                ? (CredentialPersistance)credential.Persist
-                : CredentialPersistance.Unknown;
+            PeristenceType = Enum.IsDefined(typeof(CredentialPeristence), credential.Persist)
+                ? (CredentialPeristence)credential.Persist
+                : CredentialPeristence.Unknown;
             LastUpdated = DateTime.FromFileTimeUtc(credential.LastWritten);
 
             if (!string.IsNullOrEmpty(GetInvalidArgumentNameOrEmpty()))
                 throw new ArgumentException("invalid settings", nameof(credential));
         }
 
-        public Credential(string id, string username, string secret, CredentialFlag characteristics, CredentialType type, CredentialPersistance persistenceType, DateTime lastUpdated)
+        public Credential(string id, string username, string secret, CredentialFlag characteristics, CredentialType type, CredentialPeristence persistanceType, DateTime lastUpdated)
         {
             Id = id;
             UserName = username;
-            Secret = secret;
+            Secret = secret ?? string.Empty;
             Characteristics = characteristics;
             Type = type;
-            PersistenceType = persistenceType;
+            PeristenceType = persistanceType;
             LastUpdated = lastUpdated;
 
             var invalidPropertyName = GetInvalidArgumentNameOrEmpty();
             if (!string.IsNullOrEmpty(invalidPropertyName))
                 throw new ArgumentException("one or more parameters have invalid values", invalidPropertyName);
-        }
-
-        private string GetInvalidArgumentNameOrEmpty()
-        {
-            if (string.IsNullOrEmpty(Id))
-                return nameof(Id);
-            if (string.IsNullOrEmpty(UserName))
-                return nameof(UserName);
-            if (Characteristics == CredentialFlag.None)
-                return nameof(Characteristics);
-            if (Type == CredentialType.Unknown)
-                return nameof(Type);
-            if (PersistanceType == CredentialPersistance.Unknown)
-                return nameof(PersistanceType);
-            return string.Empty;
         }
 
         /// <summary>
@@ -115,12 +100,14 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <see cref="CredentialType"/>
         /// </summary>
         public CredentialType Type { get; } = CredentialType.Unknown;
-        public CredentialPersistance PersistenceType { get; }
-        public DateTime LastUpdated { get; }
         /// <summary>
         /// <see cref="CredentialType"/>
         /// </summary>
-        public CredentialPersistance PersistanceType { get; } = CredentialPersistance.LocalMachine;
+        public CredentialPeristence PeristenceType { get; }
+        /// <summary>
+        /// Last Updated time, only valid for reads
+        /// </summary>
+        public DateTime LastUpdated { get; }
 
         public void Deconstruct(out string id, out string username, out string secret)
         {
@@ -131,13 +118,29 @@ namespace Moreland.Security.Win32.CredentialStore
         public Credential With(string? id = null, string? username = null, 
             string? secret = null, CredentialFlag? characteristics = null, 
             CredentialType? type = null, 
-            CredentialPersistance? persistenceType = null, 
+            CredentialPeristence? persistanceType = null, 
             DateTime? lastUpdated = null) =>
             new Credential(id ?? Id, username ?? UserName, secret ?? Secret,
                 characteristics ?? Characteristics, type ?? Type,
-                persistenceType ?? PersistenceType, lastUpdated ?? LastUpdated);
+                persistanceType ?? PeristenceType, lastUpdated ?? LastUpdated);
 
         public override string ToString() =>
             $"{Id}: {UserName} {Type}";
+
+        private string GetInvalidArgumentNameOrEmpty()
+        {
+            if (string.IsNullOrEmpty(Id))
+                return nameof(Id);
+            if (string.IsNullOrEmpty(UserName))
+                return nameof(UserName);
+            if (Characteristics == CredentialFlag.None)
+                return nameof(Characteristics);
+            if (Type == CredentialType.Unknown)
+                return nameof(Type);
+            if (PeristenceType == CredentialPeristence.Unknown)
+                return nameof(PeristenceType);
+            return string.Empty;
+        }
+
     }
 }

@@ -74,8 +74,8 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         public IntPtr CredentialBlob = IntPtr.Zero;
 
         /// <summary>
-        /// Defines the persistence of this credential. This member can be read and written
-        /// <see cref="CredentialPersistance"/> for possible values
+        /// Defines the peristence of this credential. This member can be read and written
+        /// <see cref="CredentialPeristence"/> for possible values
         /// .</summary>
         public uint Persist;
 
