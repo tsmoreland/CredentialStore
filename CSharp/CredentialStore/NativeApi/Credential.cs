@@ -161,6 +161,6 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredDelete
         /// </remarks>
         [DllImport("advapi32.dll", EntryPoint = "CredDeleteW", CharSet = CharSet.Unicode)]
-        private static extern bool CredDelete(string target, CredentialType type, int flags);
+        public static extern bool CredDelete(string target, CredentialType type, int flags);
     }
 }
