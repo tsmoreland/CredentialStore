@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright © 2020 Terry Moreland
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
 // to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -54,7 +54,9 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 throw new ArgumentException("UserName cannot be empty");
 
             _targetName = Marshal.StringToCoTaskMemUni(credential.Id);
-            _userName = Marshal.StringToCoTaskMemUni(credential.UserName);
+            _userName = !string.IsNullOrEmpty(credential.UserName)
+                ? Marshal.StringToCoTaskMemUni(credential.UserName)
+                : IntPtr.Zero;
 
             _credentialBlob = Marshal.StringToCoTaskMemUni(credential.Secret);
             var credentialSize = credential.Secret == null

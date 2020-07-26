@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright © 2020 Terry Moreland
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
 // to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -24,7 +24,7 @@ namespace Moreland.Security.Win32.CredentialStore
     /// this entity does not store any attributes from the native credential, 
     /// any persist of this object will result in the loss of that data
     /// </remarks>
-    [DebuggerDisplay("{Id}: {Username} {Type}")]
+    [DebuggerDisplay("{Id}: {UserName} {Type}")]
     public sealed class Credential 
     {
         internal Credential(NativeApi.Credential credential)
@@ -35,9 +35,10 @@ namespace Moreland.Security.Win32.CredentialStore
             if (credential.CredentialBlob != IntPtr.Zero && credential.CredentialBlobSize > 0)
             {
                 if (credential.CredentialBlobSize > NativeApi.Limits.MaxCredentialBlobSize)
-                    throw new ArgumentException($"secret length is greater than maximum supported value {NativeApi.Limits.MaxCredentialBlobSize / sizeof(char)}");
-                // this should never happen since max credential blob size is 512 but it's a contant defined elsewhere so
-                // this is more of a sanity check
+                {
+                    // .. log this .. it should be at most 512 but i've had ones come back higher
+                }
+
                 if (credential.CredentialBlobSize > (uint)int.MaxValue)
                     throw new ArgumentException($"secret is length greater than maximum supported value {int.MaxValue / sizeof(char)}");
 
@@ -62,7 +63,7 @@ namespace Moreland.Security.Win32.CredentialStore
         public Credential(string id, string username, string secret, CredentialFlag characteristics, CredentialType type, CredentialPeristence persistanceType, DateTime lastUpdated)
         {
             Id = id;
-            UserName = username;
+            UserName = username ?? string.Empty;
             Secret = secret ?? string.Empty;
             Characteristics = characteristics;
             Type = type;
@@ -131,15 +132,11 @@ namespace Moreland.Security.Win32.CredentialStore
         {
             if (string.IsNullOrEmpty(Id))
                 return nameof(Id);
-            if (string.IsNullOrEmpty(UserName))
-                return nameof(UserName);
-            if (Characteristics == CredentialFlag.None)
-                return nameof(Characteristics);
             if (Type == CredentialType.Unknown)
                 return nameof(Type);
-            if (PeristenceType == CredentialPeristence.Unknown)
-                return nameof(PeristenceType);
-            return string.Empty;
+            return PeristenceType == CredentialPeristence.Unknown
+                ? nameof(PeristenceType)
+                : string.Empty;
         }
 
     }

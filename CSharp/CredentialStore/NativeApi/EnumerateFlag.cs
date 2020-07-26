@@ -11,6 +11,27 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-using System.Runtime.CompilerServices;
+namespace Moreland.Security.Win32.CredentialStore.NativeApi
+{
+    /// <summary>
+    /// Flags passed to <see cref="Credential.CredEnumerate(string, int, out int, out System.IntPtr)"/>
+    /// https://docs.microsoft.com/en-us/windows/win32/api/wincred/nf-wincred-credenumeratew
+    /// </summary>
+    internal enum EnumerateFlag : uint
+    {
+        /// <summary>
+        /// None
+        /// </summary>
+        None = 0,
 
-[assembly: InternalsVisibleTo("Moreland.Security.Win32.CredentialStore.Tests")]
+        /// <summary>
+        /// This function enumerates all of the credentials in the user's
+        /// credential set. The target name of each credential is returned in
+        /// the "namespace:attribute=target" format. If this flag is set and
+        /// the Filter parameter is not NULL, the function fails and returns
+        /// <see cref="ErrorCode.InvalidFlags"/>
+        /// </summary>
+        EnumerateAllCredentials = 0x1,
+
+    }
+}

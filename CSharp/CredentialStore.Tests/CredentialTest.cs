@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright © 2020 Terry Moreland
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
 // to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -14,7 +14,7 @@
 using System;
 using NUnit.Framework;
 
-namespace Moreland.Security.Win32.CredentialStore.Test
+namespace Moreland.Security.Win32.CredentialStore.Tests
 {
     [TestFixture]
     public class CredentialTest
@@ -45,14 +45,14 @@ namespace Moreland.Security.Win32.CredentialStore.Test
             Assert.Throws<ArgumentException>(() => _ = new Credential(null!, _username, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
         }
         [Test]
-        public void ConstructorShould_ThrowArgumentException_WhenUserNameIsNull()
+        public void ConstructorShouldNot_ThrowArgumentException_WhenUserNameIsNull()
         {
-            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, null!, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
+            Assert.DoesNotThrow(() => _ = new Credential(_id, null!, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
         }
         [Test]
-        public void ConstructorShould_ThrowArgumentException_WhenCharacteristicsAreNone()
+        public void ConstructorShouldNot_ThrowArgumentException_WhenCharacteristicsAreNone()
         {
-            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, _username, _secret, CredentialFlag.None, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
+            Assert.DoesNotThrow(() => _ = new Credential(_id, _username, _secret, CredentialFlag.None, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
         }
         [Test]
         public void ConstructorShould_ThrowArgumentException_WhenTypeIsUnknown()

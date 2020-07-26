@@ -11,6 +11,24 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-using System.Runtime.CompilerServices;
+namespace Moreland.Security.Win32.CredentialStore.NativeApi
+{
+    /// <summary>
+    /// Flags used as parameter in <see cref="Credential.CredWrite"/>
+    /// https://docs.microsoft.com/en-us/windows/win32/api/wincred/nf-wincred-credwritew
+    /// </summary>
+    internal enum PreserveFlag : uint
+    {
+        /// <summary>
+        /// None
+        /// </summary>
+        None = 0,
 
-[assembly: InternalsVisibleTo("Moreland.Security.Win32.CredentialStore.Tests")]
+        /// <summary>
+        /// The credential BLOB from an existing credential is preserved with
+        /// the same credential name and credential type. The CredentialBlobSize
+        /// of the passed in Credential structure must be zero.
+        /// </summary>
+        PreserveCredentialBlob = 0x1,
+    }
+}
