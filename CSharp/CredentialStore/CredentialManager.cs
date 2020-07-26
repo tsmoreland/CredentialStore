@@ -15,7 +15,8 @@ using System;
 using System.Collections.Generic;
 using static Moreland.Security.Win32.CredentialStore.NativeApi.ErrorCode;
 using System.Linq;
-using Moreland.Security.Win32.CredentialStore.NativeApi;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Moreland.Security.Win32.CredentialStore
 {
@@ -40,13 +41,11 @@ namespace Moreland.Security.Win32.CredentialStore
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IEnumerable<Credential> Credentials
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        /// <summary>
+        /// Returns all Credentials from the Users credential set
+        /// </summary>
+        public IEnumerable<Credential> Credentials => GetCredentials(null, NativeApi.EnumerateFlag.EnumerateAllCredentials);
+
         /// <summary>
         /// Finds a credential with the given id value and optionally <see cref="CredentialType"/>
         /// </summary>
@@ -64,27 +63,36 @@ namespace Moreland.Security.Win32.CredentialStore
             if (string.IsNullOrEmpty(id))
                 throw new ArgumentException("id cannot be empty");
 
-            if (!NativeApi.Credential.CredRead(id, type, 0, out IntPtr credentialPtr))
+            var credentialPtr = IntPtr.Zero;
+            try
             {
-                LogLastWin32Error(_logger, new[] { NotFound });
+                if (NativeApi.Credential.CredRead(id, type, 0, out credentialPtr))
+                    return GetCredentialFromPtr(credentialPtr);
+
+                LogLastWin32Error(_logger, new[] {NotFound});
                 return null;
             }
-
-            if (credentialPtr == IntPtr.Zero)
+            finally
             {
-                _logger.Warning($"CredRead reports success but resulted in null credential pointer");
-                return null;
-            }
+                if (credentialPtr != IntPtr.Zero)
+                {
+                    _logger.Verbose("Releasing credential");
+                    NativeApi.Credential.CredFree(credentialPtr);
+                }
 
-            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr);
-            if (handle.NativeCredential == null)
-            {
-                _logger.Warning("Unable to get structure from credential pointer");
-                return null;
             }
-
-            return new Credential(handle.NativeCredential);
         }
+
+        /// <summary>
+        /// Returns all credentials matching wildcard based <paramref name="filter"/>
+        /// </summary>
+        /// <param name="filter">filter using wildcards</param>
+        /// <param name="searchAll">if true all credentials are searched</param>
+        /// <returns><see cref="IEnumerable{Credential}"/> of credentials matching filter</returns>
+        public IEnumerable<Credential> Find(string filter, bool searchAll) =>
+            GetCredentials(filter, searchAll 
+                ? NativeApi.EnumerateFlag.EnumerateAllCredentials 
+                : NativeApi.EnumerateFlag.None);
 
         /// <summary>
         /// Attemtps to Save <paramref name="credential"/> to Win32 
@@ -104,7 +112,7 @@ namespace Moreland.Security.Win32.CredentialStore
             if (credential == null)
                 throw new ArgumentNullException(nameof(credential));
 
-            using var intermediate = new IntermediateCredential(credential);
+            using var intermediate = new NativeApi.IntermediateCredential(credential);
 
             var nativeCredential = intermediate.NativeCredential;
             if (!NativeApi.Credential.CredWrite(ref nativeCredential, 0))
@@ -118,18 +126,63 @@ namespace Moreland.Security.Win32.CredentialStore
         }
 
         /// <summary>
-        /// 
+        /// deletes a credential from the user's credential set
         /// </summary>
         /// <param name="credential"></param>
+        /// <returns>The function returns true on success and false</returns>
         /// <exception cref="ArgumentNullException">
         /// if <paramref name="credential"/> is null
         /// </exception>
-        public void Delete(Credential credential)
+        public bool Delete(Credential credential)
         {
             if (credential == null)
                 throw new ArgumentNullException(nameof(credential));
 
             throw new NotImplementedException();
         }
+
+        private IEnumerable<Credential> GetCredentials(string? filter, NativeApi.EnumerateFlag flag, [CallerMemberName] string callerMemberName = "")
+        {
+            if (!NativeApi.Credential.CredEnumerate(filter, (int)flag, out int count, out IntPtr credentialsPtr))
+            {
+                _logger.Warning(ErrorOrUnknownMessage(Marshal.GetLastWin32Error()), callerMemberName);
+                yield break;
+            }
+
+            try
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    var nextPtr = (Environment.Is64BitProcess)
+                        ? new IntPtr(credentialsPtr.ToInt64() + i)
+                        : new IntPtr(credentialsPtr.ToInt32() + i);
+                    var credential = GetCredentialFromPtr(nextPtr);
+                    if (credential == null)
+                        yield break;
+                    yield return credential;
+                }
+            }
+            finally
+            {
+                if (!NativeApi.Credential.CredFree(credentialsPtr))
+                    _logger.Warning(ErrorOrUnknownMessage(Marshal.GetLastWin32Error()), callerMemberName);
+            }
+        }
+        private Credential? GetCredentialFromPtr(IntPtr credentialPtr, [CallerMemberName] string callerMemberName = "")
+        {
+            if (credentialPtr == IntPtr.Zero)
+            {
+                _logger.Warning("null credential pointer, unable to convert to Credential object", callerMemberName);
+                return null;
+            }
+
+            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr);
+            if (handle.NativeCredential != null)
+                return new Credential(handle.NativeCredential);
+
+            _logger.Warning("Unable to get structure from credential pointer");
+            return null;
+        }
+
     }
 }
