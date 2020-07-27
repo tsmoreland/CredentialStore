@@ -29,8 +29,8 @@ namespace Moreland.Security.Win32.CredentialStore
     {
         internal Credential(NativeApi.Credential credential)
         {
-            Id = Marshal.PtrToStringUni(credential.TargetName) ?? string.Empty;
-            UserName = Marshal.PtrToStringUni(credential.UserName) ?? string.Empty;
+            Id = credential.TargetName ?? string.Empty;
+            UserName = credential.UserName ?? string.Empty;
             Secret = string.Empty;
             if (credential.CredentialBlob != IntPtr.Zero && credential.CredentialBlobSize > 0)
             {
@@ -96,11 +96,11 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <summary>
         /// <see cref="CredentialFlag"/>
         /// </summary>
-        public CredentialFlag Characteristics { get; } = CredentialFlag.None;
+        public CredentialFlag Characteristics { get; } 
         /// <summary>
         /// <see cref="CredentialType"/>
         /// </summary>
-        public CredentialType Type { get; } = CredentialType.Unknown;
+        public CredentialType Type { get; } 
         /// <summary>
         /// <see cref="CredentialType"/>
         /// </summary>

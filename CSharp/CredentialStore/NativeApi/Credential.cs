@@ -28,15 +28,14 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// altered to permit future enhancement.
         /// <see cref="CredentialFlag"/> for possible values
         /// </summary>
-        public uint Flags;
+        public int Flags = 0;
 
         /// <summary>
         /// The type of the credential. This member cannot be changed after 
         /// the credential is created. The following values are valid.
         /// <see cref="CredentialType"/> for possible values
         /// </summary>
-        [MarshalAs(UnmanagedType.I4)]
-        public uint Type;
+        public int Type;
 
         /// <summary>
         /// The name of the credential. The <see cref="TargetName"/> and 
@@ -45,27 +44,29 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// Instead, the credential with the old name should be deleted 
         /// and the credential with the new name created.
         /// </summary>
-        public IntPtr TargetName;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string? TargetName;
 
         /// <summary>
         /// A string comment from the user that describes this credential. This 
         /// member cannot be longer than 
         /// <see cref="Limits.MaximumCredentialStringLength"/> characters.
         /// </summary>
-        public IntPtr Comment;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string? Comment;
 
         /// <summary>
         /// The time, in Coordinated Universal Time (Greenwich Mean Time), of 
         /// the last modification of the credential. For write operations, the 
         /// value of this member is ignored.
         /// </summary>
-        public long LastWritten;
+        public long LastWritten = 0;
 
         /// <summary>
         /// The size, in bytes, of the CredentialBlob member. This member 
         /// cannot be larger than <see cref="Limits.MaxCredentialBlobSize"/> bytes
         /// .</summary>
-        public uint CredentialBlobSize;
+        public int CredentialBlobSize;
 
         /// <summary>
         /// Secret data for the credential. The CredentialBlob member can be 
@@ -77,140 +78,33 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// Defines the peristence of this credential. This member can be read and written
         /// <see cref="CredentialPeristence"/> for possible values
         /// .</summary>
-        public uint Persist;
+        public int Persist;
 
         /// <summary>
         /// The number of application-defined attributes to be associated with 
         /// the credential. This member can be read and written. Its value 
         /// cannot be greater than CRED_MAX_ATTRIBUTES (64).
         /// </summary>
-        public uint AttributeCount;
+        public int AttributeCount = 0;
 
         /// <summary>
         /// Application-defined attributes that are associated with the 
         /// credential. This member can be read and written.
         /// </summary>
-        public IntPtr Attributes;
+        public IntPtr Attributes = IntPtr.Zero;
 
         /// <summary>
         /// Alias for the <see cref="TargetName"/>  member. This member can be 
         /// read and written. It cannot be longer than 
         /// <see cref="Limits.MaximumCredentialStringLength"/> characters.
         /// </summary>
-        public IntPtr TargetAlias;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string? TargetAlias = null;
 
         /// <summary>
         /// The user name of the account used to connect to <see cref="TargetName"/>.
         /// </summary>
-        public IntPtr UserName;
-
-        /// <summary>
-        /// The CredRead function reads a credential from the user's 
-        /// credential set. The credential set used is the one associated with 
-        /// the logon session of the current token. The token must not have the 
-        /// user's SID disabled.
-        /// </summary>
-        /// <param name="target">
-        /// Pointer to a null-terminated string that contains the name of the
-        /// credential to read.
-        /// </param>
-        /// <param name="type">
-        /// Type of the credential to read. Type must be one of the
-        /// <see cref="CredentialType"/> defined types.
-        /// </param>
-        /// <param name="reservedFlag">Currently reserved and must be zero.</param>
-        /// <param name="credentialPtr">
-        /// Pointer to a single allocated block buffer to return the credential.
-        /// Any pointers contained within the buffer are pointers to locations
-        /// within this single allocated block. The single returned buffer must
-        /// be freed by calling <see cref="CredFree"/>
-        /// </param>
-        /// <returns>The function returns true on success and false on failure</returns>
-        /// <remarks>
-        /// reference: https://www.pinvoke.net/default.aspx/advapi32/CredRead.html
-        /// </remarks>
-        [DllImport("Advapi32.dll", EntryPoint = "CredReadW", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern bool CredRead(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
-
-        /// <summary>
-        /// The CredWrite function creates a new credential or modifies an 
-        /// existing credential in the user's credential set. The new credential 
-        /// is associated with the logon session of the current token. The token 
-        /// must not have the user's security identifier (SID) disabled.
-        /// </summary>
-        /// <param name="userCredential">
-        /// A pointer to the <see cref="Credential"/> structure to be written.
-        /// </param>
-        /// <param name="flags">
-        /// Flags that control the function's operation.
-        /// <see cref="PreserveFlag"/> for valid values.
-        /// </param>
-        /// <returns>If the function succeeds, the function returns TRUE.</returns>
-        /// <remarks>
-        /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredWrite
-        /// </remarks>
-        [DllImport("Advapi32.dll", EntryPoint = "CredWriteW", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern bool CredWrite([In] ref Credential userCredential, [In] UInt32 flags);
-
-        /// <summary>
-        /// The CredFree function frees a buffer returned by any of the credentials management functions.
-        /// </summary>
-        /// <param name="cred">Pointer to the buffer to be freed.</param>
-        /// <returns>If the function succeeds, the function returns true</returns>
-        /// <remarks>
-        /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredFree
-        /// </remarks>
-        [DllImport("Advapi32.dll", EntryPoint = "CredFree", SetLastError = true)]
-        public static extern bool CredFree([In] IntPtr cred);
-
-        /// <summary>
-        /// The CredDelete function deletes a credential from the user's 
-        /// credential set. The credential set used is the one associated with 
-        /// the logon session of the current token. The token must not have the 
-        /// user's SID disabled.
-        /// </summary>
-        /// <param name="target">
-        /// Pointer to a null-terminated string that contains the name of the
-        /// credential to delete.
-        /// </param>
-        /// <param name="type">
-        /// Type of the credential to delete. Must be one of the
-        /// <see cref="CredentialType"/> defined types. For a list of the
-        /// defined types, see the Type member of the <see cref="Credential"/>
-        /// structure.
-        /// </param>
-        /// <param name="flags">Reserved and must be zero.</param>
-        /// <returns>The function returns true on success and false on failure</returns>
-        /// <remarks>
-        /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredDelete
-        /// </remarks>
-        [DllImport("advapi32.dll", EntryPoint = "CredDeleteW", CharSet = CharSet.Unicode)]
-        public static extern bool CredDelete(string target, CredentialType type, int flags);
-
-        /// <summary>
-        /// The CredEnumerate function enumerates the credentials from the
-        /// user's credential set. The credential set used is the one
-        /// associated with the logon session of the current token. The token
-        /// must not have the user's SID disabled.
-        /// </summary>
-        /// <param name="filter">
-        /// Pointer to a null-terminated string that contains the filter for
-        /// the returned credentials. Only credentials with a TargetName
-        /// matching the filter will be returned. The filter specifies a name
-        /// prefix followed by an asterisk. For instance, the filter "FRED*"
-        /// will return all credentials with a TargetName beginning with the
-        /// string "FRED".
-        /// If null is specified, all credentials will be returned.
-        /// </param>
-        /// <param name="flag">
-        /// The value of this parameter can be zero or more of
-        /// <see cref="EnumerateFlag"/> values combined with a bitwise-OR
-        /// operation.
-        /// </param>
-        /// <param name="count"></param>
-        /// <param name="credentialsPtr"></param>
-        /// <returns></returns>
-        [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool CredEnumerate(string? filter, int flag, out int count, out IntPtr credentialsPtr);
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string? UserName;
     }
 }

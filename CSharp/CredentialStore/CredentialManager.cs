@@ -21,10 +21,9 @@ using System.Runtime.InteropServices;
 namespace Moreland.Security.Win32.CredentialStore
 {
     /// <summary>
-    /// Win32 Credential Manager (Credential Repository) providing CRUD 
-    /// operations for Windows Credential Manager 
+    /// <inheritdoc cref="ICredentialManager"/>
     /// </summary>
-    public sealed class CredentialManager
+    public sealed class CredentialManager : ICredentialManager
     {
         private readonly ILoggerAdapter _logger;
 
@@ -63,24 +62,11 @@ namespace Moreland.Security.Win32.CredentialStore
             if (string.IsNullOrEmpty(id))
                 throw new ArgumentException("id cannot be empty");
 
-            var credentialPtr = IntPtr.Zero;
-            try
-            {
-                if (NativeApi.Credential.CredRead(id, type, 0, out credentialPtr))
-                    return GetCredentialFromPtr(credentialPtr);
+            if (NativeApi.CredentialApi.CredRead(id, type, 0, out IntPtr credentialPtr))
+                return GetCredentialFromAndFreePtr(credentialPtr);
 
-                LogLastWin32Error(_logger, new[] {NotFound});
-                return null;
-            }
-            finally
-            {
-                if (credentialPtr != IntPtr.Zero)
-                {
-                    _logger.Verbose("Releasing credential");
-                    NativeApi.Credential.CredFree(credentialPtr);
-                }
-
-            }
+            LogLastWin32Error(_logger, new[] { NotFound });
+            return null;
         }
 
         /// <summary>
@@ -90,8 +76,8 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <param name="searchAll">if true all credentials are searched</param>
         /// <returns><see cref="IEnumerable{Credential}"/> of credentials matching filter</returns>
         public IEnumerable<Credential> Find(string filter, bool searchAll) =>
-            GetCredentials(filter, searchAll 
-                ? NativeApi.EnumerateFlag.EnumerateAllCredentials 
+            GetCredentials(filter, searchAll
+                ? NativeApi.EnumerateFlag.EnumerateAllCredentials
                 : NativeApi.EnumerateFlag.None);
 
         /// <summary>
@@ -115,7 +101,7 @@ namespace Moreland.Security.Win32.CredentialStore
             using var intermediate = new NativeApi.IntermediateCredential(credential);
 
             var nativeCredential = intermediate.NativeCredential;
-            if (!NativeApi.Credential.CredWrite(ref nativeCredential, 0))
+            if (!NativeApi.CredentialApi.CredWrite(ref nativeCredential, 0))
             {
                 LogLastWin32Error(_logger, Enumerable.Empty<int>());
                 return false;
@@ -138,21 +124,22 @@ namespace Moreland.Security.Win32.CredentialStore
             if (credential == null)
                 throw new ArgumentNullException(nameof(credential));
 
-            if (NativeApi.Credential.CredDelete(credential.Id, credential.Type, 0))
+            if (NativeApi.CredentialApi.CredDelete(credential.Id, (int)credential.Type, 0))
             {
                 _logger.Info($"{credential.Id} successfully deleted");
                 return true;
             }
 
-            LogLastWin32Error(_logger, new [] { NotFound });
-            return false;
+            return !LogLastWin32Error(_logger, new[] { NotFound });
         }
 
         private IEnumerable<Credential> GetCredentials(string? filter, NativeApi.EnumerateFlag flag, [CallerMemberName] string callerMemberName = "")
         {
-            if (!NativeApi.Credential.CredEnumerate(filter, (int)flag, out int count, out IntPtr credentialsPtr))
+            if (!NativeApi.CredentialApi.CredEnumerate(filter, (int)flag, out int count, out IntPtr credentialsPtr))
             {
-                _logger.Warning(ErrorOrUnknownMessage(Marshal.GetLastWin32Error()), callerMemberName);
+                int lastError = Marshal.GetLastWin32Error();
+                if (lastError != 0)
+                    _logger.Warning(ErrorOrUnknownMessage(lastError), callerMemberName);
                 yield break;
             }
 
@@ -174,11 +161,15 @@ namespace Moreland.Security.Win32.CredentialStore
             }
             finally
             {
-                if (!NativeApi.Credential.CredFree(credentialsPtr))
-                    _logger.Warning(ErrorOrUnknownMessage(Marshal.GetLastWin32Error()), callerMemberName);
+                if (!NativeApi.CredentialApi.CredFree(credentialsPtr))
+                {
+                    int lastError = Marshal.GetLastWin32Error();
+                    if (lastError != 0)
+                        _logger.Warning(ErrorOrUnknownMessage(lastError), callerMemberName);
+                }
             }
         }
-        private Credential? GetCredentialFromPtr(IntPtr credentialPtr, [CallerMemberName] string callerMemberName = "")
+        private Credential? GetCredentialFromAndFreePtr(IntPtr credentialPtr, [CallerMemberName] string callerMemberName = "")
         {
             if (credentialPtr == IntPtr.Zero)
             {
@@ -186,7 +177,7 @@ namespace Moreland.Security.Win32.CredentialStore
                 return null;
             }
 
-            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr);
+            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr, _logger);
             if (handle.IsValid && handle.NativeCredential != null)
                 return new Credential(handle.NativeCredential);
 

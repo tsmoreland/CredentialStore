@@ -33,13 +33,13 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             var credentialManager = new CredentialManager(logger.Object);
 
             _tempCredential = new Credential(
-                $"target-{Guid.NewGuid():N}",
-                $"user-{Guid.NewGuid():N}",
-                $"pw-{Guid.NewGuid():N}",
+                "tsmoreland@credential:test",
+                "username",
+                "password",
                 CredentialFlag.None,
                 CredentialType.Generic,
                 CredentialPeristence.LocalMachine,
-                DateTime.UtcNow);
+                DateTime.MinValue);
 
             credentialManager.Add(_tempCredential);
 #           endif
@@ -57,6 +57,29 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         {
             Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!));
         }
+
+#       if DEBUG
+        [Test]
+        public void FindShould_ReturnMatchingValue()
+        {
+            const string id = "target-54d456e0bae74269b167f031515b7761";
+            const CredentialType type = CredentialType.Generic;
+
+            var credential = _manager.Find(id, type);
+
+            Assert.That(credential, Is.Not.Null);
+            if (credential == null)
+                return;
+
+            var newCredential = credential.With(id: credential.Id.Replace("target", "tgt"));
+            bool saved = _manager.Add(newCredential);
+            if (!saved)
+            {
+                // ...
+            }
+
+        }
+#       endif
 
         [Test]
         public void ConstructorShouldNot_ThrowException_WhenSetupIsValid()
