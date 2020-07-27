@@ -25,6 +25,7 @@ namespace Moreland.Security.Win32.CredentialStore
     /// </summary>
     public sealed class CredentialManager : ICredentialManager
     {
+        private readonly INativeCredentialApi _nativeCredentialApi;
         private readonly ILoggerAdapter _logger;
 
         /// <summary>
@@ -36,7 +37,23 @@ namespace Moreland.Security.Win32.CredentialStore
         /// if <paramref name="logger"/> is null
         /// </exception>
         public CredentialManager(ILoggerAdapter logger)
+            : this(new NativeCredentialApi(), logger)
         {
+        }
+
+        /// <summary>
+        /// Instantiates a new instance of the 
+        /// <see cref="CredentialManager"/> object
+        /// </summary>
+        /// <param name="nativeCredentialApi">Native Win32 Credential API access</param>
+        /// <param name="logger">logger used to aid in debugging</param>
+        /// <exception cref="ArgumentNullException">
+        /// if <paramref name="nativeCredentialApi"/> or
+        /// <paramref name="logger"/> are null
+        /// </exception>
+        public CredentialManager(INativeCredentialApi nativeCredentialApi, ILoggerAdapter logger)
+        {
+            _nativeCredentialApi = nativeCredentialApi ?? throw new ArgumentNullException(nameof(nativeCredentialApi));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 

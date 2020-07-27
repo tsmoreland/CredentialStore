@@ -14,7 +14,6 @@
 using Moq;
 using NUnit.Framework;
 using System;
-using System.Linq;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
@@ -22,43 +21,36 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
     public sealed class CredentialManagerTest 
     {
         private Mock<ILoggerAdapter> _logger = null!;
-        private Credential _tempCredential = null!;
+        private Mock<INativeCredentialApi> _nativeCredentialApi = null!;
         private CredentialManager _manager = null!;
-
-        [OneTimeSetUp]
-        public void OneTimeSetup()
-        {
-#           if DEBUG
-            var logger = new Mock<ILoggerAdapter>();
-            var credentialManager = new CredentialManager(logger.Object);
-
-            _tempCredential = new Credential(
-                "tsmoreland@credential:test",
-                "username",
-                "password",
-                CredentialFlag.None,
-                CredentialType.Generic,
-                CredentialPeristence.LocalMachine,
-                DateTime.MinValue);
-
-            credentialManager.Add(_tempCredential);
-#           endif
-        }
 
         [SetUp]
         public void Setup()
         {
+            _nativeCredentialApi = new Mock<INativeCredentialApi>();
             _logger = new Mock<ILoggerAdapter>();
-            _manager = new CredentialManager(_logger.Object);
+            _manager = new CredentialManager(_nativeCredentialApi.Object, _logger.Object);
         }
 
         [Test]
+        public void ConstructorShould_ThrowArgumentNull_WhenNativeCredentialsApiIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _logger.Object));
+        }
+        [Test]
         public void ConstructorShould_ThrowArgumentNull_WhenLoggerIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!));
+            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeCredentialApi.Object, null!));
         }
 
-#       if DEBUG
+        [Test]
+        public void ConstructorShouldNot_ThrowException_WhenSetupIsValid()
+        {
+            Assert.DoesNotThrow(() => _ = new CredentialManager(_logger.Object));
+        }
+
+        /*
+
         [Test]
         public void FindShould_ReturnMatchingValue()
         {
@@ -79,15 +71,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             }
 
         }
-#       endif
 
-        [Test]
-        public void ConstructorShouldNot_ThrowException_WhenSetupIsValid()
-        {
-            Assert.DoesNotThrow(() => _ = new CredentialManager(_logger.Object));
-        }
-
-#       if DEBUG
         [Test]
         public void CredentialsShould_ReturnAtLeastOneEntry()
         {
@@ -96,17 +80,6 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.That(credentials, Is.Not.Null);
             Assert.That(credentials.Length, Is.AtLeast(1));
         }
-#       endif
-
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
-        {
-#           if DEBUG
-            var logger = new Mock<ILoggerAdapter>();
-            var credentialManager = new CredentialManager(logger.Object);
-
-            credentialManager.Delete(_tempCredential);
-#           endif
-        }
+        */
     }
 }
