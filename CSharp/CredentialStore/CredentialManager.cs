@@ -13,10 +13,10 @@
 
 using System;
 using System.Collections.Generic;
-using static Moreland.Security.Win32.CredentialStore.NativeApi.ErrorCode;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using static Moreland.Security.Win32.CredentialStore.NativeApi.ErrorCode;
 
 namespace Moreland.Security.Win32.CredentialStore
 {
@@ -101,14 +101,25 @@ namespace Moreland.Security.Win32.CredentialStore
             using var intermediate = new NativeApi.IntermediateCredential(credential);
 
             var nativeCredential = intermediate.NativeCredential;
-            if (!NativeApi.CredentialApi.CredWrite(ref nativeCredential, 0))
+            var nativeCredentialPtr = IntPtr.Zero;
+            try
             {
-                LogLastWin32Error(_logger, Enumerable.Empty<int>());
-                return false;
-            }
+                nativeCredentialPtr = Marshal.AllocHGlobal(Marshal.SizeOf(nativeCredential));
+                Marshal.StructureToPtr(nativeCredential, nativeCredentialPtr, false);
 
-            _logger.Verbose($"{credential} successfully saved");
-            return true;
+                if (!NativeApi.CredentialApi.CredWrite(nativeCredentialPtr, 0))
+                {
+                    LogLastWin32Error(_logger, Enumerable.Empty<int>());
+                    return false;
+                }
+
+                _logger.Verbose($"{credential} successfully saved");
+                return true;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(nativeCredentialPtr);
+            }
         }
 
         /// <summary>

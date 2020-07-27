@@ -44,7 +44,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// reference: https://www.pinvoke.net/default.aspx/advapi32/CredRead.html
         /// </remarks>
         [DllImport("Advapi32.dll", EntryPoint = "CredReadW", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern bool CredRead(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
+        public static extern bool CredRead([MarshalAs(UnmanagedType.LPWStr)]string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
 
         /// <summary>
         /// The CredWrite function creates a new credential or modifies an 
@@ -63,8 +63,8 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <remarks>
         /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredWrite
         /// </remarks>
-        [DllImport("Advapi32.dll", EntryPoint = "CredWriteW", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern bool CredWrite([In] ref Credential userCredential, [In] UInt32 flags);
+        [DllImport("Advapi32.dll", SetLastError=true, EntryPoint="CredWriteW", CharSet=CharSet.Unicode)]
+        public static extern bool CredWrite(IntPtr userCredential, int flags);
 
         /// <summary>
         /// The CredFree function frees a buffer returned by any of the credentials management functions.
@@ -99,7 +99,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredDelete
         /// </remarks>
         [DllImport("advapi32.dll", EntryPoint = "CredDeleteW", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern bool CredDelete(string target, int type, int flags);
+        public static extern bool CredDelete([MarshalAs(UnmanagedType.LPWStr)]string target, int type, int flags);
 
         /// <summary>
         /// The CredEnumerate function enumerates the credentials from the
@@ -125,6 +125,6 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <param name="credentialsPtr"></param>
         /// <returns></returns>
         [DllImport("advapi32", EntryPoint = "CredEnumerateW", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern bool CredEnumerate(string? filter, int flag, out int count, out IntPtr credentialsPtr);
+        public static extern bool CredEnumerate([MarshalAs(UnmanagedType.LPWStr)] string? filter, int flag, out int count, out IntPtr credentialsPtr);
     }
 }

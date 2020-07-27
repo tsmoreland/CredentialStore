@@ -13,6 +13,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
@@ -60,7 +61,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// the last modification of the credential. For write operations, the 
         /// value of this member is ignored.
         /// </summary>
-        public long LastWritten = 0;
+        public FILETIME LastWritten = new FILETIME {dwHighDateTime = 0, dwLowDateTime = 0};
 
         /// <summary>
         /// The size, in bytes, of the CredentialBlob member. This member 

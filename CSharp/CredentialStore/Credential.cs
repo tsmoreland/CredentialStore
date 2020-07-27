@@ -42,7 +42,7 @@ namespace Moreland.Security.Win32.CredentialStore
                 if (credential.CredentialBlobSize > (uint)int.MaxValue)
                     throw new ArgumentException($"secret is length greater than maximum supported value {int.MaxValue / sizeof(char)}");
 
-                Secret = Marshal.PtrToStringUni(credential.CredentialBlob, (int)(credential.CredentialBlobSize / sizeof(char))) ?? string.Empty;
+                Secret = Marshal.PtrToStringUni(credential.CredentialBlob, (credential.CredentialBlobSize / sizeof(char))) ?? string.Empty;
             }
 
             Characteristics = Enum.IsDefined(typeof(CredentialFlag), credential.Flags)
@@ -54,7 +54,10 @@ namespace Moreland.Security.Win32.CredentialStore
             PeristenceType = Enum.IsDefined(typeof(CredentialPeristence), credential.Persist)
                 ? (CredentialPeristence)credential.Persist
                 : CredentialPeristence.Unknown;
-            LastUpdated = DateTime.FromFileTimeUtc(credential.LastWritten);
+
+            long highBits = credential.LastWritten.dwHighDateTime;
+            highBits <<= 32;
+            LastUpdated = DateTime.FromFileTime(highBits + (long)(uint)credential.LastWritten.dwLowDateTime);
 
             if (!string.IsNullOrEmpty(GetInvalidArgumentNameOrEmpty()))
                 throw new ArgumentException("invalid settings", nameof(credential));
