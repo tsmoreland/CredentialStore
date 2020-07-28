@@ -31,6 +31,8 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
     public sealed class CredentialExecuter : ICredentialExecuter
     {
         private readonly ICredentialManager _credentialManager;
+        private readonly ITextOutputWriter _writer;
+        private readonly IObscruredReader _obscruredReader;
         private readonly ILoggerAdapter _logger;
 
         /// <summary>
@@ -39,11 +41,15 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
         /// </summary>
         /// <exception cref="ArgumentNullException">
         /// if <paramref name="credentialManager"/> or
+        /// <paramref name="writer"/> or
+        /// <paramref name="obscruredReader"/> or
         /// <paramref name="logger"/> are null
         /// </exception>
-        public CredentialExecuter(ICredentialManager credentialManager, ILoggerAdapter logger)
+        public CredentialExecuter(ICredentialManager credentialManager, ITextOutputWriter writer, IObscruredReader obscruredReader, ILoggerAdapter logger)
         {
             _credentialManager = credentialManager ?? throw new ArgumentNullException(nameof(credentialManager));
+            _writer = writer ?? throw new ArgumentNullException(nameof(writer));
+            _obscruredReader = obscruredReader ?? throw new ArgumentNullException(nameof(obscruredReader));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -83,7 +89,7 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
 
             string target = args[1];
             string username = args[2];
-            const string secret = "password"; // TODO: secure read from console
+            string secret = _obscruredReader.ReadSecret("password");
 
             switch (type)
             {
@@ -157,12 +163,12 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
             {
                 if (_credentialManager.Delete(credential))
                 {
-                    _logger.Info($"Deleted {credential.Id} {credential.UserName}");
+                    _writer.WriteLine($"Deleted {credential.Id} {credential.UserName}");
                     return true;
                 }
                 else
                 {
-                    _logger.Error($"Failed to delete {credential.Id} {credential.UserName}");
+                    _writer.WriteLine($"Failed to delete {credential.Id} {credential.UserName}");
                     return false;
                 }
             });
@@ -180,36 +186,8 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
                 .ToList()
                 .ForEach(msg => builder.AppendLine(msg));
 
-            _logger.Info(builder.ToString());
+            _writer.WriteLine(builder.ToString());
             return true;
         }
-
-        /*
-            sample code to read from console without printing, or rather overwriting characters
-
-            ConsoleKeyInfo keyInfo;
-         
-            do
-            {
-                keyInfo = Console.ReadKey(true);
-                // Skip if Backspace or Enter is Pressed
-                if (keyInfo.Key != ConsoleKey.Backspace && keyInfo.Key != ConsoleKey.Enter)
-                {
-                    password += keyInfo.KeyChar;
-                    Console.Write("*");
-                }
-                else
-                {
-                    if (keyInfo.Key == ConsoleKey.Backspace && password.Length > 0)
-                    {
-                        // Remove last charcter if Backspace is Pressed
-                        password = password.Substring(0, (password.Length - 1));
-                        Console.Write("b b");
-                    }
-                }
-            }
-            // Stops Getting Password Once Enter is Pressed
-            while (keyInfo.Key != ConsoleKey.Enter);
-         */
     }
 }
