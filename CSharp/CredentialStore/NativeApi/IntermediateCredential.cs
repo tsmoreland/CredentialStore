@@ -24,8 +24,6 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// </summary>
     internal sealed class IntermediateCredential : IDisposable
     {
-        private readonly IntPtr _targetName;
-        private readonly IntPtr _userName;
         private readonly IntPtr _credentialBlob;
 
         /// <summary>
@@ -53,30 +51,24 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             if (string.IsNullOrEmpty(credential.UserName))
                 throw new ArgumentException("UserName cannot be empty");
 
-            _targetName = Marshal.StringToCoTaskMemUni(credential.Id);
-            _userName = !string.IsNullOrEmpty(credential.UserName)
-                ? Marshal.StringToCoTaskMemUni(credential.UserName)
-                : IntPtr.Zero;
-
-            _credentialBlob = Marshal.StringToCoTaskMemUni(credential.Secret);
-            var credentialSize = credential.Secret == null
-                ? 0
-                : (uint)Encoding.Unicode.GetBytes(credential.Secret).Length;
+            int credentialSize = 0;
+            if (string.IsNullOrEmpty(credential.Secret))
+                _credentialBlob =  IntPtr.Zero;
+            else
+            {
+                _credentialBlob = Marshal.StringToCoTaskMemUni(credential.Secret);
+                credentialSize = Encoding.Unicode.GetBytes(credential.Secret).Length;
+            }
 
             NativeCredential = new Credential
             {
-                TargetName = _targetName,
-                Comment = IntPtr.Zero,
-                LastWritten = DateTime.Now.ToFileTime(),
+                UserName = string.IsNullOrEmpty(credential.UserName) ? null : credential.UserName,
+                TargetName = credential.Id,
+                Comment = string.Empty,
                 CredentialBlob = _credentialBlob,
                 CredentialBlobSize = credentialSize,
-                Flags = (uint)credential.Characteristics,
-                Type = (uint)credential.Type,
-                Persist = (uint)credential.PeristenceType,
-                AttributeCount = 0,
-                Attributes = IntPtr.Zero,
-                TargetAlias = IntPtr.Zero,
-                UserName = _userName,
+                Type = (int)credential.Type,
+                Persist = (int)credential.PeristenceType,
             };
         }
 
@@ -105,10 +97,6 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 // no managed memory to release
             }
 
-            if (_userName != IntPtr.Zero)
-                Marshal.FreeCoTaskMem(_userName);
-            if (_targetName != IntPtr.Zero)
-                Marshal.FreeCoTaskMem(_targetName);
             if (_credentialBlob != IntPtr.Zero)
                 Marshal.FreeCoTaskMem(_credentialBlob);
 

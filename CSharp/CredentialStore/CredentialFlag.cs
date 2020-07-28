@@ -20,7 +20,7 @@ namespace Moreland.Security.Win32.CredentialStore
     /// see Flags of Credential structure
     /// </summary>
     [Flags]
-    public enum CredentialFlag : uint
+    public enum CredentialFlag 
     {
         None = 0,
 

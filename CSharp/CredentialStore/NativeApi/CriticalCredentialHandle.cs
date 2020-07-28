@@ -13,6 +13,7 @@
 
 
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
@@ -24,13 +25,16 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// </summary>
     internal sealed class CriticalCredentialHandle : CriticalHandleZeroOrMinusOneIsInvalid
     {
+        private readonly ILoggerAdapter _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CriticalCredentialHandle"/> class.
         /// </summary>
         /// <param name="handle">handle to <see cref="Credential"/></param>
-        public CriticalCredentialHandle(IntPtr handle)
+        public CriticalCredentialHandle(IntPtr handle, ILoggerAdapter logger)
         {
             SetHandle(handle);
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -54,8 +58,9 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             if (IsInvalid)
                 return true; // nothing to do
 
-            if (!Credential.CredFree(handle))
+            if (!CredentialApi.CredFree(handle) && ErrorCode.LogLastWin32Error(_logger, Enumerable.Empty<int>()))
                 return false;
+
             SetHandleAsInvalid();
             return true;
         }

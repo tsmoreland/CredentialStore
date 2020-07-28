@@ -20,12 +20,15 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
     internal static class ErrorCode
     {
-        private static readonly IDictionary<int, string> _errorMessages = new Dictionary<int, string>
+        private static IDictionary<int, string> ErrorMessages { get; } = new Dictionary<int, string>
         {
-            { NotFound, $"Element not found. {NotFound:x}" },
-            { NoSuchLogonSession, $"A specified logon session does not exist. It might already have been terminated. {NoSuchLogonSession:x}" },
-            { InvalidFlags, $"Invalid Flags {InvalidFlags:x}" },
-            { InvalidArgument, $"Invalid Argument {InvalidFlags:x}" }
+            {NotFound, $"Element not found. {NotFound:x}"},
+            {
+                NoSuchLogonSession,
+                $"A specified logon session does not exist. It might already have been terminated. {NoSuchLogonSession:x}"
+            },
+            {InvalidFlags, $"Invalid Flags {InvalidFlags:x}"},
+            {InvalidArgument, $"Invalid Argument {InvalidFlags:x}"}
         };
 
         // ReSharper disable once MemberCanBePrivate.Global
@@ -42,16 +45,22 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// saying the error is unknown
         /// </summary>
         public static string ErrorOrUnknownMessage(int errorCode) =>
-            (_errorMessages.ContainsKey(errorCode))
-                ? _errorMessages[errorCode]
+            (ErrorMessages.ContainsKey(errorCode))
+                ? ErrorMessages[errorCode]
                 : $"Unknown error code {errorCode}";
 
-        public static void LogLastWin32Error(ILoggerAdapter logger, IEnumerable<int> ignoredErrors, [CallerMemberName] string callerMemberName = "")
-        {            
+        /// <summary>
+        /// logs the last win32 error if not in <paramref name="ignoredErrors"/>
+        /// </summary>
+        /// <returns>true if error is logged; otherwise false</returns>
+        public static bool LogLastWin32Error(ILoggerAdapter logger, IEnumerable<int> ignoredErrors, [CallerMemberName] string callerMemberName = "")
+        {
+            const int noError = 0;
             int lastError = Marshal.GetLastWin32Error();
-            if (ignoredErrors?.Contains(lastError) == true)
-                return;
+            if (ignoredErrors?.Contains(lastError) == true || lastError == noError)
+                return false;
             logger?.Error(ErrorOrUnknownMessage(lastError), callerMemberName: callerMemberName);
+            return true;
         }
     }
 }

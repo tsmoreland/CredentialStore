@@ -29,8 +29,8 @@ namespace Moreland.Security.Win32.CredentialStore
     {
         internal Credential(NativeApi.Credential credential)
         {
-            Id = Marshal.PtrToStringUni(credential.TargetName) ?? string.Empty;
-            UserName = Marshal.PtrToStringUni(credential.UserName) ?? string.Empty;
+            Id = credential.TargetName ?? string.Empty;
+            UserName = credential.UserName ?? string.Empty;
             Secret = string.Empty;
             if (credential.CredentialBlob != IntPtr.Zero && credential.CredentialBlobSize > 0)
             {
@@ -42,7 +42,7 @@ namespace Moreland.Security.Win32.CredentialStore
                 if (credential.CredentialBlobSize > (uint)int.MaxValue)
                     throw new ArgumentException($"secret is length greater than maximum supported value {int.MaxValue / sizeof(char)}");
 
-                Secret = Marshal.PtrToStringUni(credential.CredentialBlob, (int)(credential.CredentialBlobSize / sizeof(char))) ?? string.Empty;
+                Secret = Marshal.PtrToStringUni(credential.CredentialBlob, (credential.CredentialBlobSize / sizeof(char))) ?? string.Empty;
             }
 
             Characteristics = Enum.IsDefined(typeof(CredentialFlag), credential.Flags)
@@ -54,7 +54,10 @@ namespace Moreland.Security.Win32.CredentialStore
             PeristenceType = Enum.IsDefined(typeof(CredentialPeristence), credential.Persist)
                 ? (CredentialPeristence)credential.Persist
                 : CredentialPeristence.Unknown;
-            LastUpdated = DateTime.FromFileTimeUtc(credential.LastWritten);
+
+            long highBits = credential.LastWritten.dwHighDateTime;
+            highBits <<= 32;
+            LastUpdated = DateTime.FromFileTime(highBits + (long)(uint)credential.LastWritten.dwLowDateTime);
 
             if (!string.IsNullOrEmpty(GetInvalidArgumentNameOrEmpty()))
                 throw new ArgumentException("invalid settings", nameof(credential));
@@ -96,11 +99,11 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <summary>
         /// <see cref="CredentialFlag"/>
         /// </summary>
-        public CredentialFlag Characteristics { get; } = CredentialFlag.None;
+        public CredentialFlag Characteristics { get; } 
         /// <summary>
         /// <see cref="CredentialType"/>
         /// </summary>
-        public CredentialType Type { get; } = CredentialType.Unknown;
+        public CredentialType Type { get; } 
         /// <summary>
         /// <see cref="CredentialType"/>
         /// </summary>

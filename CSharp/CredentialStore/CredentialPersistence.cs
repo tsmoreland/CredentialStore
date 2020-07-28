@@ -16,7 +16,7 @@ namespace Moreland.Security.Win32.CredentialStore
     /// <summary>
     /// https://docs.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala
     /// </summary>
-    public enum CredentialPeristence : uint
+    public enum CredentialPeristence 
     {
         Unknown = 0,
 

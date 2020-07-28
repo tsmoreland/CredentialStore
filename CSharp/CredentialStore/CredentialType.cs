@@ -17,7 +17,7 @@ namespace Moreland.Security.Win32.CredentialStore
     /// https://docs.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala
     /// see Type of Credential structure
     /// </summary>
-    public enum CredentialType : uint
+    public enum CredentialType 
     {
         Unknown = 0,
 
