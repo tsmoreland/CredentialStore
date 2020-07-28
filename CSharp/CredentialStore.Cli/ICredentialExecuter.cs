@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright © 2020 Terry Moreland
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
 // to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -15,10 +15,54 @@ using System;
 
 namespace Moreland.Security.Win32.CredentialStore.Cli
 {
+    /// <summary>
+    /// Command Line interface request executor
+    /// </summary>
     public interface ICredentialExecuter
     {
+        /// <summary>
+        /// Fetches a deletegate to one of the supported operations
+        /// </summary>
+        /// <param name="name">
+        /// one of the supported methods of <see cref="ICredentialExecuter"/>
+        /// </param>
+        /// <returns>
+        /// <see cref="CredentialStoreOperation"/> if operation found;
+        /// or null if not found
+        /// </returns>
+        CredentialStoreOperation? GetOperation(string name);
+        /// <summary>
+        /// Adds a new credential using the supplied arguments
+        /// </summary>
+        /// <param name="args">
+        /// either type id username with password being prompted
+        /// or help which will detail the required arguments
+        /// </param>
+        /// <returns>
+        /// true if credential was added or help was requested;
+        /// otherwise false
+        /// </returns>
         bool Add(Span<string> args);
+        /// <summary>
+        /// Deletes a credential matching the supplied arguments
+        /// </summary>
+        /// <param name="args">
+        /// ...pending...
+        /// or help which will detail the required arguments
+        /// </param>
+        /// <returns>
+        /// true if credential exists and is removed, or doesn't exist
+        /// or using help; otherwise, false
+        /// </returns>
         bool Delete(Span<string> args);
-        void List(Span<string> args);
+        /// <summary>
+        /// prints out all credentials for the current user
+        /// </summary>
+        /// <param name="args">
+        /// ...pending...
+        /// or help which will detail the required arguments
+        /// </param>
+        /// <returns>true</returns>
+        bool List(Span<string> args);
     }
 }
