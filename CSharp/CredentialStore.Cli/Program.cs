@@ -12,6 +12,7 @@
 // 
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -19,14 +20,15 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
 {
     internal static class Program
     {
-        internal static void Main(string[] args)
+        internal static int Main(string[] args)
         {
             if (args.Length < 1)
             {
                 Console.WriteLine("Usage: CredentialStore.Cli <verb>");
-                return;
+                return 1;
             }
 
+            ILoggerAdapter? logger = null;
             try
             {
                 var services = new ServiceCollection();
@@ -41,25 +43,21 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
                     .AddScoped<ICredentialExecuter, CredentialExecuter>();
                 using var provider = services.BuildServiceProvider();
 
-                var executer = provider.GetService<ICredentialExecuter>();
-                var remainingArgs = new Span<string>(args, 1, args.Length - 1);
+                logger = provider.GetService<ILoggerAdapter>();
+                if (logger == null)
+                    throw new KeyNotFoundException("unable to get logger");
 
-                switch (args[0].ToLowerInvariant())
-                {
-                    case "add":
-                        executer.Add(remainingArgs);
-                        break;
-                    case "delete":
-                        executer.Delete(remainingArgs);
-                        break;
-                    case "list":
-                        executer.List(remainingArgs);
-                        break;
-                }
+                var executer = provider.GetService<ICredentialExecuter>();
+                return executer
+                    .GetOperation(args[0])?
+                    .Invoke(new Span<string>(args, 1, args.Length - 1)) == true 
+                    ? 0 
+                    : 2;
             }
             catch (Exception ex) when (ex is OperationCanceledException)
             {
-                // ... ignore error ...
+                logger?.Error(ex.Message, ex);
+                return 3;
             }
         }
     }

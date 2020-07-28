@@ -12,22 +12,61 @@
 // 
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace Moreland.Security.Win32.CredentialStore.Cli
 {
+    /// <summary>
+    /// delegate for operations provided by <see cref="ICredentialExecuter"/>
+    /// </summary>
+    /// <param name="arguments">arguments used by each operation</param>
+    /// <returns>true if operation was successful; otherwise, false</returns>
+    public delegate bool CredentialStoreOperation(Span<string> arguments);
+
+    /// <summary>
+    /// <inheritdoc cref="ICredentialExecuter"/>
+    /// </summary>
     public sealed class CredentialExecuter : ICredentialExecuter
     {
         private readonly ICredentialManager _credentialManager;
         private readonly ILoggerAdapter _logger;
 
+        /// <summary>
+        /// Instantiates a new instance of the
+        /// <see cref="CredentialExecuter"/> class
+        /// </summary>
+        /// <exception cref="ArgumentNullException">
+        /// if <paramref name="credentialManager"/> or
+        /// <paramref name="logger"/> are null
+        /// </exception>
         public CredentialExecuter(ICredentialManager credentialManager, ILoggerAdapter logger)
         {
             _credentialManager = credentialManager ?? throw new ArgumentNullException(nameof(credentialManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <summary>
+        /// <see cref="ICredentialExecuter.GetOperation(string)"/>
+        /// </summary>
+        public CredentialStoreOperation? GetOperation(string name)
+        {
+            CredentialStoreOperation? operation = name?.ToLowerInvariant() switch
+            {
+                "add" => Add,
+                "list" => List,
+                "delete" => Delete,
+                _ =>  null,
+            };
+            if (operation == null)
+                _logger.Error($"unsupported operation {name}");
+            return operation;
+        }
+
+        /// <summary>
+        /// <see cref="ICredentialExecuter.Add(Span{string})"/>
+        /// </summary>
         public bool Add(Span<string> args)
         {
             if (args.Length < 3)
@@ -75,12 +114,64 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
 
             return true;
         }
+        /// <summary>
+        /// <see cref="ICredentialExecuter.Delete(Span{string})"/>
+        /// </summary>
         public bool Delete(Span<string> args)
         {
-            return false;
+            if (args.Length < 1)
+            {
+                // TODO: log usage, preferable from dictionary
+                return false;
+            }
+
+            if (args[0].ToLowerInvariant() == "help")
+            {
+                // TODO: output usage
+                return true;
+            }
+
+            string target = args[1].ToLowerInvariant();
+            IEnumerable<Credential> credentials;
+            if (args.Length > 1)
+            {
+                if (!Enum.TryParse(args[2], true, out CredentialType type))
+                {
+                    _logger.Error($"Unrecognized or unsupported type '{args[2]}'");
+                    return false;
+                }
+
+                var credential = _credentialManager.Find(target, type);
+                credentials = credential != null
+                    ? new[] {credential}
+                    : Enumerable.Empty<Credential>();
+            }
+            else
+                credentials = _credentialManager
+                    .Credentials
+                    .Where(c => c.Id.ToUpperInvariant() == target)
+                    .ToArray();
+
+
+            return credentials.All(credential =>
+            {
+                if (_credentialManager.Delete(credential))
+                {
+                    _logger.Info($"Deleted {credential.Id} {credential.UserName}");
+                    return true;
+                }
+                else
+                {
+                    _logger.Error($"Failed to delete {credential.Id} {credential.UserName}");
+                    return false;
+                }
+            });
         }
 
-        public void List(Span<string> args)
+        /// <summary>
+        /// <see cref="ICredentialExecuter.List(Span{string})"/>
+        /// </summary>
+        public bool List(Span<string> args)
         {
             var builder = new StringBuilder();
             _credentialManager
@@ -90,6 +181,7 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
                 .ForEach(msg => builder.AppendLine(msg));
 
             _logger.Info(builder.ToString());
+            return true;
         }
 
         /*
