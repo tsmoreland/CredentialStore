@@ -13,16 +13,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
-    public sealed class TestData 
+    public sealed class TestData : IDisposable
     {
         public TestData(CredentialType type, bool includeKnownTarget)
         {
             KnownTarget = $"{Guid.NewGuid():N}@{Guid.NewGuid():N}";
             KnownCredentialType = CredentialType.Generic;
-            var credentials = new List<Credential>
+            var credentials = new List<NativeApi.Credential>
             {
                 BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.LocalMachine),
                 BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.Enterprise),
@@ -39,13 +42,65 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
 
         public string KnownTarget { get; }
         public CredentialType KnownCredentialType { get; }
-        public IEnumerable<Credential> Credentials { get; }
+        public IEnumerable<NativeApi.Credential> Credentials { get; }
 
-        private static Credential BuildRandomCredential(CredentialFlag flags, CredentialType type,
+        private static NativeApi.Credential BuildRandomCredential(CredentialFlag flags, CredentialType type,
             CredentialPeristence persistanceType) =>
             BuildRandomCredential($"{Guid.NewGuid():N}@{Guid.NewGuid():N}", flags, type, persistanceType);
-        private static Credential BuildRandomCredential(string target, CredentialFlag flags, CredentialType type, CredentialPeristence persistanceType) =>
-            new Credential($"{target}", $"{Guid.NewGuid():N}", $"{Guid.NewGuid():N}", flags, type, persistanceType, DateTime.Now);
 
+        private static NativeApi.Credential BuildRandomCredential(string target, CredentialFlag flags,
+            CredentialType type, CredentialPeristence persistanceType)
+        {
+            string secret = $"{Guid.NewGuid():N}";
+
+            var credentialBlob = Marshal.StringToCoTaskMemUni(secret);
+            int credentialSize = Encoding.Unicode.GetBytes(secret).Length;
+
+            var credential = new NativeApi.Credential
+            {
+                Flags = (int)flags,
+                Type = (int)type,
+                TargetName = target,
+                Comment = string.Empty,
+                LastWritten = new FILETIME {dwHighDateTime = 0, dwLowDateTime = 0},
+                CredentialBlobSize = credentialSize,
+                CredentialBlob = credentialBlob,
+                Persist = (int)persistanceType,
+                UserName = $"{Guid.NewGuid():N}",
+            };
+            return credential;
+        }
+
+        #region IDisposable
+
+        ///<summary>Finalize</summary>
+        ~TestData() => Dispose(false);
+
+        ///<summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ///<summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        ///<param name="disposing">if <c>true</c> then release managed resources in addition to unmanaged</param>
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // nothing to dispose
+            }
+
+            foreach (var credential in Credentials)
+            {
+                Marshal.FreeHGlobal(credential.CredentialBlob);
+                credential.CredentialBlob = IntPtr.Zero;
+            }
+        }
+
+        #endregion
+
+        
     }
 }

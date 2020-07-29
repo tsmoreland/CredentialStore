@@ -14,6 +14,8 @@
 using Moq;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
@@ -36,11 +38,21 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _nativeCredentialApi = new Mock<INativeCredentialApi>();
             _logger = new Mock<ILoggerAdapter>();
             _manager = new CredentialManager(_nativeCredentialApi.Object, _logger.Object);
-            
-            /*
+
             _nativeCredentialApi
-                .Setup(native => native.CredRead(_dataSource.KnownTarget, _dataSource.KnownTarget, KnownCredentialType
-                */
+                .Setup(native => native.CredRead(_dataSource.KnownTarget, It.IsAny<CredentialType>(), 0))
+                .Returns(() =>
+                {
+                    IEnumerable<NativeApi.Credential?> credentials = _dataSource.Credentials;
+                    return credentials.DefaultIfEmpty(null!)
+                        .FirstOrDefault(c => c?.TargetName == _dataSource.KnownTarget);
+                });
+            _nativeCredentialApi
+                .Setup(native => native.CredEnumerate(It.IsAny<string?>(), It.IsAny<int>()))
+                .Returns(() => _dataSource.Credentials);
+            _nativeCredentialApi
+                .Setup(native => native.CredDelete(_dataSource.KnownTarget, (int)_dataSource.KnownCredentialType, It.IsAny<int>()))
+                .Returns(() => true);
         }
 
         [Test]
