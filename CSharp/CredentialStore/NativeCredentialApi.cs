@@ -12,7 +12,11 @@
 // 
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using static Moreland.Security.Win32.CredentialStore.NativeApi.ErrorCode;
 
 namespace Moreland.Security.Win32.CredentialStore
 {
@@ -21,23 +25,43 @@ namespace Moreland.Security.Win32.CredentialStore
     /// </summary>
     public class NativeCredentialApi : INativeCredentialApi
     {
+        private readonly ILoggerAdapter _logger; 
+
+        public NativeCredentialApi(ILoggerAdapter logger)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
         /// <summary>
         /// <see cref="NativeApi.CredentialApi.CredRead(string, CredentialType, int, out IntPtr)"/>
         /// </summary>
-        public bool CredRead(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr) =>
-            NativeApi.CredentialApi.CredRead(target, type, reservedFlag, out credentialPtr);
+        public NativeApi.Credential? CredRead(string target, CredentialType type, int reservedFlag) =>
+            !NativeApi.CredentialApi.CredRead(target, type, reservedFlag, out var credentialPtr)
+                ? null
+                : GetCredentialFromAndFreePtr(credentialPtr);
 
         /// <summary>
         /// <see cref="NativeApi.CredentialApi.CredWrite(IntPtr, int)"/>
         /// </summary>
-        public bool CredWrite(IntPtr userCredential, int flags) =>
-            NativeApi.CredentialApi.CredWrite(userCredential, flags);
+        public bool CredWrite(NativeApi.Credential credential, int flags)
+        {
+            var nativeCredentialPtr = IntPtr.Zero;
+            try
+            {
+                nativeCredentialPtr = Marshal.AllocHGlobal(Marshal.SizeOf(credential));
+                Marshal.StructureToPtr(credential, nativeCredentialPtr, false);
 
-        /// <summary>
-        /// <see cref="NativeApi.CredentialApi.CredFree(IntPtr)"/>
-        /// </summary>
-        public bool CredFree([In] IntPtr cred) =>
-            NativeApi.CredentialApi.CredFree(cred);
+                if (!NativeApi.CredentialApi.CredWrite(nativeCredentialPtr, flags))
+                    LogLastWin32Error(_logger, Enumerable.Empty<int>());
+
+                return true;
+            }
+            finally
+            {
+                if (nativeCredentialPtr != IntPtr.Zero)
+                    Marshal.FreeHGlobal(nativeCredentialPtr);
+            }
+        }
 
         /// <summary>
         /// <see cref="NativeApi.CredentialApi.CredDelete("/>
@@ -48,7 +72,61 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <summary>
         /// <see cref="NativeApi.CredentialApi.CredEnumerate(string?, int, out int, out IntPtr)"/>
         /// </summary>
-        public bool CredEnumerate(string? filter, int flag, out int count, out IntPtr credentialsPtr) =>
-            NativeApi.CredentialApi.CredEnumerate(filter, flag, out count, out credentialsPtr);
+        public IEnumerable<NativeApi.Credential> CredEnumerate(string? filter, int flag)
+        {
+            if (!NativeApi.CredentialApi.CredEnumerate(filter, flag, out int count, out IntPtr credentialsPtr))
+            {
+                int lastError = Marshal.GetLastWin32Error();
+                if (lastError != 0)
+                    _logger.Warning(ErrorOrUnknownMessage(lastError));
+                yield break;
+            }
+
+            try
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    var nextPtr = IntPtr.Add(credentialsPtr, IntPtr.Size * i);
+                    var currentPtr = Marshal.ReadIntPtr(nextPtr);
+                    var nativeCredential = Marshal.PtrToStructure<NativeApi.Credential>(currentPtr);
+                    if (nativeCredential == null)
+                    {
+                        _logger.Error($"pointer failed to pin to structure at index {i}");
+                        yield break;
+                    }
+
+                    NativeApi.Credential copy = nativeCredential;
+                    yield return copy;
+                }
+            }
+            finally
+            {
+                if (!NativeApi.CredentialApi.CredFree(credentialsPtr))
+                {
+                    int lastError = Marshal.GetLastWin32Error();
+                    if (lastError != 0)
+                        _logger.Warning(ErrorOrUnknownMessage(lastError));
+                }
+            }
+        }
+        private NativeApi.Credential? GetCredentialFromAndFreePtr(IntPtr credentialPtr, [CallerMemberName] string callerMemberName = "")
+        {
+            if (credentialPtr == IntPtr.Zero)
+            {
+                _logger.Warning("null credential pointer, unable to convert to Credential object", callerMemberName);
+                return null;
+            }
+
+            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr, _logger);
+            if (handle.IsValid && handle.NativeCredential != null)
+            {
+                // make a copy so we're not referencing the pinned struct
+                NativeApi.Credential nativeCredential = handle.NativeCredential;
+                return nativeCredential;
+            }
+
+            _logger.Warning("Unable to get structure from credential pointer");
+            return null;
+        }
     }
 }

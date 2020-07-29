@@ -17,12 +17,18 @@ using System;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
-    [TestFixture]
+    [TestFixtureSource(typeof(TestDataSource))]
     public sealed class CredentialManagerTest 
     {
         private Mock<ILoggerAdapter> _logger = null!;
         private Mock<INativeCredentialApi> _nativeCredentialApi = null!;
         private CredentialManager _manager = null!;
+        private readonly TestData _dataSource;
+
+        public CredentialManagerTest(TestData dataSource)
+        {
+            _dataSource = dataSource;
+        }
 
         [SetUp]
         public void Setup()
@@ -30,6 +36,11 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _nativeCredentialApi = new Mock<INativeCredentialApi>();
             _logger = new Mock<ILoggerAdapter>();
             _manager = new CredentialManager(_nativeCredentialApi.Object, _logger.Object);
+            
+            /*
+            _nativeCredentialApi
+                .Setup(native => native.CredRead(_dataSource.KnownTarget, _dataSource.KnownTarget, KnownCredentialType
+                */
         }
 
         [Test]
@@ -48,6 +59,26 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         {
             Assert.DoesNotThrow(() => _ = new CredentialManager(_logger.Object));
         }
+
+        /*
+        [TestCase(true, ExpectedResult = true)]
+        [TestCase(false, ExpectedResult = false)]
+        public bool FindShould_ReturnCredentialIfExists(bool useKnownTarget)
+        {
+            string target = useKnownTarget
+                ? _dataSource.KnownTarget
+                : Guid.NewGuid().ToString();
+            var type = useKnownTarget
+                ? _dataSource.KnownCredentialType
+                : CredentialType.DomainPassword;
+
+            var credential = _manager.Find(target, type);
+
+            return credential?.Id == target;
+        }
+        */
+
+
 
         /*
 
@@ -81,5 +112,8 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.That(credentials.Length, Is.AtLeast(1));
         }
         */
+
+        private static Credential BuildRandomCredential(CredentialFlag flags, CredentialType type, CredentialPeristence persistanceType) =>
+            new Credential($"{Guid.NewGuid():N}@{Guid.NewGuid():N}", $"{Guid.NewGuid():N}", $"{Guid.NewGuid():N}", flags, type, persistanceType, DateTime.Now);
     }
 }

@@ -21,7 +21,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// https://docs.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala
     /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
-    internal class Credential
+    public class Credential
     {
         /// <summary>
         /// A bit member that identifies characteristics of the credential. 
