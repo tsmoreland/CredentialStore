@@ -26,10 +26,8 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
 
         public IEnumerator<TestData> GetEnumerator()
         {
-            yield return new TestData(CredentialType.Generic, true);
-            yield return new TestData(CredentialType.Generic, false);
-            yield return new TestData(CredentialType.DomainPassword, true);
-            yield return new TestData(CredentialType.DomainPassword, false);
+            yield return new TestData(CredentialType.Generic);
+            yield return new TestData(CredentialType.DomainPassword);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

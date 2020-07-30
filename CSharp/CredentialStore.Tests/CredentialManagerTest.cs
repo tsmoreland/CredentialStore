@@ -72,7 +72,6 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.DoesNotThrow(() => _ = new CredentialManager(_logger.Object));
         }
 
-        /*
         [TestCase(true, ExpectedResult = true)]
         [TestCase(false, ExpectedResult = false)]
         public bool FindShould_ReturnCredentialIfExists(bool useKnownTarget)
@@ -88,7 +87,6 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
 
             return credential?.Id == target;
         }
-        */
 
 
 
@@ -124,8 +122,5 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.That(credentials.Length, Is.AtLeast(1));
         }
         */
-
-        private static Credential BuildRandomCredential(CredentialFlag flags, CredentialType type, CredentialPeristence persistanceType) =>
-            new Credential($"{Guid.NewGuid():N}@{Guid.NewGuid():N}", $"{Guid.NewGuid():N}", $"{Guid.NewGuid():N}", flags, type, persistanceType, DateTime.Now);
     }
 }
