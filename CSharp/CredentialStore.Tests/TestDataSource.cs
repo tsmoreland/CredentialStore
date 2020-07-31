@@ -13,6 +13,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
@@ -24,10 +25,17 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
 
         public static IEnumerable<TestData> Source => new TestDataSource();
 
+        public static IEnumerable<TestData> SourceWhereTargetIsIncluded =>
+            (new TestDataSource())
+            .Where(data => data.IncludesTarget);
+
+
         public IEnumerator<TestData> GetEnumerator()
         {
-            yield return new TestData(CredentialType.Generic);
-            yield return new TestData(CredentialType.DomainPassword);
+            yield return new TestData(CredentialType.Generic, true);
+            yield return new TestData(CredentialType.DomainPassword, true);
+            yield return new TestData(CredentialType.Generic, false);
+            yield return new TestData(CredentialType.DomainPassword, false);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

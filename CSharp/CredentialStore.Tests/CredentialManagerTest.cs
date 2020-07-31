@@ -19,18 +19,13 @@ using System.Linq;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
-    [TestFixtureSource(typeof(TestDataSource))]
-    public sealed class CredentialManagerTest 
+    [TestFixture]
+    public sealed class CredentialManagerTest
     {
         private Mock<ILoggerAdapter> _logger = null!;
         private Mock<INativeCredentialApi> _nativeCredentialApi = null!;
         private CredentialManager _manager = null!;
-        private readonly TestData _dataSource;
-
-        public CredentialManagerTest(TestData dataSource)
-        {
-            _dataSource = dataSource;
-        }
+        private TestData? _dataSource;
 
         [SetUp]
         public void Setup()
@@ -38,21 +33,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _nativeCredentialApi = new Mock<INativeCredentialApi>();
             _logger = new Mock<ILoggerAdapter>();
             _manager = new CredentialManager(_nativeCredentialApi.Object, _logger.Object);
-
-            _nativeCredentialApi
-                .Setup(native => native.CredRead(_dataSource.KnownTarget, It.IsAny<CredentialType>(), 0))
-                .Returns(() =>
-                {
-                    IEnumerable<NativeApi.Credential?> credentials = _dataSource.Credentials;
-                    return credentials.DefaultIfEmpty(null!)
-                        .FirstOrDefault(c => c?.TargetName == _dataSource.KnownTarget);
-                });
-            _nativeCredentialApi
-                .Setup(native => native.CredEnumerate(It.IsAny<string?>(), It.IsAny<int>()))
-                .Returns(() => _dataSource.Credentials);
-            _nativeCredentialApi
-                .Setup(native => native.CredDelete(_dataSource.KnownTarget, (int)_dataSource.KnownCredentialType, It.IsAny<int>()))
-                .Returns(() => true);
+            _targetDeleted = false;
         }
 
         [Test]
@@ -60,6 +41,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         {
             Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _logger.Object));
         }
+
         [Test]
         public void ConstructorShould_ThrowArgumentNull_WhenLoggerIsNull()
         {
@@ -72,55 +54,119 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.DoesNotThrow(() => _ = new CredentialManager(_logger.Object));
         }
 
-        [TestCase(true, ExpectedResult = true)]
-        [TestCase(false, ExpectedResult = false)]
-        public bool FindShould_ReturnCredentialIfExists(bool useKnownTarget)
+        [Test]
+        [TestCaseSource(typeof(TestDataSource), nameof(TestDataSource.Source))]
+        public void FindShould_ReturnCredentialIfExists(TestData data)
         {
-            string target = useKnownTarget
-                ? _dataSource.KnownTarget
-                : Guid.NewGuid().ToString();
-            var type = useKnownTarget
-                ? _dataSource.KnownCredentialType
-                : CredentialType.DomainPassword;
+            InitializeFromTestData(data);
+            var credential = _manager.Find(data.Target, data.CredentialType);
 
-            var credential = _manager.Find(target, type);
-
-            return credential?.Id == target;
+            if (data.IncludesTarget)
+            {
+                Assert.That(credential, Is.Not.Null);
+                if (credential == null)
+                    return; // to prevent warning of possible use of null
+                Assert.That(credential.Id, Is.EqualTo(data.Target));
+                Assert.That(credential.Secret, Is.EqualTo(data.Secret));
+            }
+            else
+                Assert.That(credential, Is.Null);
         }
 
-
-
-        /*
-
         [Test]
-        public void FindShould_ReturnMatchingValue()
+        [TestCaseSource(typeof(TestDataSource), nameof(TestDataSource.SourceWhereTargetIsIncluded))]
+        public void DeleteShould_DeleteExistingValue_WhenGivenCredential(TestData data)
         {
-            const string id = "target-54d456e0bae74269b167f031515b7761";
-            const CredentialType type = CredentialType.Generic;
-
-            var credential = _manager.Find(id, type);
-
-            Assert.That(credential, Is.Not.Null);
-            if (credential == null)
+            InitializeFromTestData(data);
+            var beforeDelete = _manager.Find(data.Target, data.CredentialType);
+            Assert.That(beforeDelete, Is.Not.Null);
+            if (beforeDelete == null)
                 return;
 
-            var newCredential = credential.With(id: credential.Id.Replace("target", "tgt"));
-            bool saved = _manager.Add(newCredential);
-            if (!saved)
-            {
-                // ...
-            }
+            var deleted = _manager.Delete(beforeDelete);
+            var afterDelete = _manager.Find(data.Target, data.CredentialType);
 
+            Assert.That(deleted, Is.True);
+            Assert.That(afterDelete, Is.Null);
         }
 
         [Test]
-        public void CredentialsShould_ReturnAtLeastOneEntry()
+        [TestCaseSource(typeof(TestDataSource), nameof(TestDataSource.SourceWhereTargetIsIncluded))]
+        public void DeleteShould_DeleteExistingValue_WhenGivenIdAndType(TestData data)
         {
-            var credentials = _manager.Credentials.ToArray();
+            InitializeFromTestData(data);
+            var beforeDelete = _manager.Find(data.Target, data.CredentialType);
+            Assert.That(beforeDelete, Is.Not.Null);
+            if (beforeDelete == null)
+                return;
 
-            Assert.That(credentials, Is.Not.Null);
-            Assert.That(credentials.Length, Is.AtLeast(1));
+            var deleted = _manager.Delete(data.Target, data.CredentialType);
+            var afterDelete = _manager.Find(data.Target, data.CredentialType);
+
+            Assert.That(deleted, Is.True);
+            Assert.That(afterDelete, Is.Null);
         }
-        */
+
+        [Test]
+        public void DeleteShould_ThrowArgumentNullExceptionIfCredentialIsNull()
+        {
+            Credential credential = null!;
+            Assert.Throws<ArgumentNullException>(() => _manager.Delete(credential));
+        }
+
+        [Test]
+        [TestCase(null!)]
+        [TestCase("")]
+        public void DeleteShould_ThrowArgumentExceptionIfIdIsNullOrEmpty(string id)
+        {
+            Assert.Throws<ArgumentException>(() => _manager.Delete(id, CredentialType.Generic));
+        }
+
+        [Test]
+        [TestCaseSource(typeof(TestDataSource), nameof(TestDataSource.Source))]
+        public void CredentialsShould_ReturnAllCredentials(TestData data)
+        {
+            InitializeFromTestData(data);
+            var credentials = _manager.Credentials;
+
+            CollectionAssert.AreEquivalent(
+                data.Credentials.Select(c => c.TargetName),
+                credentials.Select(c => c.Id));
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _dataSource?.Dispose();
+            _dataSource = null!;
+        }
+
+        private bool _targetDeleted;
+        private void InitializeFromTestData(TestData dataSource)
+        {
+            _dataSource = dataSource;
+            _nativeCredentialApi
+                .Setup(native => native.CredRead(_dataSource.Target, It.IsAny<CredentialType>(), 0))
+                .Returns(() =>
+                {
+                    if (_targetDeleted)
+                        return null;
+
+                    IEnumerable<NativeApi.Credential?> credentials = _dataSource.Credentials;
+                    return credentials.DefaultIfEmpty(null!)
+                        .FirstOrDefault(c => c?.TargetName == _dataSource.Target);
+                });
+            _nativeCredentialApi
+                .Setup(native => native.CredEnumerate(It.IsAny<string?>(), It.IsAny<int>()))
+                .Returns(() => _dataSource.Credentials);
+            _nativeCredentialApi
+                .Setup(native => native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()))
+                .Returns(() => true);
+            _nativeCredentialApi
+                .Setup(native =>
+                    native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()))
+                .Callback<string, int, int>((target, type, flag) => _targetDeleted = true)
+                .Returns(true);
+        }
     }
 }

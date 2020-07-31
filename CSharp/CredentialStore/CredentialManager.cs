@@ -132,15 +132,35 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <exception cref="ArgumentNullException">
         /// if <paramref name="credential"/> is null
         /// </exception>
+        /// <exception cref="ArgumentException">
+        /// if <paramref name="credential.Id"/> is null or empty
+        /// </exception>
         public bool Delete(Credential credential)
         {
             if (credential == null)
                 throw new ArgumentNullException(nameof(credential));
 
-            if (!_nativeCredentialApi.CredDelete(credential.Id, (int)credential.Type, 0))
+            return Delete(credential.Id, credential.Type);
+        }
+
+        /// <summary>
+        /// deletes a credential from the user's credential set
+        /// </summary>
+        /// <param name="id">id of item to be deleted</param>
+        /// <param name="type">credential type of item to be deleted</param>
+        /// <returns>true if item not found successfully deleted, otherwise false</returns>
+        /// <exception cref="ArgumentException">
+        /// if <paramref name="id"/> is null or empty
+        /// </exception>
+        public bool Delete(string id, CredentialType type)
+        {
+            if (string.IsNullOrEmpty(id))
+                throw new ArgumentException("id cannot be empty", nameof(id));
+
+            if (!_nativeCredentialApi.CredDelete(id, (int)type, 0))
                 return !LogLastWin32Error(_logger, new[] { NotFound });
 
-            _logger.Info($"{credential.Id} successfully deleted");
+            _logger.Info($"{id} successfully deleted");
             return true;
         }
 

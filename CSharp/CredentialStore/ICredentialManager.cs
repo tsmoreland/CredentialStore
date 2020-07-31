@@ -50,6 +50,18 @@ namespace Moreland.Security.Win32.CredentialStore
         /// if <paramref name="credential"/> is null
         /// </exception>
         bool Delete(Credential credential);
+
+        /// <summary>
+        /// deletes a credential from the user's credential set
+        /// </summary>
+        /// <param name="id">id of item to be deleted</param>
+        /// <param name="type">credential type of item to be deleted</param>
+        /// <returns>true if item not found successfully deleted, otherwise false</returns>
+        /// <exception cref="ArgumentException">
+        /// if <paramref name="id"/> is null or empty
+        /// </exception>
+        bool Delete(string id, CredentialType type);
+
         /// <summary>
         /// Finds a credential with the given id value and optionally <see cref="CredentialType"/>
         /// </summary>

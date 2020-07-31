@@ -21,11 +21,11 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
 {
     public sealed class TestData : IDisposable
     {
-        public TestData(CredentialType type)
+        public TestData(CredentialType type, bool includesTarget)
         {
-            KnownTarget = $"{Guid.NewGuid():N}@{Guid.NewGuid():N}";
-            KnownCredentialType = CredentialType.Generic;
-            KnownSecret = $"secret-${Guid.NewGuid():N}-secret";
+            Target = $"{Guid.NewGuid():N}@{Guid.NewGuid():N}";
+            CredentialType = CredentialType.Generic;
+            Secret = $"secret-${Guid.NewGuid():N}-secret";
             var credentials = new List<NativeApi.Credential>
             {
                 BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.LocalMachine),
@@ -33,17 +33,20 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                 BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.Session),
                 BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.LocalMachine),
                 BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.Enterprise),
-                BuildRandomCredential(KnownTarget, KnownSecret, CredentialFlag.None, KnownCredentialType, 
-                    CredentialPeristence.LocalMachine),
             };
-
+            if (includesTarget)
+                credentials.Add(BuildRandomCredential(Target, Secret, CredentialFlag.None,
+                    CredentialType,
+                    CredentialPeristence.LocalMachine));
             Credentials = credentials;
+            IncludesTarget = includesTarget;
         }
 
-        public string KnownTarget { get; }
-        public string KnownSecret { get; }
-        public CredentialType KnownCredentialType { get; }
+        public string Target { get; }
+        public string Secret { get; }
+        public CredentialType CredentialType { get; }
         public IEnumerable<NativeApi.Credential> Credentials { get; }
+        public bool IncludesTarget { get; }
 
         private static NativeApi.Credential BuildRandomCredential(CredentialFlag flags, CredentialType type,
             CredentialPeristence persistanceType) =>
