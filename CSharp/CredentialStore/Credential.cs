@@ -141,6 +141,5 @@ namespace Moreland.Security.Win32.CredentialStore
                 ? nameof(PeristenceType)
                 : string.Empty;
         }
-
     }
 }

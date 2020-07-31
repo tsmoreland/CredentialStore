@@ -14,8 +14,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using static Moreland.Security.Win32.CredentialStore.NativeApi.ErrorCode;
 
 namespace Moreland.Security.Win32.CredentialStore
@@ -37,7 +35,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// if <paramref name="logger"/> is null
         /// </exception>
         public CredentialManager(ILoggerAdapter logger)
-            : this(new NativeCredentialApi(), logger)
+            : this(new NativeCredentialApi(logger), logger)
         {
         }
 
@@ -79,8 +77,9 @@ namespace Moreland.Security.Win32.CredentialStore
             if (string.IsNullOrEmpty(id))
                 throw new ArgumentException("id cannot be empty");
 
-            if (NativeApi.CredentialApi.CredRead(id, type, 0, out IntPtr credentialPtr))
-                return GetCredentialFromAndFreePtr(credentialPtr);
+            var nativeCredential = _nativeCredentialApi.CredRead(id, type, 0);
+            if (nativeCredential != null)
+                return new Credential(nativeCredential);
 
             LogLastWin32Error(_logger, new[] { NotFound });
             return null;
@@ -118,25 +117,11 @@ namespace Moreland.Security.Win32.CredentialStore
             using var intermediate = new NativeApi.IntermediateCredential(credential);
 
             var nativeCredential = intermediate.NativeCredential;
-            var nativeCredentialPtr = IntPtr.Zero;
-            try
-            {
-                nativeCredentialPtr = Marshal.AllocHGlobal(Marshal.SizeOf(nativeCredential));
-                Marshal.StructureToPtr(nativeCredential, nativeCredentialPtr, false);
+            if (!_nativeCredentialApi.CredWrite(nativeCredential, 0))
+                return false;
 
-                if (!NativeApi.CredentialApi.CredWrite(nativeCredentialPtr, 0))
-                {
-                    LogLastWin32Error(_logger, Enumerable.Empty<int>());
-                    return false;
-                }
-
-                _logger.Verbose($"{credential} successfully saved");
-                return true;
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(nativeCredentialPtr);
-            }
+            _logger.Verbose($"{credential} successfully saved");
+            return true;
         }
 
         /// <summary>
@@ -147,71 +132,42 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <exception cref="ArgumentNullException">
         /// if <paramref name="credential"/> is null
         /// </exception>
+        /// <exception cref="ArgumentException">
+        /// if <paramref name="credential.Id"/> is null or empty
+        /// </exception>
         public bool Delete(Credential credential)
         {
             if (credential == null)
                 throw new ArgumentNullException(nameof(credential));
 
-            if (NativeApi.CredentialApi.CredDelete(credential.Id, (int)credential.Type, 0))
-            {
-                _logger.Info($"{credential.Id} successfully deleted");
-                return true;
-            }
-
-            return !LogLastWin32Error(_logger, new[] { NotFound });
+            return Delete(credential.Id, credential.Type);
         }
 
-        private IEnumerable<Credential> GetCredentials(string? filter, NativeApi.EnumerateFlag flag, [CallerMemberName] string callerMemberName = "")
+        /// <summary>
+        /// deletes a credential from the user's credential set
+        /// </summary>
+        /// <param name="id">id of item to be deleted</param>
+        /// <param name="type">credential type of item to be deleted</param>
+        /// <returns>true if item not found successfully deleted, otherwise false</returns>
+        /// <exception cref="ArgumentException">
+        /// if <paramref name="id"/> is null or empty
+        /// </exception>
+        public bool Delete(string id, CredentialType type)
         {
-            if (!NativeApi.CredentialApi.CredEnumerate(filter, (int)flag, out int count, out IntPtr credentialsPtr))
-            {
-                int lastError = Marshal.GetLastWin32Error();
-                if (lastError != 0)
-                    _logger.Warning(ErrorOrUnknownMessage(lastError), callerMemberName);
-                yield break;
-            }
+            if (string.IsNullOrEmpty(id))
+                throw new ArgumentException("id cannot be empty", nameof(id));
 
-            try
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    var nextPtr = IntPtr.Add(credentialsPtr, IntPtr.Size * i);
-                    var currentPtr = Marshal.ReadIntPtr(nextPtr);
-                    var nativeCredential = Marshal.PtrToStructure<NativeApi.Credential>(currentPtr);
-                    if (nativeCredential == null)
-                    {
-                        _logger.Error($"pointer failed to pin to structure at index {i}", callerMemberName: callerMemberName);
-                        yield break;
-                    }
+            if (!_nativeCredentialApi.CredDelete(id, (int)type, 0))
+                return !LogLastWin32Error(_logger, new[] { NotFound });
 
-                    yield return new Credential(nativeCredential);
-                }
-            }
-            finally
-            {
-                if (!NativeApi.CredentialApi.CredFree(credentialsPtr))
-                {
-                    int lastError = Marshal.GetLastWin32Error();
-                    if (lastError != 0)
-                        _logger.Warning(ErrorOrUnknownMessage(lastError), callerMemberName);
-                }
-            }
+            _logger.Info($"{id} successfully deleted");
+            return true;
         }
-        private Credential? GetCredentialFromAndFreePtr(IntPtr credentialPtr, [CallerMemberName] string callerMemberName = "")
-        {
-            if (credentialPtr == IntPtr.Zero)
-            {
-                _logger.Warning("null credential pointer, unable to convert to Credential object", callerMemberName);
-                return null;
-            }
 
-            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr, _logger);
-            if (handle.IsValid && handle.NativeCredential != null)
-                return new Credential(handle.NativeCredential);
-
-            _logger.Warning("Unable to get structure from credential pointer");
-            return null;
-        }
+        private IEnumerable<Credential> GetCredentials(string? filter, NativeApi.EnumerateFlag flag) =>
+            _nativeCredentialApi.CredEnumerate(filter, (int)flag)
+                .Select(credential => new Credential(credential))
+                .ToArray();
 
     }
 }

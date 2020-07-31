@@ -11,15 +11,33 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace Moreland.Security.Win32.CredentialStore
+namespace Moreland.Security.Win32.CredentialStore.Tests
 {
-    public interface INativeCredentialApi
+    /// <summary>
+    /// <inheritdoc cref="IEnumerable{TestData}"/>
+    /// </summary>
+    internal class TestDataSource : IEnumerable<TestData>
     {
-        bool CredDelete(string target, int type, int flags);
-        IEnumerable<NativeApi.Credential> CredEnumerate(string? filter, int flag);
-        NativeApi.Credential? CredRead(string target, CredentialType type, int reservedFlag);
-        bool CredWrite(NativeApi.Credential credential, int flags);
+
+        public static IEnumerable<TestData> Source => new TestDataSource();
+
+        public static IEnumerable<TestData> SourceWhereTargetIsIncluded =>
+            (new TestDataSource())
+            .Where(data => data.IncludesTarget);
+
+
+        public IEnumerator<TestData> GetEnumerator()
+        {
+            yield return new TestData(CredentialType.Generic, true);
+            yield return new TestData(CredentialType.DomainPassword, true);
+            yield return new TestData(CredentialType.Generic, false);
+            yield return new TestData(CredentialType.DomainPassword, false);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
