@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Moreland.Security.Win32.CredentialStore
 {
@@ -49,7 +50,10 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <exception cref="ArgumentNullException">
         /// if <paramref name="credential"/> is null
         /// </exception>
-        bool Delete(Credential credential);
+        /// <exception cref="Win32Exception">
+        /// if error occurs calling native api
+        /// </exception>
+        void Delete(Credential credential);
 
         /// <summary>
         /// deletes a credential from the user's credential set
@@ -60,7 +64,10 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <exception cref="ArgumentException">
         /// if <paramref name="id"/> is null or empty
         /// </exception>
-        bool Delete(string id, CredentialType type);
+        /// <exception cref="Win32Exception">
+        /// if error occurs calling native api
+        /// </exception>
+        void Delete(string id, CredentialType type);
 
         /// <summary>
         /// Finds a credential with the given id value and optionally <see cref="CredentialType"/>

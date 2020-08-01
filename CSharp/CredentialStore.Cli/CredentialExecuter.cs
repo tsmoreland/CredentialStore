@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
@@ -161,14 +162,15 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
 
             return credentials.All(credential =>
             {
-                if (_credentialManager.Delete(credential))
+                try
                 {
+                    _credentialManager.Delete(credential);
                     _writer.WriteLine($"Deleted {credential.Id} {credential.UserName}");
                     return true;
                 }
-                else
+                catch (Win32Exception ex)
                 {
-                    _writer.WriteLine($"Failed to delete {credential.Id} {credential.UserName}");
+                    _writer.WriteLine($"Failed to delete {credential.Id} {credential.UserName}, Error: {ex.NativeErrorCode:x8}");
                     return false;
                 }
             });

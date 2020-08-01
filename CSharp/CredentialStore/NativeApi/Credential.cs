@@ -12,6 +12,7 @@
 // 
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
@@ -21,6 +22,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// https://docs.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala
     /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+    [DebuggerDisplay("{TargetName}: {UserName} {Type}")]
     public class Credential
     {
         /// <summary>

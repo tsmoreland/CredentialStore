@@ -26,6 +26,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         private Mock<INativeCredentialApi> _nativeCredentialApi = null!;
         private CredentialManager _manager = null!;
         private TestData? _dataSource;
+        private NativeApi.IntermediateCredential? _addedCredential;
 
         [SetUp]
         public void Setup()
@@ -52,6 +53,33 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         public void ConstructorShouldNot_ThrowException_WhenSetupIsValid()
         {
             Assert.DoesNotThrow(() => _ = new CredentialManager(_logger.Object));
+        }
+
+        [Test]
+        public void AddShould_ThrowArgumentNullException_WhenCredentialIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() => _manager.Add(null!));
+            Assert.That(exception.ParamName, Is.EqualTo("credential"));
+        }
+
+        [Test]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine, true)]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine, false)]
+        [TestCase(CredentialFlag.None, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, true)]
+        [TestCase(CredentialFlag.None, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, false)]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.Enterprise, true)]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.Enterprise, false)]
+        [TestCase(CredentialFlag.None, CredentialType.DomainPassword, CredentialPeristence.Enterprise, true)]
+        [TestCase(CredentialFlag.None, CredentialType.DomainPassword, CredentialPeristence.Enterprise, false)]
+        public void AddShould_ReturnsCredWriteResult(CredentialFlag flag, CredentialType type, CredentialPeristence persistType, bool successful)
+        {
+            using var data = new TestData(type, false);
+            var toAdd = TestData.BuildRandomCredential(flag, type, persistType);
+            InitializeFromTestData(data, toAdd, successful);
+
+            bool added = _manager.Add(toAdd);
+
+            Assert.That(added, Is.EqualTo(successful));
         }
 
         [Test]
@@ -83,10 +111,9 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             if (beforeDelete == null)
                 return;
 
-            var deleted = _manager.Delete(beforeDelete);
+            _manager.Delete(beforeDelete);
             var afterDelete = _manager.Find(data.Target, data.CredentialType);
 
-            Assert.That(deleted, Is.True);
             Assert.That(afterDelete, Is.Null);
         }
 
@@ -100,10 +127,9 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             if (beforeDelete == null)
                 return;
 
-            var deleted = _manager.Delete(data.Target, data.CredentialType);
+            _manager.Delete(data.Target, data.CredentialType);
             var afterDelete = _manager.Find(data.Target, data.CredentialType);
 
-            Assert.That(deleted, Is.True);
             Assert.That(afterDelete, Is.Null);
         }
 
@@ -137,13 +163,18 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [TearDown]
         public void TearDown()
         {
+            _addedCredential?.Dispose();
+            _addedCredential = null;
             _dataSource?.Dispose();
             _dataSource = null!;
         }
 
         private bool _targetDeleted;
-        private void InitializeFromTestData(TestData dataSource)
+        private void InitializeFromTestData(TestData dataSource, Credential? toAdd = null, bool successfulAdd = true)
         {
+            if (toAdd != null)
+                _addedCredential = new NativeApi.IntermediateCredential(toAdd);
+
             _dataSource = dataSource;
             _nativeCredentialApi
                 .Setup(native => native.CredRead(_dataSource.Target, It.IsAny<CredentialType>(), 0))
@@ -156,9 +187,15 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                     return credentials.DefaultIfEmpty(null!)
                         .FirstOrDefault(c => c?.TargetName == _dataSource.Target);
                 });
+            if (_addedCredential != null && toAdd != null)
+                _nativeCredentialApi
+                    .Setup(native => native.CredRead(toAdd.Id, toAdd.Type, 0))
+                    .Returns(() => _addedCredential.NativeCredential);
             _nativeCredentialApi
                 .Setup(native => native.CredEnumerate(It.IsAny<string?>(), It.IsAny<int>()))
-                .Returns(() => _dataSource.Credentials);
+                .Returns(() => _addedCredential == null
+                    ? _dataSource.Credentials
+                    : _dataSource.Credentials.Union(new[] {_addedCredential.NativeCredential}).ToArray());
             _nativeCredentialApi
                 .Setup(native => native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()))
                 .Returns(() => true);
@@ -167,6 +204,14 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                     native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()))
                 .Callback<string, int, int>((target, type, flag) => _targetDeleted = true)
                 .Returns(true);
+            if (_addedCredential != null)
+                _nativeCredentialApi
+                    .Setup(native => native.CredWrite(It.IsAny<NativeApi.Credential>(), It.IsAny<int>()))
+                    .Callback<NativeApi.Credential, int>((credential, flag) =>
+                    {
+                        Assert.That(credential.TargetName, Is.EqualTo(_addedCredential.NativeCredential.TargetName));
+                    })
+                    .Returns(() => successfulAdd);
         }
     }
 }
