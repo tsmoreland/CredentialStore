@@ -28,14 +28,14 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Secret = $"secret-${Guid.NewGuid():N}-secret";
             var credentials = new List<NativeApi.Credential>
             {
-                BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.LocalMachine),
-                BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.Enterprise),
-                BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.Session),
-                BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.LocalMachine),
-                BuildRandomCredential(CredentialFlag.None, type, CredentialPeristence.Enterprise),
+                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPeristence.LocalMachine),
+                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPeristence.Enterprise),
+                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPeristence.Session),
+                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPeristence.LocalMachine),
+                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPeristence.Enterprise),
             };
             if (includesTarget)
-                credentials.Add(BuildRandomCredential(Target, Secret, CredentialFlag.None,
+                credentials.Add(BuildRandomNativeCredential(Target, Secret, CredentialFlag.None,
                     CredentialType,
                     CredentialPeristence.LocalMachine));
             Credentials = credentials;
@@ -48,15 +48,20 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         public IEnumerable<NativeApi.Credential> Credentials { get; }
         public bool IncludesTarget { get; }
 
-        private static NativeApi.Credential BuildRandomCredential(CredentialFlag flags, CredentialType type,
+        public static Credential BuildRandomCredential(CredentialFlag flags, CredentialType type,
             CredentialPeristence persistanceType) =>
-            BuildRandomCredential($"{Guid.NewGuid():N}@{Guid.NewGuid():N}", flags, type, persistanceType);
+            new Credential($"{Guid.NewGuid():N}@{Guid.NewGuid():N}", $"user-{Guid.NewGuid():N}",
+                $"secret-{Guid.NewGuid():N}", flags, type, persistanceType, DateTime.Now);
 
-        private static NativeApi.Credential BuildRandomCredential(string target, CredentialFlag flags,
+        private static NativeApi.Credential BuildRandomNativeCredential(CredentialFlag flags, CredentialType type,
+            CredentialPeristence persistanceType) =>
+            BuildRandomNativeCredential($"{Guid.NewGuid():N}@{Guid.NewGuid():N}", flags, type, persistanceType);
+
+        private static NativeApi.Credential BuildRandomNativeCredential(string target, CredentialFlag flags,
             CredentialType type, CredentialPeristence persistanceType) =>
-            BuildRandomCredential(target, $"{Guid.NewGuid():N}", flags, type, persistanceType);
+            BuildRandomNativeCredential(target, $"{Guid.NewGuid():N}", flags, type, persistanceType);
 
-        private static NativeApi.Credential BuildRandomCredential(string target, string secret,  CredentialFlag flags,
+        private static NativeApi.Credential BuildRandomNativeCredential(string target, string secret,  CredentialFlag flags,
             CredentialType type, CredentialPeristence persistanceType)
         {
             var credentialBlob = Marshal.StringToCoTaskMemUni(secret);

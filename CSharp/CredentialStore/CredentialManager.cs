@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using static Moreland.Security.Win32.CredentialStore.NativeApi.ErrorCode;
 
@@ -135,12 +136,15 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <exception cref="ArgumentException">
         /// if <paramref name="credential.Id"/> is null or empty
         /// </exception>
-        public bool Delete(Credential credential)
+        /// <exception cref="Win32Exception">
+        /// if error occurs calling native api
+        /// </exception>
+        public void Delete(Credential credential)
         {
             if (credential == null)
                 throw new ArgumentNullException(nameof(credential));
 
-            return Delete(credential.Id, credential.Type);
+            Delete(credential.Id, credential.Type);
         }
 
         /// <summary>
@@ -152,16 +156,18 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <exception cref="ArgumentException">
         /// if <paramref name="id"/> is null or empty
         /// </exception>
-        public bool Delete(string id, CredentialType type)
+        /// <exception cref="Win32Exception">
+        /// if error occurs calling native api
+        /// </exception>
+        public void Delete(string id, CredentialType type)
         {
             if (string.IsNullOrEmpty(id))
                 throw new ArgumentException("id cannot be empty", nameof(id));
 
-            if (!_nativeCredentialApi.CredDelete(id, (int)type, 0))
-                return !LogLastWin32Error(_logger, new[] { NotFound });
+            if (!_nativeCredentialApi.CredDelete(id, (int)type, 0) && LogLastWin32Error(out int lastError, _logger, new[] {NotFound}))
+                throw new Win32Exception(lastError, "Failed to delete {id}");
 
             _logger.Info($"{id} successfully deleted");
-            return true;
         }
 
         private IEnumerable<Credential> GetCredentials(string? filter, NativeApi.EnumerateFlag flag) =>

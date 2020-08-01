@@ -62,5 +62,19 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             logger?.Error(ErrorOrUnknownMessage(lastError), callerMemberName: callerMemberName);
             return true;
         }
+
+        /// <summary>
+        /// logs the last win32 error if not in <paramref name="ignoredErrors"/>
+        /// </summary>
+        /// <returns>true if error is logged; otherwise false</returns>
+        public static bool LogLastWin32Error(out int lastError, ILoggerAdapter logger, IEnumerable<int> ignoredErrors, [CallerMemberName] string callerMemberName = "")
+        {
+            const int noError = 0;
+            lastError = Marshal.GetLastWin32Error();
+            if (ignoredErrors?.Contains(lastError) == true || lastError == noError)
+                return false;
+            logger?.Error(ErrorOrUnknownMessage(lastError), callerMemberName: callerMemberName);
+            return true;
+        }
     }
 }
