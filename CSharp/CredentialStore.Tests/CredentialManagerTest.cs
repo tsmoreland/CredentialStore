@@ -102,6 +102,33 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
+        [TestCase(null!)]
+        [TestCase("")]
+        public void FindShould_ThrowArgumentExceptionIfIdIsNullOrEmpty(string id)
+        {
+            var ex = Assert.Throws<ArgumentException>(() => _manager.Find(id, CredentialType.Generic));
+            Assert.That(ex.ParamName, Is.EqualTo("id"));
+        }
+
+        [Test]
+        [TestCase(null!, true)]
+        [TestCase("", true)]
+        [TestCase(null!, false)]
+        [TestCase("", false)]
+        public void FindUsingFilter_ShouldReturnAllCredentialsWhenIdIsNullOrEmpty(string filter, bool searchAll)
+        {
+            using var data = new TestData(CredentialType.Generic, false);
+            InitializeFromTestData(data);
+
+            var credentials = _manager.Find(filter, searchAll);
+
+            CollectionAssert.AreEquivalent(
+                data.Credentials.Select(c => c.TargetName),
+                credentials.Select(c => c.Id));
+
+        }
+
+        [Test]
         [TestCaseSource(typeof(TestDataSource), nameof(TestDataSource.SourceWhereTargetIsIncluded))]
         public void DeleteShould_DeleteExistingValue_WhenGivenCredential(TestData data)
         {
@@ -145,7 +172,8 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [TestCase("")]
         public void DeleteShould_ThrowArgumentExceptionIfIdIsNullOrEmpty(string id)
         {
-            Assert.Throws<ArgumentException>(() => _manager.Delete(id, CredentialType.Generic));
+            var ex = Assert.Throws<ArgumentException>(() => _manager.Delete(id, CredentialType.Generic));
+            Assert.That(ex.ParamName, Is.EqualTo("id"));
         }
 
         [Test]

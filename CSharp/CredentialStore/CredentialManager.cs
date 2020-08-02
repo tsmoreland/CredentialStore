@@ -76,7 +76,7 @@ namespace Moreland.Security.Win32.CredentialStore
         public Credential? Find(string id, CredentialType type = CredentialType.DomainPassword)
         {
             if (string.IsNullOrEmpty(id))
-                throw new ArgumentException("id cannot be empty");
+                throw new ArgumentException("id cannot be empty", nameof(id));
 
             var nativeCredential = _nativeCredentialApi.CredRead(id, type, 0);
             if (nativeCredential != null)
