@@ -16,7 +16,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using static Moreland.Security.Win32.CredentialStore.NativeApi.ErrorCode;
 
 namespace Moreland.Security.Win32.CredentialStore
 {
@@ -25,10 +24,12 @@ namespace Moreland.Security.Win32.CredentialStore
     /// </summary>
     public class NativeCredentialApi : INativeCredentialApi
     {
+        private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger; 
 
-        public NativeCredentialApi(ILoggerAdapter logger)
+        public NativeCredentialApi(IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
+            _errorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -52,7 +53,7 @@ namespace Moreland.Security.Win32.CredentialStore
                 Marshal.StructureToPtr(credential, nativeCredentialPtr, false);
 
                 if (!NativeApi.CredentialApi.CredWrite(nativeCredentialPtr, flags))
-                    LogLastWin32Error(_logger, Enumerable.Empty<int>());
+                    _errorCodeToStringService.LogLastWin32Error(_logger, Enumerable.Empty<int>());
 
                 return true;
             }
@@ -78,7 +79,7 @@ namespace Moreland.Security.Win32.CredentialStore
             {
                 int lastError = Marshal.GetLastWin32Error();
                 if (lastError != 0)
-                    _logger.Warning(ErrorOrUnknownMessage(lastError));
+                    _logger.Warning(_errorCodeToStringService.GetMessageFor(lastError));
                 yield break;
             }
 
@@ -105,7 +106,7 @@ namespace Moreland.Security.Win32.CredentialStore
                 {
                     int lastError = Marshal.GetLastWin32Error();
                     if (lastError != 0)
-                        _logger.Warning(ErrorOrUnknownMessage(lastError));
+                        _logger.Warning(_errorCodeToStringService.GetMessageFor(lastError));
                 }
             }
         }
@@ -117,7 +118,7 @@ namespace Moreland.Security.Win32.CredentialStore
                 return null;
             }
 
-            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr, _logger);
+            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr, _errorCodeToStringService, _logger);
             if (handle.IsValid && handle.NativeCredential != null)
             {
                 // make a copy so we're not referencing the pinned struct

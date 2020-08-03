@@ -25,15 +25,20 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// </summary>
     internal sealed class CriticalCredentialHandle : CriticalHandleZeroOrMinusOneIsInvalid
     {
+        private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CriticalCredentialHandle"/> class.
         /// </summary>
         /// <param name="handle">handle to <see cref="Credential"/></param>
-        public CriticalCredentialHandle(IntPtr handle, ILoggerAdapter logger)
+        /// <param name="errorCodeToStringService">error code to string translation service</param>
+        /// <param name="logger">logger</param>
+        public CriticalCredentialHandle(IntPtr handle, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
             SetHandle(handle);
+            _errorCodeToStringService = errorCodeToStringService ??
+                                        throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -58,7 +63,8 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             if (IsInvalid)
                 return true; // nothing to do
 
-            if (!CredentialApi.CredFree(handle) && ErrorCode.LogLastWin32Error(_logger, Enumerable.Empty<int>()))
+            if (!CredentialApi.CredFree(handle) &&
+                _errorCodeToStringService.LogLastWin32Error(_logger, Enumerable.Empty<int>()).Logged)
                 return false;
 
             SetHandleAsInvalid();

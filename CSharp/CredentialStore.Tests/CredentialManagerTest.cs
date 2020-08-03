@@ -24,6 +24,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
     {
         private Mock<ILoggerAdapter> _logger = null!;
         private Mock<INativeCredentialApi> _nativeCredentialApi = null!;
+        private Mock<IErrorCodeToStringService> _errorCodeToString = null!;
         private CredentialManager _manager = null!;
         private TestData? _dataSource;
         private NativeApi.IntermediateCredential? _addedCredential;
@@ -32,21 +33,28 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         public void Setup()
         {
             _nativeCredentialApi = new Mock<INativeCredentialApi>();
+            _errorCodeToString = new Mock<IErrorCodeToStringService>();
             _logger = new Mock<ILoggerAdapter>();
-            _manager = new CredentialManager(_nativeCredentialApi.Object, _logger.Object);
+            _manager = new CredentialManager(_nativeCredentialApi.Object, _errorCodeToString.Object, _logger.Object);
             _targetDeleted = false;
         }
 
         [Test]
         public void ConstructorShould_ThrowArgumentNull_WhenNativeCredentialsApiIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _logger.Object));
+            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _errorCodeToString.Object, _logger.Object));
+        }
+
+        [Test]
+        public void ConstructorShould_ThrowArgumentNull_WhenErrorCodeToStringIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeCredentialApi.Object, null!, _logger.Object));
         }
 
         [Test]
         public void ConstructorShould_ThrowArgumentNull_WhenLoggerIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeCredentialApi.Object, null!));
+            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeCredentialApi.Object, _errorCodeToString.Object, null!));
         }
 
         [Test]
