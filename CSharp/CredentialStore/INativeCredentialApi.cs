@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
+using System;
 using System.Collections.Generic;
 
 namespace Moreland.Security.Win32.CredentialStore
@@ -21,5 +22,6 @@ namespace Moreland.Security.Win32.CredentialStore
         IEnumerable<NativeApi.Credential> CredEnumerate(string? filter, int flag);
         NativeApi.Credential? CredRead(string target, CredentialType type, int reservedFlag);
         bool CredWrite(NativeApi.Credential credential, int flags);
+        void CredFree(IntPtr handle);
     }
 }

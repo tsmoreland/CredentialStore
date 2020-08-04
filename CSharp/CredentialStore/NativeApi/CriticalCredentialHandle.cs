@@ -13,7 +13,7 @@
 
 
 using System;
-using System.Linq;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
@@ -25,6 +25,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// </summary>
     internal sealed class CriticalCredentialHandle : CriticalHandleZeroOrMinusOneIsInvalid
     {
+        private readonly INativeCredentialApi _nativeCredentialApi;
         private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger;
 
@@ -32,11 +33,13 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// Initializes a new instance of the <see cref="CriticalCredentialHandle"/> class.
         /// </summary>
         /// <param name="handle">handle to <see cref="Credential"/></param>
+        /// <param name="nativeCredentialApi">Win32 API for Credential management</param>
         /// <param name="errorCodeToStringService">error code to string translation service</param>
         /// <param name="logger">logger</param>
-        public CriticalCredentialHandle(IntPtr handle, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public CriticalCredentialHandle(IntPtr handle, INativeCredentialApi nativeCredentialApi, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
             SetHandle(handle);
+            _nativeCredentialApi = nativeCredentialApi ?? throw new ArgumentNullException(nameof(nativeCredentialApi));
             _errorCodeToStringService = errorCodeToStringService ??
                                         throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -63,12 +66,17 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             if (IsInvalid)
                 return true; // nothing to do
 
-            if (!CredentialApi.CredFree(handle) &&
-                _errorCodeToStringService.LogLastWin32Error(_logger, Enumerable.Empty<int>()).Logged)
+            try
+            {
+                _nativeCredentialApi.CredFree(handle);
+                SetHandleAsInvalid();
+                return true;
+            }
+            catch (Win32Exception ex)
+            {
+                _logger.Error(_errorCodeToStringService.GetMessageFor(ex.NativeErrorCode));
                 return false;
-
-            SetHandleAsInvalid();
-            return true;
+            }
         }
     }
 }

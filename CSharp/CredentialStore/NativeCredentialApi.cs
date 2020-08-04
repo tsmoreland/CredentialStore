@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -110,6 +111,13 @@ namespace Moreland.Security.Win32.CredentialStore
                 }
             }
         }
+
+        public void CredFree(IntPtr handle)
+        {
+            if (!NativeApi.CredentialApi.CredFree(handle))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
         private NativeApi.Credential? GetCredentialFromAndFreePtr(IntPtr credentialPtr, [CallerMemberName] string callerMemberName = "")
         {
             if (credentialPtr == IntPtr.Zero)
@@ -118,7 +126,7 @@ namespace Moreland.Security.Win32.CredentialStore
                 return null;
             }
 
-            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr, _errorCodeToStringService, _logger);
+            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr, this, _errorCodeToStringService, _logger);
             if (handle.IsValid && handle.NativeCredential != null)
             {
                 // make a copy so we're not referencing the pinned struct
