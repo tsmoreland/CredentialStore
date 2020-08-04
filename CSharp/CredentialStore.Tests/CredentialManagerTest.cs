@@ -15,6 +15,7 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
@@ -185,6 +186,23 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
+        [TestCase((int)NativeApi.ExpectedError.NotFound, false, CredentialType.Generic)]
+        [TestCase((int)NativeApi.ExpectedError.InvalidArgument, true, CredentialType.Generic)]
+        [TestCase((int)NativeApi.ExpectedError.NotFound, false, CredentialType.DomainPassword)]
+        [TestCase((int)NativeApi.ExpectedError.InvalidArgument, true, CredentialType.DomainPassword)]
+        public void DeleteShould_IgnoreNotFoundError(int errorCode, bool throwsException, CredentialType type)
+        {
+            string id = $"not-found-{Guid.NewGuid():N}";
+            using var data = new TestData(CredentialType.Generic, false);
+            InitializeFromTestData(data, idNotFound: id, lastErrorCode: errorCode);
+
+            if (throwsException)
+                Assert.Throws<Win32Exception>(() => _manager.Delete(id, type));
+            else
+                Assert.DoesNotThrow(() => _manager.Delete(id, type));
+        }
+
+        [Test]
         [TestCaseSource(typeof(TestDataSource), nameof(TestDataSource.Source))]
         public void CredentialsShould_ReturnAllCredentials(TestData data)
         {
@@ -206,7 +224,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         private bool _targetDeleted;
-        private void InitializeFromTestData(TestData dataSource, Credential? toAdd = null, bool successfulAdd = true)
+        private void InitializeFromTestData(TestData dataSource, Credential? toAdd = null, bool successfulAdd = true, string idNotFound = null!, int? lastErrorCode = null)
         {
             if (toAdd != null)
                 _addedCredential = new NativeApi.IntermediateCredential(toAdd);
@@ -235,6 +253,20 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _nativeCredentialApi
                 .Setup(native => native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()))
                 .Returns(() => true);
+            if (!string.IsNullOrEmpty(idNotFound))
+            {
+                _nativeCredentialApi
+                    .Setup(native => native.CredDelete(idNotFound, It.IsAny<int>(), It.IsAny<int>()))
+                    .Returns(false);
+            }
+
+            if (lastErrorCode != null)
+                _errorCodeToString
+                    .Setup(errorCodeToString => errorCodeToString.LogLastWin32Error(It.IsAny<ILoggerAdapter>(),
+                        It.IsAny<IEnumerable<int>>(), It.IsAny<string>()))
+                    .Callback<ILoggerAdapter, IEnumerable<int>, string>((logger, ignored, caller) => _targetDeleted = ignored.Contains((int)lastErrorCode))
+                    .Returns(() => (!_targetDeleted, (int)lastErrorCode));
+
             _nativeCredentialApi
                 .Setup(native =>
                     native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()))
