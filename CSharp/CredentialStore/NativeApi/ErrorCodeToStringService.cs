@@ -11,10 +11,10 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
@@ -23,7 +23,8 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// </summary>
     internal sealed class ErrorCodeToStringService : IErrorCodeToStringService
     {
-        private readonly ILoggerAdapter _loggerAdapter;
+        private readonly IMarshalService _marshalService;
+        private readonly ILoggerAdapter _logger;
         private static IDictionary<int, string> ErrorMessages { get; } = new Dictionary<int, string>
         {
             {(int)ExpectedError.NotFound, $"Element not found. {(int)ExpectedError.NotFound:x}"},
@@ -35,9 +36,10 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             {(int)ExpectedError.InvalidArgument, $"Invalid Argument {(int)ExpectedError.InvalidFlags:x}"}
         };
 
-        public ErrorCodeToStringService(ILoggerAdapter loggerAdapter)
+        public ErrorCodeToStringService(IMarshalService marshalService, ILoggerAdapter loggerAdapter)
         {
-            _loggerAdapter = loggerAdapter;
+            _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
+            _logger = loggerAdapter ?? throw new ArgumentNullException(nameof(loggerAdapter));
         }
 
         public string GetMessageFor(ExpectedError errorCode) =>
@@ -48,14 +50,14 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             if (ErrorMessages.ContainsKey(errorCode))
                 return ErrorMessages[errorCode];
 
-            _loggerAdapter.Error($"unrecognized error {errorCode:X}");
+            _logger.Error($"unrecognized error {errorCode:X}");
             return $"Unknown error {errorCode:X}";
         }
 
         public (bool Logged, int ErrorCode) LogLastWin32Error(ILoggerAdapter logger, IEnumerable<int> ignoredErrors, [CallerMemberName] string callerMemberName = "")
         {
             const int noError = 0;
-            int lastError = Marshal.GetLastWin32Error();
+            int lastError = _marshalService.GetLastWin32Error();
             if (ignoredErrors?.Contains(lastError) == true || lastError == noError)
                 return (false, lastError);
             logger?.Error(GetMessageFor(lastError), callerMemberName: callerMemberName);

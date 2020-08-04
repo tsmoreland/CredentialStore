@@ -61,9 +61,9 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         public int GetLastWin32Error() => Marshal.GetLastWin32Error();
 
         /// <summary>
-        /// <inheritdoc cref="Marshal.AllocHGlobal(IntPtr)"/>
+        /// <inheritdoc cref="Marshal.AllocHGlobal(int)"/>
         /// </summary>
-        public IntPtr AllocHGlobal(IntPtr pointer) =>
+        public IntPtr AllocHGlobal(int pointer) =>
             Marshal.AllocHGlobal(pointer);
 
         /// <summary>
@@ -83,5 +83,18 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// </summary>
         public IntPtr StringToCoTaskMemUni(string value) =>
             Marshal.StringToCoTaskMemUni(value);
+
+        /// <summary>
+        /// <inheritdoc cref="IMarshalService.SizeOf(Type)"/>
+        /// </summary>
+        public int SizeOf(Type type) =>
+            Marshal.SizeOf(type);
+
+        /// <summary>
+        /// <inheritdoc cref="IMarshalService.SizeOf{T}(T)"/>
+        /// </summary>
+        public int SizeOf<T>(T value) =>
+            Marshal.SizeOf(value);
     }
+
 }

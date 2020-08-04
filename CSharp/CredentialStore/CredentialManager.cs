@@ -36,7 +36,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// if <paramref name="logger"/> is null
         /// </exception>
         public CredentialManager(ILoggerAdapter logger)
-            : this(new NativeApi.ErrorCodeToStringService(logger), logger)
+            : this(new NativeApi.MarshalService(), logger)
         {
         }
 
@@ -44,13 +44,28 @@ namespace Moreland.Security.Win32.CredentialStore
         /// Instantiates a new instance of the 
         /// <see cref="CredentialManager"/> object
         /// </summary>
+        /// <param name="marshalService">wrapper around <see cref="System.Runtime.InteropServices.Marshal"/></param>
+        /// <param name="logger">logger used to aid in debugging</param>
+        /// <exception cref="ArgumentNullException">
+        /// if <paramref name="logger"/> is null
+        /// </exception>
+        private CredentialManager(IMarshalService marshalService, ILoggerAdapter logger)
+            : this(marshalService, new NativeApi.ErrorCodeToStringService(marshalService, logger), logger)
+        {
+        }
+
+        /// <summary>
+        /// Instantiates a new instance of the 
+        /// <see cref="CredentialManager"/> object
+        /// </summary>
+        /// <param name="marshalService">wrapper around <see cref="System.Runtime.InteropServices.Marshal"/></param>
         /// <param name="errorCodeToStringService">error code to string translation service</param>
         /// <param name="logger">logger used to aid in debugging</param>
         /// <exception cref="ArgumentNullException">
         /// if <paramref name="logger"/> is null
         /// </exception>
-        public CredentialManager(IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
-            : this(new NativeCredentialApi(errorCodeToStringService, logger), errorCodeToStringService, logger)
+        private CredentialManager(IMarshalService marshalService, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+            : this(new NativeCredentialApi(marshalService, errorCodeToStringService, logger), errorCodeToStringService, logger)
         {
         }
 

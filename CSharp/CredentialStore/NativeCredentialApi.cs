@@ -16,7 +16,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Moreland.Security.Win32.CredentialStore
 {
@@ -25,11 +24,13 @@ namespace Moreland.Security.Win32.CredentialStore
     /// </summary>
     public class NativeCredentialApi : INativeCredentialApi
     {
+        private readonly IMarshalService _marshalService;
         private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger; 
 
-        public NativeCredentialApi(IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public NativeCredentialApi(IMarshalService marshalService, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
+            _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
             _errorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -50,8 +51,8 @@ namespace Moreland.Security.Win32.CredentialStore
             var nativeCredentialPtr = IntPtr.Zero;
             try
             {
-                nativeCredentialPtr = Marshal.AllocHGlobal(Marshal.SizeOf(credential));
-                Marshal.StructureToPtr(credential, nativeCredentialPtr, false);
+                nativeCredentialPtr = _marshalService.AllocHGlobal(_marshalService.SizeOf(credential));
+                _marshalService.StructureToPtr(credential, nativeCredentialPtr, false);
 
                 if (!NativeApi.CredentialApi.CredWrite(nativeCredentialPtr, flags))
                     _errorCodeToStringService.LogLastWin32Error(_logger, Enumerable.Empty<int>());
@@ -61,12 +62,12 @@ namespace Moreland.Security.Win32.CredentialStore
             finally
             {
                 if (nativeCredentialPtr != IntPtr.Zero)
-                    Marshal.FreeHGlobal(nativeCredentialPtr);
+                    _marshalService.FreeHGlobal(nativeCredentialPtr);
             }
         }
 
         /// <summary>
-        /// <see cref="NativeApi.CredentialApi.CredDelete("/>
+        /// <see cref="NativeApi.CredentialApi.CredDelete(string, int, int)"/>
         /// </summary>
         public bool CredDelete(string target, int type, int flags) =>
             NativeApi.CredentialApi.CredDelete(target, type, flags);
@@ -78,7 +79,7 @@ namespace Moreland.Security.Win32.CredentialStore
         {
             if (!NativeApi.CredentialApi.CredEnumerate(filter, flag, out int count, out IntPtr credentialsPtr))
             {
-                int lastError = Marshal.GetLastWin32Error();
+                int lastError = _marshalService.GetLastWin32Error();
                 if (lastError != 0)
                     _logger.Warning(_errorCodeToStringService.GetMessageFor(lastError));
                 yield break;
@@ -89,8 +90,8 @@ namespace Moreland.Security.Win32.CredentialStore
                 for (int i = 0; i < count; i++)
                 {
                     var nextPtr = IntPtr.Add(credentialsPtr, IntPtr.Size * i);
-                    var currentPtr = Marshal.ReadIntPtr(nextPtr);
-                    var nativeCredential = Marshal.PtrToStructure<NativeApi.Credential>(currentPtr);
+                    var currentPtr = _marshalService.ReadIntPtr(nextPtr);
+                    var nativeCredential = _marshalService.PtrToStructure<NativeApi.Credential>(currentPtr);
                     if (nativeCredential == null)
                     {
                         _logger.Error($"pointer failed to pin to structure at index {i}");
@@ -105,7 +106,7 @@ namespace Moreland.Security.Win32.CredentialStore
             {
                 if (!NativeApi.CredentialApi.CredFree(credentialsPtr))
                 {
-                    int lastError = Marshal.GetLastWin32Error();
+                    int lastError = _marshalService.GetLastWin32Error();
                     if (lastError != 0)
                         _logger.Warning(_errorCodeToStringService.GetMessageFor(lastError));
                 }
@@ -115,7 +116,7 @@ namespace Moreland.Security.Win32.CredentialStore
         public void CredFree(IntPtr handle)
         {
             if (!NativeApi.CredentialApi.CredFree(handle))
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw new Win32Exception(_marshalService.GetLastWin32Error());
         }
 
         private NativeApi.Credential? GetCredentialFromAndFreePtr(IntPtr credentialPtr, [CallerMemberName] string callerMemberName = "")

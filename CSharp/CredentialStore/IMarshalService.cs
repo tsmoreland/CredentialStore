@@ -15,7 +15,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace Moreland.Security.Win32.CredentialStore.NativeApi
+namespace Moreland.Security.Win32.CredentialStore
 {
     /// <summary>
     /// Wrapper around <see cref="Marshal"/>
@@ -50,7 +50,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <summary>
         /// <inheritdoc cref="Marshal.AllocHGlobal(IntPtr)"/>
         /// </summary>
-        IntPtr AllocHGlobal(IntPtr pointer);
+        IntPtr AllocHGlobal(int size);
         /// <summary>
         /// <inheritdoc cref="Marshal.FreeHGlobal(IntPtr)"/>
         /// </summary>
@@ -65,5 +65,14 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// </summary>
         IntPtr StringToCoTaskMemUni(string value);
 
+        /// <summary>
+        /// <inheritdoc cref="Marshal.SizeOf(Type)"/>
+        /// </summary>
+        int SizeOf(Type type);
+
+        /// <summary>
+        /// <inheritdoc cref="Marshal.SizeOf{T}(T)"/>
+        /// </summary>
+        int SizeOf<T>(T value);
     }
 }
