@@ -11,17 +11,16 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-using System;
-using System.Collections.Generic;
-
-namespace Moreland.Security.Win32.CredentialStore
+namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    public interface INativeCredentialApi
+    /// <summary>
+    /// Expected Win32 error codes
+    /// </summary>
+    internal enum ExpectedError
     {
-        bool CredDelete(string target, int type, int flags);
-        IEnumerable<NativeApi.Credential> CredEnumerate(string? filter, int flag);
-        NativeApi.Credential? CredRead(string target, CredentialType type, int reservedFlag);
-        bool CredWrite(NativeApi.Credential credential, int flags);
-        void CredFree(IntPtr handle);
+        NotFound = 0x00000490,
+        NoSuchLogonSession = 0x00000520,
+        InvalidFlags = 0x000003eC,
+        InvalidArgument = 87, 
     }
 }
