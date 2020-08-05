@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Moreland.Security.Win32.CredentialStore.NativeApi;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
@@ -43,7 +42,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _pointerMath = new Mock<IPointerMath>();
             _logger = new Mock<ILoggerAdapter>();
 
-            _nativeHelper = new NativeHelper(
+            _nativeHelper = new NativeApi.NativeHelper(
                 _pointerMath.Object,
                 _marshalService.Object,
                 _nativeCredentialApi.Object,
@@ -55,15 +54,50 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
-        public void ConstructorShould_ThrowArgumentNull_WhenNativeHelperIsNull()
+        public void ConstructorShould_ThrowArgumentNullException_WhenNativeHelperIsNull()
         {
             Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _logger.Object));
         }
 
         [Test]
-        public void ConstructorShould_ThrowArgumentNull_WhenLoggerIsNull()
+        public void ConstructorShould_ThrowArgumentNullException_WhenLoggerIsNull()
         {
             Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeHelper, null!));
+        }
+
+        [Test]
+        [TestCase(false, false, false, false)]
+        [TestCase(true, false, false, false)]
+        [TestCase(true, true, false, false)]
+        [TestCase(true, false, true, false)]
+        [TestCase(true, false, true, true)]
+        [TestCase(true, true, true, false)]
+        [TestCase(false, true, false, false)]
+        [TestCase(false, true, true, false)]
+        [TestCase(false, true, true, true)]
+        [TestCase(false, true, false, true)]
+        public void ConstructorShould_ThrowArgumentException_WhenNativeHelperIsNotValid(bool includePointerMath, bool includeMarshalService, bool includeNativeCredentialsApi, bool includeErrorToStringService)
+        {
+            Mock<INativeHelper> nativeHelper = new Mock<INativeHelper>();
+            if (includePointerMath)
+                nativeHelper
+                    .SetupGet(helper => helper.PointerMath)
+                    .Returns(_pointerMath.Object);
+            if (includeMarshalService)
+                nativeHelper
+                    .SetupGet(helper => helper.MarshalService)
+                    .Returns(_marshalService.Object);
+            if (includeNativeCredentialsApi)
+                nativeHelper
+                    .SetupGet(helper => helper.NativeCredentialApi)
+                    .Returns(_nativeCredentialApi.Object);
+            if (includeErrorToStringService)
+                nativeHelper
+                    .SetupGet(helper => helper.ErrorCodeToStringService)
+                    .Returns(_errorCodeToString.Object);
+
+            var ex = Assert.Throws<ArgumentException>(() => _ = new CredentialManager(nativeHelper.Object, _logger.Object));
+            Assert.That(ex.ParamName, Is.EquivalentTo("nativeHelper"));
         }
 
         [Test]
