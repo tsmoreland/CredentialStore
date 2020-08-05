@@ -17,15 +17,19 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Moreland.Security.Win32.CredentialStore.NativeApi;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
     [TestFixture]
     public sealed class CredentialManagerTest
     {
+        private INativeHelper _nativeHelper = null!;
         private Mock<ILoggerAdapter> _logger = null!;
         private Mock<INativeCredentialApi> _nativeCredentialApi = null!;
         private Mock<IErrorCodeToStringService> _errorCodeToString = null!;
+        private Mock<IPointerMath> _pointerMath = null!;
+        private Mock<IMarshalService> _marshalService = null!;
         private CredentialManager _manager = null!;
         private TestData? _dataSource;
         private NativeApi.IntermediateCredential? _addedCredential;
@@ -35,27 +39,31 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         {
             _nativeCredentialApi = new Mock<INativeCredentialApi>();
             _errorCodeToString = new Mock<IErrorCodeToStringService>();
+            _marshalService = new Mock<IMarshalService>();
+            _pointerMath = new Mock<IPointerMath>();
             _logger = new Mock<ILoggerAdapter>();
-            _manager = new CredentialManager(_nativeCredentialApi.Object, _errorCodeToString.Object, _logger.Object);
+
+            _nativeHelper = new NativeHelper(
+                _pointerMath.Object,
+                _marshalService.Object,
+                _nativeCredentialApi.Object,
+                _errorCodeToString.Object,
+                _logger.Object);
+
+            _manager = new CredentialManager(_nativeHelper, _logger.Object);
             _targetDeleted = false;
         }
 
         [Test]
-        public void ConstructorShould_ThrowArgumentNull_WhenNativeCredentialsApiIsNull()
+        public void ConstructorShould_ThrowArgumentNull_WhenNativeHelperIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _errorCodeToString.Object, _logger.Object));
-        }
-
-        [Test]
-        public void ConstructorShould_ThrowArgumentNull_WhenErrorCodeToStringIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeCredentialApi.Object, null!, _logger.Object));
+            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _logger.Object));
         }
 
         [Test]
         public void ConstructorShould_ThrowArgumentNull_WhenLoggerIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeCredentialApi.Object, _errorCodeToString.Object, null!));
+            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeHelper, null!));
         }
 
         [Test]
