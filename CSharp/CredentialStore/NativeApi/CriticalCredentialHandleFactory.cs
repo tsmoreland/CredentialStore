@@ -12,34 +12,45 @@
 // 
 
 using System;
+using System.ComponentModel;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    internal class CriticalCredentialHandleFactory
+    public class CriticalCredentialHandleFactory : ICriticalCredentialHandleFactory
     {
-        private readonly INativeHelper _nativeHelper;
+        private readonly INativeCredentialApi _nativeCredentialApi;
+        private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="CriticalCredentialHandleFactory"/> class.
         /// </summary>
         /// <exception cref="ArgumentNullException">
-        /// if <paramref name="nativeHelper"/> or <paramref name="logger"/> is null
+        /// if any of the provided arguments are null
         /// </exception>
-        /// <exception cref="ArgumentException">
-        /// if <see cref="INativeHelper.IsValid"/> for <paramref name="nativeHelper"/>
-        /// returns false
-        /// </exception>
-        public CriticalCredentialHandleFactory(INativeHelper nativeHelper, ILoggerAdapter logger)
+        public CriticalCredentialHandleFactory(INativeCredentialApi nativeCredentialApi, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
-            _nativeHelper = nativeHelper ?? throw new ArgumentNullException(nameof(nativeHelper));
+            _nativeCredentialApi = nativeCredentialApi ?? throw new ArgumentNullException(nameof(nativeCredentialApi));
+            _errorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            if (!_nativeHelper.IsValid)
-                throw new ArgumentException("nativeHelper is not valid", nameof(nativeHelper));
         }
 
-        public CriticalCredentialHandle Build(IntPtr handle) =>
-            new CriticalCredentialHandle(handle, _nativeHelper.NativeCredentialApi,
-                _nativeHelper.ErrorCodeToStringService, _logger);
+        public ICriticalCredentialHandle Build(IntPtr handle) =>
+            new CriticalCredentialHandle(handle, CredFree,
+                _errorCodeToStringService, _logger);
+
+        private bool CredFree(IntPtr handle)
+        {
+            try
+            {
+                _nativeCredentialApi.CredFree(handle);
+                return true;
+            }
+            catch (Win32Exception ex)
+            {
+                _logger.Error(ex.ToString());
+                return false;
+            }
+        }
     }
 }

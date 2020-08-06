@@ -127,7 +127,7 @@ namespace Moreland.Security.Win32.CredentialStore
                 return null;
             }
 
-            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr, this, _errorCodeToStringService, _logger);
+            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr, NativeApi.CredentialApi.CredFree, _errorCodeToStringService, _logger);
             if (handle.IsValid && handle.NativeCredential != null)
             {
                 // make a copy so we're not referencing the pinned struct

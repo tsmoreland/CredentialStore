@@ -23,9 +23,9 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// <see cref="IDisposable"/> handle to pinned structure which must be disposed or a memory leak
     /// will occur
     /// </summary>
-    internal sealed class CriticalCredentialHandle : CriticalHandleZeroOrMinusOneIsInvalid
+    internal sealed class CriticalCredentialHandle : CriticalHandleZeroOrMinusOneIsInvalid, ICriticalCredentialHandle
     {
-        private readonly INativeCredentialApi _nativeCredentialApi;
+        private readonly Func<IntPtr, bool> _releaseHandle;
         private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger;
 
@@ -33,13 +33,13 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// Initializes a new instance of the <see cref="CriticalCredentialHandle"/> class.
         /// </summary>
         /// <param name="handle">handle to <see cref="Credential"/></param>
-        /// <param name="nativeCredentialApi">Win32 API for Credential management</param>
+        /// <param name="releaseHandle">method to call which releases <paramref name="handle"/></param>
         /// <param name="errorCodeToStringService">error code to string translation service</param>
         /// <param name="logger">logger</param>
-        public CriticalCredentialHandle(IntPtr handle, INativeCredentialApi nativeCredentialApi, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public CriticalCredentialHandle(IntPtr handle, Func<IntPtr, bool> releaseHandle, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
             SetHandle(handle);
-            _nativeCredentialApi = nativeCredentialApi ?? throw new ArgumentNullException(nameof(nativeCredentialApi));
+            _releaseHandle = releaseHandle ?? throw new ArgumentNullException(nameof(releaseHandle));
             _errorCodeToStringService = errorCodeToStringService ??
                                         throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -68,7 +68,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
 
             try
             {
-                _nativeCredentialApi.CredFree(handle);
+                _releaseHandle.Invoke(handle);
                 SetHandleAsInvalid();
                 return true;
             }

@@ -41,19 +41,37 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 logger)
         {
         }
+        private NativeHelper(IPointerMath pointerMath, IMarshalService marshalService,
+            INativeCredentialApi nativeCredentialApi, IErrorCodeToStringService errorCodeToStringService,
+            ILoggerAdapter logger)
+            : this(
+                pointerMath,
+                marshalService, 
+                nativeCredentialApi,
+                new CriticalCredentialHandleFactory(nativeCredentialApi, errorCodeToStringService, logger),
+                errorCodeToStringService,
+                logger)
+        {
+        }
 
-        public NativeHelper(IPointerMath pointerMath, IMarshalService marshalService, INativeCredentialApi nativeCredentialApi, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public NativeHelper(IPointerMath pointerMath, IMarshalService marshalService,
+            INativeCredentialApi nativeCredentialApi, ICriticalCredentialHandleFactory criticalCredentialHandleFactory,
+            IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             PointerMath = pointerMath ?? throw new ArgumentNullException(nameof(pointerMath));
             MarshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
             NativeCredentialApi = nativeCredentialApi ?? throw new ArgumentNullException(nameof(nativeCredentialApi));
-            ErrorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
+            CriticalCredentialHandleFactory = criticalCredentialHandleFactory ??
+                                              throw new ArgumentNullException(nameof(criticalCredentialHandleFactory));
+            ErrorCodeToStringService = errorCodeToStringService ??
+                                       throw new ArgumentNullException(nameof(errorCodeToStringService));
         }
 
         public IPointerMath PointerMath { get; }
         public IMarshalService MarshalService { get; }
         public INativeCredentialApi NativeCredentialApi { get; }
+        public ICriticalCredentialHandleFactory CriticalCredentialHandleFactory { get; }
         public IErrorCodeToStringService ErrorCodeToStringService { get; }
 
         /// <summary>
@@ -67,6 +85,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             yield return PointerMath;
             yield return MarshalService;
             yield return NativeCredentialApi;
+            yield return CriticalCredentialHandleFactory;
             yield return ErrorCodeToStringService;
         }
     }

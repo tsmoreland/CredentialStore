@@ -29,6 +29,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         private Mock<IErrorCodeToStringService> _errorCodeToString = null!;
         private Mock<IPointerMath> _pointerMath = null!;
         private Mock<IMarshalService> _marshalService = null!;
+        private Mock<ICriticalCredentialHandleFactory> _criticalCredentialHandleFactory = null!;
         private CredentialManager _manager = null!;
         private TestData? _dataSource;
         private NativeApi.IntermediateCredential? _addedCredential;
@@ -40,12 +41,14 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _errorCodeToString = new Mock<IErrorCodeToStringService>();
             _marshalService = new Mock<IMarshalService>();
             _pointerMath = new Mock<IPointerMath>();
+            _criticalCredentialHandleFactory = new Mock<ICriticalCredentialHandleFactory>();
             _logger = new Mock<ILoggerAdapter>();
 
             _nativeHelper = new NativeApi.NativeHelper(
                 _pointerMath.Object,
                 _marshalService.Object,
                 _nativeCredentialApi.Object,
+                _criticalCredentialHandleFactory.Object,
                 _errorCodeToString.Object,
                 _logger.Object);
 
@@ -66,17 +69,12 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
-        [TestCase(false, false, false, false)]
-        [TestCase(true, false, false, false)]
-        [TestCase(true, true, false, false)]
-        [TestCase(true, false, true, false)]
-        [TestCase(true, false, true, true)]
-        [TestCase(true, true, true, false)]
-        [TestCase(false, true, false, false)]
-        [TestCase(false, true, true, false)]
-        [TestCase(false, true, true, true)]
-        [TestCase(false, true, false, true)]
-        public void ConstructorShould_ThrowArgumentException_WhenNativeHelperIsNotValid(bool includePointerMath, bool includeMarshalService, bool includeNativeCredentialsApi, bool includeErrorToStringService)
+        [TestCase(false, true, true, true, true)]
+        [TestCase(true, false, true, true, true)]
+        [TestCase(true, true, false, true, true)]
+        [TestCase(true, true, true, false, true)]
+        [TestCase(true, true, true, true, false)]
+        public void ConstructorShould_ThrowArgumentException_WhenNativeHelperIsNotValid(bool includePointerMath, bool includeMarshalService, bool includeNativeCredentialsApi, bool includeCriticalCredentialHandleFactory, bool includeErrorToStringService)
         {
             Mock<INativeHelper> nativeHelper = new Mock<INativeHelper>();
             if (includePointerMath)
@@ -91,6 +89,10 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                 nativeHelper
                     .SetupGet(helper => helper.NativeCredentialApi)
                     .Returns(_nativeCredentialApi.Object);
+            if (includeCriticalCredentialHandleFactory)
+                nativeHelper
+                    .SetupGet(helper => helper.CriticalCredentialHandleFactory)
+                    .Returns(_criticalCredentialHandleFactory.Object);
             if (includeErrorToStringService)
                 nativeHelper
                     .SetupGet(helper => helper.ErrorCodeToStringService)

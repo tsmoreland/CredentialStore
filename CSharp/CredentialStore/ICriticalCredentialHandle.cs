@@ -11,37 +11,21 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
+
+using System;
+
 namespace Moreland.Security.Win32.CredentialStore
 {
-    /// <summary>
-    /// Aggregrate root like container for common native helper utilities
-    /// </summary>
-    public interface INativeHelper
+    public interface ICriticalCredentialHandle : IDisposable
     {
         /// <summary>
-        /// <see cref="IPointerMath"/>
-        /// </summary>
-        IPointerMath PointerMath { get; }
-        /// <summary>
-        /// <see cref="IMarshalService"/>
-        /// </summary>
-        IMarshalService MarshalService { get; }
-        /// <summary>
-        /// <see cref="IErrorCodeToStringService"/>
-        /// </summary>
-        IErrorCodeToStringService ErrorCodeToStringService { get; }
-        /// <summary>
-        /// <see cref="INativeCredentialApi"/>
-        /// </summary>
-        INativeCredentialApi NativeCredentialApi { get; }
-        /// <summary>
-        /// <see cref="ICriticalCredentialHandleFactory"/>
-        /// </summary>
-        ICriticalCredentialHandleFactory CriticalCredentialHandleFactory { get; }
-
-        /// <summary>
-        /// Returns true if all members are non-null 
+        /// Returns true if the underlying handle is valid
         /// </summary>
         bool IsValid { get; }
+        /// <summary>
+        /// returns <see cref="Credential"/> referenced by the handle if <see cref="IsValid"/>
+        /// otherwise null
+        /// </summary>
+        NativeApi.Credential? NativeCredential { get; }
     }
 }
