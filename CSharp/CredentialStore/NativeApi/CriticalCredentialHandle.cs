@@ -25,7 +25,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// </summary>
     internal sealed class CriticalCredentialHandle : CriticalHandleZeroOrMinusOneIsInvalid, ICriticalCredentialHandle
     {
-        private readonly Func<IntPtr, bool> _releaseHandle;
+        private readonly ICredentialApi _credentialApi;
         private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger;
 
@@ -33,13 +33,13 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// Initializes a new instance of the <see cref="CriticalCredentialHandle"/> class.
         /// </summary>
         /// <param name="handle">handle to <see cref="Credential"/></param>
-        /// <param name="releaseHandle">method to call which releases <paramref name="handle"/></param>
+        /// <param name="credentialApi">wrapper around Win32 extern methods</param>
         /// <param name="errorCodeToStringService">error code to string translation service</param>
         /// <param name="logger">logger</param>
-        public CriticalCredentialHandle(IntPtr handle, Func<IntPtr, bool> releaseHandle, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public CriticalCredentialHandle(IntPtr handle, ICredentialApi credentialApi, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
             SetHandle(handle);
-            _releaseHandle = releaseHandle ?? throw new ArgumentNullException(nameof(releaseHandle));
+            _credentialApi = credentialApi ?? throw new ArgumentNullException(nameof(credentialApi));
             _errorCodeToStringService = errorCodeToStringService ??
                                         throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -68,7 +68,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
 
             try
             {
-                _releaseHandle.Invoke(handle);
+                _credentialApi.CredFree(handle);
                 SetHandleAsInvalid();
                 return true;
             }

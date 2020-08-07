@@ -97,7 +97,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredFree
         /// </remarks>
         /// <returns>0 on success Last Win32 error on failure</returns>
-        public int CredFree([In] IntPtr cred) =>
+        public int CredFree(IntPtr cred) =>
             NativeMethods.CredFree(cred)
                 ? 0
                 : _marshalService.GetLastWin32Error();
@@ -124,7 +124,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredDelete
         /// </remarks>
         /// <returns>0 on success Last Win32 error on failure</returns>
-        public int CredDelete([MarshalAs(UnmanagedType.LPWStr)] string target, int type, int flags) =>
+        public int CredDelete(string target, int type, int flags) =>
             NativeMethods.CredDelete(target, type, flags)
                 ? 0
                 : _marshalService.GetLastWin32Error();
@@ -152,7 +152,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <param name="count"></param>
         /// <param name="credentialsPtr"></param>
         /// <returns>0 on success Last Win32 error on failure</returns>
-        public int CredEnumerate([MarshalAs(UnmanagedType.LPWStr)] string? filter, int flag, out int count,
+        public int CredEnumerate(string? filter, int flag, out int count,
             out IntPtr credentialsPtr) =>
             NativeMethods.CredEnumerate(filter, flag, out count, out credentialsPtr)
                 ? 0
