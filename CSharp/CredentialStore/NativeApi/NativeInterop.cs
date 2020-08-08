@@ -23,14 +23,17 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     internal sealed class NativeInterop : INativeInterop
     {
         private readonly ICredentialApi _credentialApi;
+        private readonly ICriticalCredentialHandleFactory _criticalCredentialHandleFactory;
         private readonly IMarshalService _marshalService;
         private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger;
         private const int NativeSuccess = 0;
 
-        public NativeInterop(ICredentialApi credentialApi, IMarshalService marshalService, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public NativeInterop(ICredentialApi credentialApi, ICriticalCredentialHandleFactory criticalCredentialHandleFactory, IMarshalService marshalService, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
             _credentialApi = credentialApi;
+            _criticalCredentialHandleFactory = criticalCredentialHandleFactory ??
+                                               throw new ArgumentNullException(nameof(criticalCredentialHandleFactory));
             _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
             _errorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -136,7 +139,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 return null;
             }
 
-            using var handle = new CriticalCredentialHandle(credentialPtr, _credentialApi, _errorCodeToStringService, _logger);
+            using var handle = _criticalCredentialHandleFactory.Build(credentialPtr);
             if (handle.IsValid && handle.NativeCredential != null)
             {
                 // make a copy so we're not referencing the pinned struct

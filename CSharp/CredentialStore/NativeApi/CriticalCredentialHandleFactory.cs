@@ -18,6 +18,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     internal class CriticalCredentialHandleFactory : ICriticalCredentialHandleFactory
     {
         private readonly ICredentialApi _credentialApi;
+        private readonly IMarshalService _marshalService;
         private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger;
 
@@ -27,15 +28,16 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <exception cref="ArgumentNullException">
         /// if any of the provided arguments are null
         /// </exception>
-        public CriticalCredentialHandleFactory(ICredentialApi credentialApi, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public CriticalCredentialHandleFactory(ICredentialApi credentialApi, IMarshalService marshalService, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
             _credentialApi = credentialApi ?? throw new ArgumentNullException(nameof(credentialApi));
+            _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
             _errorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public ICriticalCredentialHandle Build(IntPtr handle) =>
-            new CriticalCredentialHandle(handle, _credentialApi, 
+            new CriticalCredentialHandle(handle, _credentialApi, _marshalService, 
                 _errorCodeToStringService, _logger);
     }
 }

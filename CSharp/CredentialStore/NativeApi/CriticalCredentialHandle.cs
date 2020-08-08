@@ -26,6 +26,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     internal sealed class CriticalCredentialHandle : CriticalHandleZeroOrMinusOneIsInvalid, ICriticalCredentialHandle
     {
         private readonly ICredentialApi _credentialApi;
+        private readonly IMarshalService _marshalService;
         private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger;
 
@@ -34,12 +35,14 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// </summary>
         /// <param name="handle">handle to <see cref="Credential"/></param>
         /// <param name="credentialApi">wrapper around Win32 extern methods</param>
+        /// <param name="marshalService">wrapper around <see cref="Marshal"/></param>
         /// <param name="errorCodeToStringService">error code to string translation service</param>
         /// <param name="logger">logger</param>
-        public CriticalCredentialHandle(IntPtr handle, ICredentialApi credentialApi, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public CriticalCredentialHandle(IntPtr handle, ICredentialApi credentialApi, IMarshalService marshalService, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
             SetHandle(handle);
             _credentialApi = credentialApi ?? throw new ArgumentNullException(nameof(credentialApi));
+            _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
             _errorCodeToStringService = errorCodeToStringService ??
                                         throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -55,7 +58,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// otherwise null
         /// </summary>
         public Credential? NativeCredential => IsValid
-            ? (Credential?)Marshal.PtrToStructure(handle, typeof(Credential))
+            ? (Credential?)_marshalService.PtrToStructure(handle, typeof(Credential))
             : null;
 
         /// <summary>

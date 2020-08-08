@@ -13,9 +13,9 @@
 
 using System;
 
-namespace Moreland.Security.Win32.CredentialStore
+namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    public interface ICriticalCredentialHandleFactory
+    internal interface ICriticalCredentialHandleFactory
     {
         ICriticalCredentialHandle Build(IntPtr handle);
     }
