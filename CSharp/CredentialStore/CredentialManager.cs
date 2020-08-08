@@ -35,12 +35,12 @@ namespace Moreland.Security.Win32.CredentialStore
         /// if <paramref name="logger"/> is null
         /// </exception>
         public CredentialManager(ILoggerAdapter logger)
-            : this(new NativeApi.NativeUtilities(logger), logger)
+            : this(new NativeApi.CredentialManagerDependeniesAggregate(logger), logger)
         {
         }
 
-        private CredentialManager(NativeApi.INativeUtilities nativeUtilities, ILoggerAdapter logger)
-            : this(nativeUtilities.NativeInterop, logger)
+        private CredentialManager(NativeApi.ICredentialManagerDependeniesAggregate credentialManagerDependeniesAggregate, ILoggerAdapter logger)
+            : this(credentialManagerDependeniesAggregate.NativeInterop, logger)
         {
         }
 

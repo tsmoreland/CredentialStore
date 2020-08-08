@@ -13,7 +13,7 @@
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    internal interface INativeUtilities
+    internal interface ICredentialManagerDependeniesAggregate
     {
         INativeInterop NativeInterop { get; }
         IErrorCodeToStringService ErrorCodeToStringService { get; }

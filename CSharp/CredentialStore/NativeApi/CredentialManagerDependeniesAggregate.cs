@@ -15,13 +15,10 @@ using System;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    internal class NativeUtilities : INativeUtilities
+    internal class CredentialManagerDependeniesAggregate : ICredentialManagerDependeniesAggregate
     {
-        private readonly ILoggerAdapter _logger;
-
-        public NativeUtilities(ILoggerAdapter logger)
+        public CredentialManagerDependeniesAggregate(ILoggerAdapter logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             MarshalService = new MarshalService();
             PointerMath = new PointerMath(MarshalService, logger);
             NativeInterop = new NativeInterop(new CredentialApi(MarshalService), MarshalService,
@@ -29,14 +26,13 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             ErrorCodeToStringService = new ErrorCodeToStringService(MarshalService, logger);
         }
 
-        public NativeUtilities(IMarshalService marshalService, IPointerMath pointerMath, INativeInterop nativeInterop,
-            IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public CredentialManagerDependeniesAggregate(IMarshalService marshalService, IPointerMath pointerMath, INativeInterop nativeInterop,
+            IErrorCodeToStringService errorCodeToStringService)
         {
             MarshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
             PointerMath = pointerMath ?? throw new ArgumentNullException(nameof(pointerMath));
             NativeInterop = nativeInterop ?? throw new ArgumentNullException(nameof(nativeInterop));
             ErrorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public IMarshalService MarshalService { get; }
