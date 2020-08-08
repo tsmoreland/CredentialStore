@@ -54,7 +54,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <summary>
         /// <see cref="NativeApi.CredentialApi.CredWrite(IntPtr, int)"/>
         /// </summary>
-        public bool CredWrite(NativeApi.Credential credential, int flags)
+        public void CredWrite(Credential credential, int flags)
         {
             var nativeCredentialPtr = IntPtr.Zero;
             try
@@ -63,11 +63,8 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 _marshalService.StructureToPtr(credential, nativeCredentialPtr, false);
 
                 int result = _credentialApi.CredWrite(nativeCredentialPtr, flags);
-                return result switch
-                {
-                    NativeSuccess => true,
-                    _ => LogAndThrowWin32Exception<bool>(result);
-                };
+                if (result != NativeSuccess)
+                    LogAndThrowWin32Exception(result);
             }
             finally
             {
@@ -90,7 +87,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <summary>
         /// <see cref="NativeApi.CredentialApi.CredEnumerate(string?, int, out int, out IntPtr)"/>
         /// </summary>
-        public IEnumerable<NativeApi.Credential> CredEnumerate(string? filter, int flag)
+        public IEnumerable<Credential> CredEnumerate(string? filter, int flag)
         {
             int result = _credentialApi.CredEnumerate(filter, flag, out int count, out IntPtr credentialsPtr);
             if (result != NativeSuccess)
@@ -105,14 +102,14 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 {
                     var nextPtr = IntPtr.Add(credentialsPtr, IntPtr.Size * i);
                     var currentPtr = _marshalService.ReadIntPtr(nextPtr);
-                    var nativeCredential = _marshalService.PtrToStructure<NativeApi.Credential>(currentPtr);
+                    var nativeCredential = _marshalService.PtrToStructure<Credential>(currentPtr);
                     if (nativeCredential == null)
                     {
                         _logger.Error($"pointer failed to pin to structure at index {i}");
                         yield break;
                     }
 
-                    NativeApi.Credential copy = nativeCredential;
+                    Credential copy = nativeCredential;
                     yield return copy;
                 }
             }
@@ -131,7 +128,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 throw new Win32Exception(_marshalService.GetLastWin32Error());
         }
 
-        private NativeApi.Credential? GetCredentialFromAndFreePtr(IntPtr credentialPtr, [CallerMemberName] string callerMemberName = "")
+        private Credential? GetCredentialFromAndFreePtr(IntPtr credentialPtr, [CallerMemberName] string callerMemberName = "")
         {
             if (credentialPtr == IntPtr.Zero)
             {
@@ -139,11 +136,11 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 return null;
             }
 
-            using var handle = new NativeApi.CriticalCredentialHandle(credentialPtr, _credentialApi, _errorCodeToStringService, _logger);
+            using var handle = new CriticalCredentialHandle(credentialPtr, _credentialApi, _errorCodeToStringService, _logger);
             if (handle.IsValid && handle.NativeCredential != null)
             {
                 // make a copy so we're not referencing the pinned struct
-                NativeApi.Credential nativeCredential = handle.NativeCredential;
+                Credential nativeCredential = handle.NativeCredential;
                 return nativeCredential;
             }
 

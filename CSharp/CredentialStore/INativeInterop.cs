@@ -11,23 +11,18 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
+
+using System;
 using System.Collections.Generic;
 
 namespace Moreland.Security.Win32.CredentialStore
 {
-    public interface IErrorCodeToStringService
+    public interface INativeInterop
     {
-        /// <summary>
-        /// Gets the error message for <paramref name="errorCode"/> if known,
-        /// ottherwise generic error message
-        /// </summary>
-        string GetMessageFor(int errorCode);
-
-        /// <summary>
-        /// logs the last win32 error if not in <paramref name="ignoredErrors"/>
-        /// </summary>
-        /// <returns>true if error is logged; otherwise false</returns>
-        (bool Logged, int ErrorCode) LogLastWin32Error(ILoggerAdapter logger, IEnumerable<int> ignoredErrors,
-            string callerMemberName = "");
+        void CredDelete(string target, int type, int flags);
+        IEnumerable<NativeApi.Credential> CredEnumerate(string? filter, int flag);
+        void CredFree(IntPtr handle);
+        NativeApi.Credential? CredRead(string target, CredentialType type, int reservedFlag);
+        void CredWrite(NativeApi.Credential credential, int flags);
     }
 }

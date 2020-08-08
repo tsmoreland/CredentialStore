@@ -12,13 +12,12 @@
 // 
 
 using System;
-using System.ComponentModel;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    public class CriticalCredentialHandleFactory : ICriticalCredentialHandleFactory
+    internal class CriticalCredentialHandleFactory : ICriticalCredentialHandleFactory
     {
-        private readonly INativeCredentialApi _nativeCredentialApi;
+        private readonly ICredentialApi _credentialApi;
         private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger;
 
@@ -28,29 +27,15 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <exception cref="ArgumentNullException">
         /// if any of the provided arguments are null
         /// </exception>
-        public CriticalCredentialHandleFactory(INativeCredentialApi nativeCredentialApi, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public CriticalCredentialHandleFactory(ICredentialApi credentialApi, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
-            _nativeCredentialApi = nativeCredentialApi ?? throw new ArgumentNullException(nameof(nativeCredentialApi));
+            _credentialApi = credentialApi ?? throw new ArgumentNullException(nameof(credentialApi));
             _errorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public ICriticalCredentialHandle Build(IntPtr handle) =>
-            new CriticalCredentialHandle(handle, CredFree,
+            new CriticalCredentialHandle(handle, _credentialApi, 
                 _errorCodeToStringService, _logger);
-
-        private bool CredFree(IntPtr handle)
-        {
-            try
-            {
-                _nativeCredentialApi.CredFree(handle);
-                return true;
-            }
-            catch (Win32Exception ex)
-            {
-                _logger.Error(ex.ToString());
-                return false;
-            }
-        }
     }
 }
