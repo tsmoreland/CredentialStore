@@ -14,3 +14,6 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Moreland.Security.Win32.CredentialStore.Tests")]
+
+// for unit-testing, needed to generate mock for internal interfaces
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] 

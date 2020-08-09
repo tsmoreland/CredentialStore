@@ -113,7 +113,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// if <see cref="Credential.Id"/> or 
         /// <see cref="Credential.UserName"/> are null or empty
         /// </exception>
-        public bool Add(Credential credential)
+        public void Add(Credential credential)
         {
             if (credential == null)
                 throw new ArgumentNullException(nameof(credential));
@@ -123,7 +123,6 @@ namespace Moreland.Security.Win32.CredentialStore
             var nativeCredential = intermediate.NativeCredential;
             _nativeInterop.CredWrite(nativeCredential, 0);
             _logger.Verbose($"{credential} successfully saved");
-            return true;
         }
 
         /// <summary>
@@ -165,7 +164,16 @@ namespace Moreland.Security.Win32.CredentialStore
             if (string.IsNullOrEmpty(id))
                 throw new ArgumentException("id cannot be empty", nameof(id));
 
-            _nativeInterop.CredDelete(id, (int)type, 0);
+            try
+            {
+                _nativeInterop.CredDelete(id, (int)type, 0);
+            }
+            catch (Win32Exception ex)
+            {
+                if (ex.NativeErrorCode != (int)NativeApi.ExpectedError.NotFound)
+                    throw;
+            }
+
             _logger.Info($"{id} successfully deleted");
         }
 

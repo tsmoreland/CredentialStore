@@ -22,7 +22,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// <summary>
     /// Wrapper around <see cref="Marshal"/>
     /// </summary>
-    internal interface IMarshalService
+    public interface IMarshalService
     {
         /// <summary>
         /// <inheritdoc cref="Marshal.PtrToStructure(IntPtr, Type)"/>

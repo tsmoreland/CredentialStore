@@ -56,15 +56,13 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
-        public void ConstructorShould_ThrowArgumentNullException_WhenNativeHelperIsNull()
+        public void ConstructorShould_ThrowArgumentNullException_WhenArgumentsAreNull()
         {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _logger.Object));
-        }
+            var ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _logger.Object));
+            Assert.That(ex.ParamName, Is.EqualTo("nativeInterop"));
 
-        [Test]
-        public void ConstructorShould_ThrowArgumentNullException_WhenLoggerIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeInterop.Object, null!));
+            ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeInterop.Object, null!));
+            Assert.That(ex.ParamName, Is.EqualTo("logger"));
         }
 
         [Test]
@@ -95,9 +93,10 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             var toAdd = TestData.BuildRandomCredential(flag, type, persistType);
             InitializeFromTestData(data, toAdd, successful);
 
-            bool added = _manager.Add(toAdd);
-
-            Assert.That(added, Is.EqualTo(successful));
+            if (!successful)
+                Assert.Throws<Win32Exception>(() => _manager.Add(toAdd));
+            else
+                Assert.DoesNotThrow(() => _manager.Add(toAdd));
         }
 
         [Test]
@@ -262,11 +261,11 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _nativeInterop
                 .Setup(native =>
                     native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()));
-            if (!string.IsNullOrEmpty(idNotFound))
+            if (!string.IsNullOrEmpty(idNotFound) && lastErrorCode != null)
             {
                 _nativeInterop
                     .Setup(native => native.CredDelete(idNotFound, It.IsAny<int>(), It.IsAny<int>()))
-                    .Throws(new Win32Exception((int)NativeApi.ExpectedError.InvalidFlags));
+                    .Throws(new Win32Exception((int)lastErrorCode));
             }
 
             if (lastErrorCode != null)
