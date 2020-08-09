@@ -17,15 +17,20 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Moreland.Security.Win32.CredentialStore.NativeApi;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
     [TestFixture]
     public sealed class CredentialManagerTest
     {
+        private NativeApi.ICredentialManagerDependeniesAggregate _dependeniesAggregate = null!;
         private Mock<ILoggerAdapter> _logger = null!;
-        private Mock<INativeCredentialApi> _nativeCredentialApi = null!;
-        private Mock<IErrorCodeToStringService> _errorCodeToString = null!;
+        private Mock<INativeInterop> _nativeInterop = null!;
+        private Mock<NativeApi.IErrorCodeToStringService> _errorCodeToString = null!;
+        private Mock<IPointerMath> _pointerMath = null!;
+        private Mock<NativeApi.IMarshalService> _marshalService = null!;
+        private Mock<NativeApi.ICriticalCredentialHandleFactory> _criticalCredentialHandleFactory = null!;
         private CredentialManager _manager = null!;
         private TestData? _dataSource;
         private NativeApi.IntermediateCredential? _addedCredential;
@@ -33,29 +38,31 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [SetUp]
         public void Setup()
         {
-            _nativeCredentialApi = new Mock<INativeCredentialApi>();
-            _errorCodeToString = new Mock<IErrorCodeToStringService>();
+            _nativeInterop = new Mock<INativeInterop>();
+            _errorCodeToString = new Mock<NativeApi.IErrorCodeToStringService>();
+            _marshalService = new Mock<NativeApi.IMarshalService>();
+            _pointerMath = new Mock<IPointerMath>();
+            _criticalCredentialHandleFactory = new Mock<NativeApi.ICriticalCredentialHandleFactory>();
             _logger = new Mock<ILoggerAdapter>();
-            _manager = new CredentialManager(_nativeCredentialApi.Object, _errorCodeToString.Object, _logger.Object);
+
+            _dependeniesAggregate = new CredentialManagerDependeniesAggregate(
+                _marshalService.Object, 
+                _pointerMath.Object, 
+                _nativeInterop.Object,
+                _errorCodeToString.Object);
+
+            _manager = new CredentialManager(_nativeInterop.Object, _logger.Object);
             _targetDeleted = false;
         }
 
         [Test]
-        public void ConstructorShould_ThrowArgumentNull_WhenNativeCredentialsApiIsNull()
+        public void ConstructorShould_ThrowArgumentNullException_WhenArgumentsAreNull()
         {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _errorCodeToString.Object, _logger.Object));
-        }
+            var ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _logger.Object));
+            Assert.That(ex.ParamName, Is.EqualTo("nativeInterop"));
 
-        [Test]
-        public void ConstructorShould_ThrowArgumentNull_WhenErrorCodeToStringIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeCredentialApi.Object, null!, _logger.Object));
-        }
-
-        [Test]
-        public void ConstructorShould_ThrowArgumentNull_WhenLoggerIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeCredentialApi.Object, _errorCodeToString.Object, null!));
+            ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeInterop.Object, null!));
+            Assert.That(ex.ParamName, Is.EqualTo("logger"));
         }
 
         [Test]
@@ -86,9 +93,10 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             var toAdd = TestData.BuildRandomCredential(flag, type, persistType);
             InitializeFromTestData(data, toAdd, successful);
 
-            bool added = _manager.Add(toAdd);
-
-            Assert.That(added, Is.EqualTo(successful));
+            if (!successful)
+                Assert.Throws<Win32Exception>(() => _manager.Add(toAdd));
+            else
+                Assert.DoesNotThrow(() => _manager.Add(toAdd));
         }
 
         [Test]
@@ -230,7 +238,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                 _addedCredential = new NativeApi.IntermediateCredential(toAdd);
 
             _dataSource = dataSource;
-            _nativeCredentialApi
+            _nativeInterop
                 .Setup(native => native.CredRead(_dataSource.Target, It.IsAny<CredentialType>(), 0))
                 .Returns(() =>
                 {
@@ -242,22 +250,22 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                         .FirstOrDefault(c => c?.TargetName == _dataSource.Target);
                 });
             if (_addedCredential != null && toAdd != null)
-                _nativeCredentialApi
+                _nativeInterop
                     .Setup(native => native.CredRead(toAdd.Id, toAdd.Type, 0))
                     .Returns(() => _addedCredential.NativeCredential);
-            _nativeCredentialApi
+            _nativeInterop
                 .Setup(native => native.CredEnumerate(It.IsAny<string?>(), It.IsAny<int>()))
                 .Returns(() => _addedCredential == null
                     ? _dataSource.Credentials
                     : _dataSource.Credentials.Union(new[] {_addedCredential.NativeCredential}).ToArray());
-            _nativeCredentialApi
-                .Setup(native => native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()))
-                .Returns(() => true);
-            if (!string.IsNullOrEmpty(idNotFound))
+            _nativeInterop
+                .Setup(native =>
+                    native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()));
+            if (!string.IsNullOrEmpty(idNotFound) && lastErrorCode != null)
             {
-                _nativeCredentialApi
+                _nativeInterop
                     .Setup(native => native.CredDelete(idNotFound, It.IsAny<int>(), It.IsAny<int>()))
-                    .Returns(false);
+                    .Throws(new Win32Exception((int)lastErrorCode));
             }
 
             if (lastErrorCode != null)
@@ -267,19 +275,22 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                     .Callback<ILoggerAdapter, IEnumerable<int>, string>((logger, ignored, caller) => _targetDeleted = ignored.Contains((int)lastErrorCode))
                     .Returns(() => (!_targetDeleted, (int)lastErrorCode));
 
-            _nativeCredentialApi
+            _nativeInterop
                 .Setup(native =>
                     native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()))
-                .Callback<string, int, int>((target, type, flag) => _targetDeleted = true)
-                .Returns(true);
+                .Callback<string, int, int>((target, type, flag) => _targetDeleted = true);
             if (_addedCredential != null)
-                _nativeCredentialApi
+            {
+                var mockSetup = _nativeInterop
                     .Setup(native => native.CredWrite(It.IsAny<NativeApi.Credential>(), It.IsAny<int>()))
                     .Callback<NativeApi.Credential, int>((credential, flag) =>
                     {
                         Assert.That(credential.TargetName, Is.EqualTo(_addedCredential.NativeCredential.TargetName));
-                    })
-                    .Returns(() => successfulAdd);
+                    });
+                if (!successfulAdd)
+                    mockSetup
+                        .Throws(new Win32Exception((int)NativeApi.ExpectedError.NoSuchLogonSession));
+            }
         }
     }
 }

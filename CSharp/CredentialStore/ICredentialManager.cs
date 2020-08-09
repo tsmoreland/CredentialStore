@@ -41,7 +41,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// if <see cref="Credential.Id"/> or 
         /// <see cref="Credential.UserName"/> are null or empty
         /// </exception>
-        bool Add(Credential credential);
+        void Add(Credential credential);
         /// <summary>
         /// deletes a credential from the user's credential set
         /// </summary>

@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright © 2020 Terry Moreland
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
 // to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -11,9 +11,17 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-using System.Runtime.CompilerServices;
+using System;
+using System.Runtime.InteropServices;
 
-[assembly: InternalsVisibleTo("Moreland.Security.Win32.CredentialStore.Tests")]
-
-// for unit-testing, needed to generate mock for internal interfaces
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] 
+namespace Moreland.Security.Win32.CredentialStore.NativeApi
+{
+    internal interface ICredentialApi
+    {
+        int CredDelete([MarshalAs(UnmanagedType.LPWStr)] string target, int type, int flags);
+        int CredEnumerate([MarshalAs(UnmanagedType.LPWStr)] string? filter, int flag, out int count, out IntPtr credentialsPtr);
+        int CredFree([In] IntPtr cred);
+        int CredRead(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
+        int CredWrite(IntPtr userCredential, int flags);
+    }
+}

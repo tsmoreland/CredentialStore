@@ -11,17 +11,21 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-using System;
-using System.Collections.Generic;
 
-namespace Moreland.Security.Win32.CredentialStore
+using System;
+
+namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    public interface INativeCredentialApi
+    public interface ICriticalCredentialHandle : IDisposable
     {
-        bool CredDelete(string target, int type, int flags);
-        IEnumerable<NativeApi.Credential> CredEnumerate(string? filter, int flag);
-        NativeApi.Credential? CredRead(string target, CredentialType type, int reservedFlag);
-        bool CredWrite(NativeApi.Credential credential, int flags);
-        void CredFree(IntPtr handle);
+        /// <summary>
+        /// Returns true if the underlying handle is valid
+        /// </summary>
+        bool IsValid { get; }
+        /// <summary>
+        /// returns <see cref="Credential"/> referenced by the handle if <see cref="IsValid"/>
+        /// otherwise null
+        /// </summary>
+        NativeApi.Credential? NativeCredential { get; }
     }
 }

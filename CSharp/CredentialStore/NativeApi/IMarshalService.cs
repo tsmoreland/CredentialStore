@@ -12,10 +12,12 @@
 // 
 
 using System;
+#if !NETSTANDARD2_0
 using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Runtime.InteropServices;
 
-namespace Moreland.Security.Win32.CredentialStore
+namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
     /// <summary>
     /// Wrapper around <see cref="Marshal"/>

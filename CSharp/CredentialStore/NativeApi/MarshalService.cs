@@ -12,7 +12,9 @@
 // 
 
 using System;
+#if !NETSTANDARD2_0
 using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Runtime.InteropServices;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
@@ -63,8 +65,8 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <summary>
         /// <inheritdoc cref="Marshal.AllocHGlobal(int)"/>
         /// </summary>
-        public IntPtr AllocHGlobal(int pointer) =>
-            Marshal.AllocHGlobal(pointer);
+        public IntPtr AllocHGlobal(int size) =>
+            Marshal.AllocHGlobal(size);
 
         /// <summary>
         /// <inheritdoc cref="IMarshalService.FreeHGlobal(IntPtr)"/>

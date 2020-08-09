@@ -11,9 +11,13 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Moreland.Security.Win32.CredentialStore.Tests")]
-
-// for unit-testing, needed to generate mock for internal interfaces
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] 
+namespace Moreland.Security.Win32.CredentialStore.NativeApi
+{
+    internal interface ICredentialManagerDependeniesAggregate
+    {
+        INativeInterop NativeInterop { get; }
+        IErrorCodeToStringService ErrorCodeToStringService { get; }
+        IMarshalService MarshalService { get; }
+        IPointerMath PointerMath { get; }
+    }
+}

@@ -16,8 +16,24 @@ using System.Runtime.InteropServices;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    internal static class CredentialApi
+    internal sealed class CredentialApi : ICredentialApi
     {
+        private readonly IMarshalService _marshalService;
+
+        /// <summary>
+        /// Instantiates a new instance of the marshalService class.
+        /// </summary>
+        /// <param name="marshalService">
+        /// used to retrieve last win32 error
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// if <paramref name="marshalService"/> is null
+        /// </exception>
+        public CredentialApi(IMarshalService marshalService)
+        {
+            _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
+        }
+
         /// <summary>
         /// The CredRead function reads a credential from the user's 
         /// credential set. The credential set used is the one associated with 
@@ -43,8 +59,11 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <remarks>
         /// reference: https://www.pinvoke.net/default.aspx/advapi32/CredRead.html
         /// </remarks>
-        [DllImport("Advapi32.dll", EntryPoint = "CredReadW", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern bool CredRead([MarshalAs(UnmanagedType.LPWStr)]string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
+        /// <returns>0 on success Last Win32 error on failure</returns>
+        public int CredRead(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr) =>
+            NativeMethods.CredRead(target, type, reservedFlag, out credentialPtr)
+                ? 0
+                : _marshalService.GetLastWin32Error();
 
         /// <summary>
         /// The CredWrite function creates a new credential or modifies an 
@@ -63,8 +82,11 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <remarks>
         /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredWrite
         /// </remarks>
-        [DllImport("Advapi32.dll", SetLastError=true, EntryPoint="CredWriteW", CharSet=CharSet.Unicode)]
-        public static extern bool CredWrite(IntPtr userCredential, int flags);
+        /// <returns>0 on success Last Win32 error on failure</returns>
+        public int CredWrite(IntPtr userCredential, int flags) =>
+            NativeMethods.CredWrite(userCredential, flags)
+                ? 0
+                : _marshalService.GetLastWin32Error();
 
         /// <summary>
         /// The CredFree function frees a buffer returned by any of the credentials management functions.
@@ -74,8 +96,11 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <remarks>
         /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredFree
         /// </remarks>
-        [DllImport("Advapi32.dll", EntryPoint = "CredFree", SetLastError = true)]
-        public static extern bool CredFree([In] IntPtr cred);
+        /// <returns>0 on success Last Win32 error on failure</returns>
+        public int CredFree(IntPtr cred) =>
+            NativeMethods.CredFree(cred)
+                ? 0
+                : _marshalService.GetLastWin32Error();
 
         /// <summary>
         /// The CredDelete function deletes a credential from the user's 
@@ -98,8 +123,11 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <remarks>
         /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredDelete
         /// </remarks>
-        [DllImport("advapi32.dll", EntryPoint = "CredDeleteW", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern bool CredDelete([MarshalAs(UnmanagedType.LPWStr)]string target, int type, int flags);
+        /// <returns>0 on success Last Win32 error on failure</returns>
+        public int CredDelete(string target, int type, int flags) =>
+            NativeMethods.CredDelete(target, type, flags)
+                ? 0
+                : _marshalService.GetLastWin32Error();
 
         /// <summary>
         /// The CredEnumerate function enumerates the credentials from the
@@ -123,8 +151,29 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// </param>
         /// <param name="count"></param>
         /// <param name="credentialsPtr"></param>
-        /// <returns></returns>
-        [DllImport("advapi32", EntryPoint = "CredEnumerateW", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern bool CredEnumerate([MarshalAs(UnmanagedType.LPWStr)] string? filter, int flag, out int count, out IntPtr credentialsPtr);
+        /// <returns>0 on success Last Win32 error on failure</returns>
+        public int CredEnumerate(string? filter, int flag, out int count,
+            out IntPtr credentialsPtr) =>
+            NativeMethods.CredEnumerate(filter, flag, out count, out credentialsPtr)
+                ? 0
+                : _marshalService.GetLastWin32Error();
+
+        private static class NativeMethods
+        {
+            [DllImport("Advapi32.dll", EntryPoint = "CredReadW", CharSet = CharSet.Unicode, SetLastError = true)]
+            public static extern bool CredRead([MarshalAs(UnmanagedType.LPWStr)] string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
+
+            [DllImport("Advapi32.dll", SetLastError = true, EntryPoint = "CredWriteW", CharSet = CharSet.Unicode)]
+            public static extern bool CredWrite(IntPtr userCredential, int flags);
+
+            [DllImport("Advapi32.dll", EntryPoint = "CredFree", SetLastError = true)]
+            public static extern bool CredFree([In] IntPtr cred);
+
+            [DllImport("advapi32.dll", EntryPoint = "CredDeleteW", CharSet = CharSet.Unicode, SetLastError = true)]
+            public static extern bool CredDelete([MarshalAs(UnmanagedType.LPWStr)] string target, int type, int flags);
+
+            [DllImport("advapi32", EntryPoint = "CredEnumerateW", CharSet = CharSet.Unicode, SetLastError = true)]
+            public static extern bool CredEnumerate([MarshalAs(UnmanagedType.LPWStr)] string? filter, int flag, out int count, out IntPtr credentialsPtr);
+        }
     }
 }
