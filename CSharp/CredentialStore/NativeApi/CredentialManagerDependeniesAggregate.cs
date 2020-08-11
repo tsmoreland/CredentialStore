@@ -15,10 +15,12 @@ using System;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    internal class CredentialManagerDependeniesAggregate : ICredentialManagerDependeniesAggregate
+    internal sealed class CredentialManagerDependeniesAggregate : ICredentialManagerDependeniesAggregate
     {
         public CredentialManagerDependeniesAggregate(ILoggerAdapter logger)
         {
+            if (logger == null)
+                throw new ArgumentNullException(nameof(logger));
             MarshalService = new MarshalService();
             PointerMath = new PointerMath(MarshalService, logger);
             ErrorCodeToStringService = new ErrorCodeToStringService(MarshalService, logger);
