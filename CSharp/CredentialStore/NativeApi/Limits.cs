@@ -21,7 +21,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     internal static class Limits
     {
         /// <summary>
-        /// Username can be in <domain>\<user> or <user>@<domain>
+        /// Username can be in domain\user or user@domain
         /// Length in characters, not including nul termination.
         /// </summary>
         public const int MaximumUserNameLength = 513; 

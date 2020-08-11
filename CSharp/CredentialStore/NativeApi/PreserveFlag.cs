@@ -14,7 +14,7 @@
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
     /// <summary>
-    /// Flags used as parameter in <see cref="Credential.CredWrite"/>
+    /// Flags used as parameter in <see cref="CredentialApi.CredWrite"/>
     /// https://docs.microsoft.com/en-us/windows/win32/api/wincred/nf-wincred-credwritew
     /// </summary>
     internal enum PreserveFlag : uint

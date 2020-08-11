@@ -26,6 +26,6 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// returns <see cref="Credential"/> referenced by the handle if <see cref="IsValid"/>
         /// otherwise null
         /// </summary>
-        NativeApi.Credential? NativeCredential { get; }
+        Credential? NativeCredential { get; }
     }
 }

@@ -17,20 +17,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Moreland.Security.Win32.CredentialStore.NativeApi;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
     [TestFixture]
     public sealed class CredentialManagerTest
     {
-        private NativeApi.ICredentialManagerDependeniesAggregate _dependeniesAggregate = null!;
         private Mock<ILoggerAdapter> _logger = null!;
         private Mock<INativeInterop> _nativeInterop = null!;
-        private Mock<NativeApi.IErrorCodeToStringService> _errorCodeToString = null!;
-        private Mock<IPointerMath> _pointerMath = null!;
-        private Mock<NativeApi.IMarshalService> _marshalService = null!;
-        private Mock<NativeApi.ICriticalCredentialHandleFactory> _criticalCredentialHandleFactory = null!;
         private CredentialManager _manager = null!;
         private TestData? _dataSource;
         private NativeApi.IntermediateCredential? _addedCredential;
@@ -39,17 +33,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         public void Setup()
         {
             _nativeInterop = new Mock<INativeInterop>();
-            _errorCodeToString = new Mock<NativeApi.IErrorCodeToStringService>();
-            _marshalService = new Mock<NativeApi.IMarshalService>();
-            _pointerMath = new Mock<IPointerMath>();
-            _criticalCredentialHandleFactory = new Mock<NativeApi.ICriticalCredentialHandleFactory>();
             _logger = new Mock<ILoggerAdapter>();
-
-            _dependeniesAggregate = new CredentialManagerDependeniesAggregate(
-                _marshalService.Object, 
-                _pointerMath.Object, 
-                _nativeInterop.Object,
-                _errorCodeToString.Object);
 
             _manager = new CredentialManager(_nativeInterop.Object, _logger.Object);
             _targetDeleted = false;
@@ -268,29 +252,23 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                     .Throws(new Win32Exception((int)lastErrorCode));
             }
 
-            if (lastErrorCode != null)
-                _errorCodeToString
-                    .Setup(errorCodeToString => errorCodeToString.LogLastWin32Error(It.IsAny<ILoggerAdapter>(),
-                        It.IsAny<IEnumerable<int>>(), It.IsAny<string>()))
-                    .Callback<ILoggerAdapter, IEnumerable<int>, string>((logger, ignored, caller) => _targetDeleted = ignored.Contains((int)lastErrorCode))
-                    .Returns(() => (!_targetDeleted, (int)lastErrorCode));
-
             _nativeInterop
                 .Setup(native =>
                     native.CredDelete(_dataSource.Target, (int)_dataSource.CredentialType, It.IsAny<int>()))
                 .Callback<string, int, int>((target, type, flag) => _targetDeleted = true);
-            if (_addedCredential != null)
-            {
-                var mockSetup = _nativeInterop
-                    .Setup(native => native.CredWrite(It.IsAny<NativeApi.Credential>(), It.IsAny<int>()))
-                    .Callback<NativeApi.Credential, int>((credential, flag) =>
-                    {
-                        Assert.That(credential.TargetName, Is.EqualTo(_addedCredential.NativeCredential.TargetName));
-                    });
-                if (!successfulAdd)
-                    mockSetup
-                        .Throws(new Win32Exception((int)NativeApi.ExpectedError.NoSuchLogonSession));
-            }
+
+            if (_addedCredential == null)
+                return;
+
+            var mockSetup = _nativeInterop
+                .Setup(native => native.CredWrite(It.IsAny<NativeApi.Credential>(), It.IsAny<int>()))
+                .Callback<NativeApi.Credential, int>((credential, flag) =>
+                {
+                    Assert.That(credential.TargetName, Is.EqualTo(_addedCredential.NativeCredential.TargetName));
+                });
+            if (!successfulAdd)
+                mockSetup
+                    .Throws(new Win32Exception((int)NativeApi.ExpectedError.NoSuchLogonSession));
         }
     }
 }
