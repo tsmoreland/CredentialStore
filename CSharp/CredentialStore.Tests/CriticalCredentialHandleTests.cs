@@ -67,6 +67,71 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.DoesNotThrow(() => _ = new CriticalCredentialHandle(_pointer, _credentialApi.Object, _marshalService.Object, _errorCodeToStringService.Object, _logger.Object));
         }
 
+        [Test]
+        [TestCase(true)]
+        [TestCase(false)]
+        public void NativeCredentialShould_ReturnProvidedCredentialIfValid(bool isValid)
+        {
+            NativeApi.Credential credential = RandomCredential();
+            bool released = false;
+            IntPtr pointer = IntPtr.Zero;
+
+            try
+            {
+                if (isValid)
+                {
+                    pointer = Marshal.AllocHGlobal(Marshal.SizeOf(_credential));
+                    Marshal.StructureToPtr(credential, pointer, false);
+                    _credentialApi
+                        .Setup(api => api.CredFree(pointer))
+                        .Callback<IntPtr>(ptr =>
+                        {
+                            if (ptr == IntPtr.Zero)
+                                return;
+                            Marshal.FreeHGlobal(ptr);
+                            released = true;
+                        });
+                    _marshalService
+                        .Setup(marshal => marshal.PtrToStructure(pointer, typeof(NativeApi.Credential)))
+                        .Returns(credential);
+                }
+
+                var critialHandle = new CriticalCredentialHandle(pointer, _credentialApi.Object,
+                    _marshalService.Object, _errorCodeToStringService.Object, _logger.Object);
+
+                if (isValid)
+                    Assert.That(critialHandle.NativeCredential, Is.EqualTo(credential));
+                else
+                    Assert.That(critialHandle.NativeCredential, Is.Null);
+                critialHandle.Dispose();
+                if (isValid)
+                    Assert.That(released, Is.True);
+
+            }
+            finally
+            {
+                if (!released && pointer != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(pointer);
+                }
+            }
+        }
+
+        [Test]
+        [TestCase(false)]
+        [TestCase(true)]
+        public void IsValidShould_ReturnTrueForNonZeroHandle(bool useZero)
+        {
+            using var criticalHandle = new CriticalCredentialHandle(useZero ? IntPtr.Zero : _pointer,
+                _credentialApi.Object, _marshalService.Object, _errorCodeToStringService.Object, _logger.Object);
+
+            if (useZero)
+                Assert.That(criticalHandle.IsValid, Is.False);
+            else
+                Assert.That(criticalHandle.IsValid, Is.True);
+
+            Assert.That(criticalHandle.IsValid, Is.Not.EqualTo(criticalHandle.IsInvalid));
+        }
 
 
         private static NativeApi.Credential RandomCredential()
@@ -103,6 +168,8 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                 .Setup(api => api.CredFree(_pointer))
                 .Callback<IntPtr>(pointer =>
                 {
+                    if (pointer == IntPtr.Zero)
+                        return;
                     Marshal.FreeHGlobal(pointer);
                     _released = true;
                 });
