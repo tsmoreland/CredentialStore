@@ -122,6 +122,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [TestCase(true)]
         public void IsValidShould_ReturnTrueForNonZeroHandle(bool useZero)
         {
+            SetupCredentialApi();
             using var criticalHandle = new CriticalCredentialHandle(useZero ? IntPtr.Zero : _pointer,
                 _credentialApi.Object, _marshalService.Object, _errorCodeToStringService.Object, _logger.Object);
 
