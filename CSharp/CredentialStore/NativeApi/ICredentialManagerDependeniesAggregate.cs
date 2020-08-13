@@ -13,11 +13,26 @@
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
+    /// <summary>
+    /// Aggregate for dependency injected services to simplify creation without injection
+    /// </summary>
     internal interface ICredentialManagerDependeniesAggregate
     {
+        /// <summary>
+        /// <see cref="INativeInterop"/>
+        /// </summary>
         INativeInterop NativeInterop { get; }
+        /// <summary>
+        /// <see cref="IErrorCodeToStringService"/>
+        /// </summary>
         IErrorCodeToStringService ErrorCodeToStringService { get; }
+        /// <summary>
+        /// <see cref="IMarshalService"/>
+        /// </summary>
         IMarshalService MarshalService { get; }
+        /// <summary>
+        /// <see cref="PointerMath"/>
+        /// </summary>
         IPointerMath PointerMath { get; }
     }
 }

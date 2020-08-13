@@ -15,10 +15,15 @@ using System;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    internal class CredentialManagerDependeniesAggregate : ICredentialManagerDependeniesAggregate
+    /// <summary>
+    /// <inheritdoc cref="ICredentialManagerDependeniesAggregate"/>
+    /// </summary>
+    internal sealed class CredentialManagerDependeniesAggregate : ICredentialManagerDependeniesAggregate
     {
         public CredentialManagerDependeniesAggregate(ILoggerAdapter logger)
         {
+            if (logger == null)
+                throw new ArgumentNullException(nameof(logger));
             MarshalService = new MarshalService();
             PointerMath = new PointerMath(MarshalService, logger);
             ErrorCodeToStringService = new ErrorCodeToStringService(MarshalService, logger);
@@ -27,18 +32,21 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 ErrorCodeToStringService, logger);
         }
 
-        public CredentialManagerDependeniesAggregate(IMarshalService marshalService, IPointerMath pointerMath, INativeInterop nativeInterop,
-            IErrorCodeToStringService errorCodeToStringService)
-        {
-            MarshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
-            PointerMath = pointerMath ?? throw new ArgumentNullException(nameof(pointerMath));
-            NativeInterop = nativeInterop ?? throw new ArgumentNullException(nameof(nativeInterop));
-            ErrorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
-        }
-
+        /// <summary>
+        /// <inheritdoc cref="ICredentialManagerDependeniesAggregate.MarshalService"/>
+        /// </summary>
         public IMarshalService MarshalService { get; }
+        /// <summary>
+        /// <inheritdoc cref="ICredentialManagerDependeniesAggregate.NativeInterop"/>
+        /// </summary>
         public INativeInterop NativeInterop { get; }
+        /// <summary>
+        /// <inheritdoc cref="ICredentialManagerDependeniesAggregate.ErrorCodeToStringService"/>
+        /// </summary>
         public IErrorCodeToStringService ErrorCodeToStringService { get; }
+        /// <summary>
+        /// <inheritdoc cref="ICredentialManagerDependeniesAggregate.PointerMath"/>
+        /// </summary>
         public IPointerMath PointerMath { get; }
     }
 }

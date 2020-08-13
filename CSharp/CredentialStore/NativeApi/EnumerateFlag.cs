@@ -14,8 +14,8 @@
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
     /// <summary>
-    /// Flags passed to <see cref="Credential.CredEnumerate(string, int, out int, out System.IntPtr)"/>
-    /// https://docs.microsoft.com/en-us/windows/win32/api/wincred/nf-wincred-credenumeratew
+    /// Flags passed to <see cref="CredentialApi.CredEnumerate(string, int, out int, out System.IntPtr)"/>
+    /// <a href="https://docs.microsoft.com/en-us/windows/win32/api/wincred/nf-wincred-credenumeratew">Win32 CredEnumerateW</a>
     /// </summary>
     internal enum EnumerateFlag : uint
     {
@@ -29,7 +29,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// credential set. The target name of each credential is returned in
         /// the "namespace:attribute=target" format. If this flag is set and
         /// the Filter parameter is not NULL, the function fails and returns
-        /// <see cref="ErrorCode.InvalidFlags"/>
+        /// <see cref="ExpectedError.InvalidFlags"/>
         /// </summary>
         EnumerateAllCredentials = 0x1,
 
