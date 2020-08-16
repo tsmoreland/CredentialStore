@@ -26,7 +26,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         private Mock<IMarshalService> _marshalService = null!;
         private Mock<IErrorCodeToStringService> _errorCodeToStringService = null!;
         private Mock<ILoggerAdapter> _logger = null!;
-        private ICriticalCredentialHandleFactory _factory;
+        private ICriticalCredentialHandleFactory _factory = null!;
 
         [SetUp]
         public void Setup()
