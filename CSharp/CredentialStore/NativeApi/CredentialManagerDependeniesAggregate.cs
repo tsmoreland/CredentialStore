@@ -26,7 +26,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 throw new ArgumentNullException(nameof(logger));
             MarshalService = new MarshalService();
             PointerMath = new PointerMath(MarshalService, logger);
-            ErrorCodeToStringService = new ErrorCodeToStringService(MarshalService, logger);
+            ErrorCodeToStringService = new ErrorCodeToStringService(logger);
             var credentialApi = new CredentialApi(MarshalService);
             NativeInterop = new NativeInterop(credentialApi, new CriticalCredentialHandleFactory(credentialApi, MarshalService, ErrorCodeToStringService, logger), MarshalService,
                 ErrorCodeToStringService, logger);

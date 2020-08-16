@@ -84,5 +84,71 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.That(updatedId, Is.EqualTo(id));
             Assert.That(updatedUsername, Is.EqualTo(first.UserName));
         }
+
+        [Test]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
+        public void EqualsShould_ReturnTrueForEqualIdUserTypeAndPersistenceType(CredentialFlag flags,
+            CredentialType type, CredentialPeristence persistanceType)
+        {
+            var first = TestData.BuildRandomCredential(flags, type, persistanceType);
+            var second = TestData.BuildRandomCredential(flags, type, persistanceType);
+
+            Assert.That(first.Equals(second), Is.False);
+            Assert.That(first.Equals((object)second), Is.False);
+            Assert.That(first.Secret.Equals(second.Secret), Is.False);
+
+            first = first.With(_id, _username);
+            second = second.With(_id, _username);
+
+            Assert.That(first.Equals(second), Is.True);
+            Assert.That(first.Equals((object)second), Is.True);
+
+            Assert.That(first.Equals((object?)first), Is.True);
+        }
+
+        [Test]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
+        public void EqualsShould_ReturnFalsForNull(CredentialFlag flags,
+            CredentialType type, CredentialPeristence persistanceType)
+        {
+            var first = TestData.BuildRandomCredential(flags, type, persistanceType);
+
+            Assert.That(first.Equals(null!), Is.False);
+            Assert.That(first!.Equals((object?)null!), Is.False); // ! is to silence warning, this should never be null here
+        }
+
+        [Test]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
+        public void GetHashCodeShould_ReturnSameValueForEqualObjects(CredentialFlag flags,
+            CredentialType type, CredentialPeristence persistanceType)
+        {
+            var first = TestData.BuildRandomCredential(flags, type, persistanceType);
+            var second = TestData.BuildRandomCredential(flags, type, persistanceType);
+            first = first!.With(_id, _username);
+            second = second.With(_id, _username);
+
+            int firstHashCode = first.GetHashCode();
+            int secondHashCode = second.GetHashCode();
+
+            Assert.That(firstHashCode, Is.EqualTo(secondHashCode));
+        }
+
+        [Test]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
+        public void GetHashCodeShould_ReturnDifferentValueForNonEqualObjects(CredentialFlag flags,
+            CredentialType type, CredentialPeristence persistanceType)
+        {
+            var first = TestData.BuildRandomCredential(flags, type, persistanceType);
+            var second = TestData.BuildRandomCredential(flags, type, persistanceType);
+
+            int firstHashCode = first.GetHashCode();
+            int secondHashCode = second.GetHashCode();
+
+            Assert.That(firstHashCode, Is.Not.EqualTo(secondHashCode));
+        }
     }
 }

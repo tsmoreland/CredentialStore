@@ -13,8 +13,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
@@ -23,7 +21,6 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// </summary>
     internal sealed class ErrorCodeToStringService : IErrorCodeToStringService
     {
-        private readonly IMarshalService _marshalService;
         private readonly ILoggerAdapter _logger;
         private static IDictionary<int, string> ErrorMessages { get; } = new Dictionary<int, string>
         {
@@ -36,15 +33,26 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             {(int)ExpectedError.InvalidArgument, $"Invalid Argument {(int)ExpectedError.InvalidFlags:x}"}
         };
 
-        public ErrorCodeToStringService(IMarshalService marshalService, ILoggerAdapter loggerAdapter)
+        /// <summary>
+        /// Instantiates a new instance of the <see cref="IErrorCodeToStringService"/> class.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">
+        /// if any argument is null
+        /// </exception>
+        public ErrorCodeToStringService(ILoggerAdapter logger)
         {
-            _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
-            _logger = loggerAdapter ?? throw new ArgumentNullException(nameof(loggerAdapter));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <summary>
+        /// <inheritdoc cref="IErrorCodeToStringService.GetMessageFor"/>
+        /// </summary>
         public string GetMessageFor(ExpectedError errorCode) =>
             GetMessageFor((int)errorCode);
 
+        /// <summary>
+        /// <inheritdoc cref="IErrorCodeToStringService.GetMessageFor"/>
+        /// </summary>
         public string GetMessageFor(int errorCode)
         {
             if (ErrorMessages.ContainsKey(errorCode))
@@ -52,16 +60,6 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
 
             _logger.Error($"unrecognized error {errorCode:X}");
             return $"Unknown error {errorCode:X}";
-        }
-
-        public (bool Logged, int ErrorCode) LogLastWin32Error(ILoggerAdapter logger, IEnumerable<int> ignoredErrors, [CallerMemberName] string callerMemberName = "")
-        {
-            const int noError = 0;
-            int lastError = _marshalService.GetLastWin32Error();
-            if (ignoredErrors?.Contains(lastError) == true || lastError == noError)
-                return (false, lastError);
-            logger?.Error(GetMessageFor(lastError), callerMemberName: callerMemberName);
-            return (true, lastError);
         }
     }
 }
