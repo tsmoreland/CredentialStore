@@ -25,7 +25,7 @@ namespace Moreland.Security.Win32.CredentialStore
     /// any persist of this object will result in the loss of that data
     /// </remarks>
     [DebuggerDisplay("{Id}: {UserName} {Type}")]
-    public sealed class Credential 
+    public sealed class Credential : IEquatable<Credential>
     {
         internal Credential(NativeApi.Credential credential)
         {
@@ -57,7 +57,7 @@ namespace Moreland.Security.Win32.CredentialStore
 
             long highBits = credential.LastWritten.dwHighDateTime;
             highBits <<= 32;
-            LastUpdated = DateTime.FromFileTime(highBits + (long)(uint)credential.LastWritten.dwLowDateTime);
+            LastUpdated = DateTime.FromFileTime(highBits + (uint)credential.LastWritten.dwLowDateTime);
 
             if (!string.IsNullOrEmpty(GetInvalidArgumentNameOrEmpty()))
                 throw new ArgumentException("invalid settings", nameof(credential));
@@ -130,6 +130,42 @@ namespace Moreland.Security.Win32.CredentialStore
 
         public override string ToString() =>
             $"{Id}: {UserName} {Type}";
+
+        /// <summary>
+        /// <inheritdoc cref="IEquatable{Credential}.Equals(Credential)"/>
+        /// </summary>
+        public bool Equals(Credential? other) =>
+            !(other is null) &&
+            Id == other.Id && 
+            UserName == other.UserName && 
+            Type == other.Type && 
+            PeristenceType == other.PeristenceType;
+
+        /// <summary>
+        /// <inheritdoc cref="object.Equals(object?)"/>
+        /// </summary>
+        public override bool Equals(object? obj) =>
+            ReferenceEquals(this, obj) || obj is Credential other && Equals(other);
+
+        /// <summary>
+        /// <inheritdoc cref="object.GetHashCode"/>
+        /// </summary>
+        public override int GetHashCode()
+        {
+            #if !NETSTANDARD2_0
+            return HashCode.Combine(Id, UserName, (int)Type, (int)PeristenceType);
+            #else
+            unchecked
+            {
+                int hashCode = 0;
+                hashCode ^= (Id?.GetHashCode() ?? 0) * 397;
+                hashCode ^= (UserName?.GetHashCode() ?? 0) * 397;
+                hashCode ^= Type.GetHashCode() * 397;
+                hashCode ^= PeristenceType.GetHashCode() * 397;
+                return hashCode;
+            }
+            #endif
+        }
 
         private string GetInvalidArgumentNameOrEmpty()
         {

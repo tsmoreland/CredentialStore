@@ -23,13 +23,6 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         private string _username = string.Empty;
         private string _secret = string.Empty;
 
-        #region Setup
-        [OneTimeSetUp]
-        public void OneTimeSetup()
-        {
-            // nothing to do yet
-        }
-
         [SetUp]
         public void Setup()
         {
@@ -37,7 +30,6 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _username = $"user-{Guid.NewGuid():N}";
             _secret = $"secret-{Guid.NewGuid():N}";
         }
-        #endregion
 
         [Test]
         public void ConstructorShould_ThrowArgumentException_WhenIdIsNull()
@@ -65,18 +57,32 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.Throws<ArgumentException>(() => _ = new Credential(_id, _username, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Unknown, DateTime.Now));
         }
 
-        #region Teardown
-        [TearDown]
-        public void TearDown()
+        [Test]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
+        public void DeconstructShould_ReturnProvidedValues(CredentialFlag flags, CredentialType type, CredentialPeristence persistanceType)
         {
-            // nothing to do yet
+            var credential = TestData.BuildRandomCredential(flags, type, persistanceType);
+
+            var (id, username, secret) = credential;
+
+            Assert.That(credential.Id, Is.EqualTo(id));
+            Assert.That(credential.UserName, Is.EqualTo(username));
+            Assert.That(credential.Secret, Is.EqualTo(secret));
         }
 
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
+        [Test]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
+        public void WithShould_UpdateWithProvidedValues(CredentialFlag flags, CredentialType type, CredentialPeristence persistanceType)
         {
-            // nothing to do yet
+            var first = TestData.BuildRandomCredential(flags, type, persistanceType);
+            var (id, _, _) = TestData.BuildRandomCredential(flags, type, persistanceType);
+
+            var (updatedId, updatedUsername, _) = first.With(id);
+
+            Assert.That(updatedId, Is.EqualTo(id));
+            Assert.That(updatedUsername, Is.EqualTo(first.UserName));
         }
-        #endregion
     }
 }
