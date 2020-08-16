@@ -12,6 +12,7 @@
 // 
 
 using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography;
@@ -134,6 +135,18 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.That(criticalHandle.IsValid, Is.Not.EqualTo(criticalHandle.IsInvalid));
         }
 
+        [Test]
+        public void DisposeShould_NotThrowExceptionWhenCredFreeThrowsException()
+        {
+            SetupCredentialApi();
+            _credentialApi
+                .Setup(cred => cred.CredFree(_pointer))
+                .Throws<Win32Exception>();
+            var criticalHandle = new CriticalCredentialHandle(_pointer,
+                _credentialApi.Object, _marshalService.Object, _errorCodeToStringService.Object, _logger.Object);
+            Assert.DoesNotThrow(() =>  criticalHandle.Dispose());
+
+        }
 
         private static NativeApi.Credential RandomCredential()
         {
