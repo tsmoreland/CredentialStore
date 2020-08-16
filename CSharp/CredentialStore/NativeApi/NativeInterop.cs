@@ -31,7 +31,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
 
         public NativeInterop(ICredentialApi credentialApi, ICriticalCredentialHandleFactory criticalCredentialHandleFactory, IMarshalService marshalService, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
-            _credentialApi = credentialApi;
+            _credentialApi = credentialApi ?? throw new ArgumentNullException(nameof(credentialApi));
             _criticalCredentialHandleFactory = criticalCredentialHandleFactory ??
                                                throw new ArgumentNullException(nameof(criticalCredentialHandleFactory));
             _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));

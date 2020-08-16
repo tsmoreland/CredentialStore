@@ -13,14 +13,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
     public sealed class TestData : IDisposable
     {
+        private static readonly RandomNumberGenerator _generator = RandomNumberGenerator.Create();
+
         public TestData(CredentialType type, bool includesTarget)
         {
             Target = $"{Guid.NewGuid():N}@{Guid.NewGuid():N}";
@@ -40,6 +44,32 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                     CredentialPeristence.LocalMachine));
             Credentials = credentials;
             IncludesTarget = includesTarget;
+        }
+
+        public static string GetRandomString() => Guid.NewGuid().ToString("N");
+
+        public static CredentialType GetRandomCredentialType()
+        {
+            var values = Enum
+                .GetValues(typeof(CredentialType))
+                .OfType<CredentialType>()
+                .ToArray();
+            int index = Math.Abs(GetRandomInteger()) % values.Length;
+            return values[index];
+        }
+
+        public static int GetRandomInteger(params int[] exclude)
+        {
+            var buffer = new byte[Marshal.SizeOf<int>()];
+            int value;
+            do
+            {
+                _generator.GetBytes(buffer);
+                value = BitConverter.ToInt32(buffer);
+
+            } while (exclude.Contains(value));
+
+            return value;
         }
 
         public string Target { get; }

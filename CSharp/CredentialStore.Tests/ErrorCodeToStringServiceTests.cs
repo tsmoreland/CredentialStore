@@ -14,7 +14,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using Moq;
 using Moreland.Security.Win32.CredentialStore.NativeApi;
 using NUnit.Framework;
@@ -24,22 +23,13 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
     [TestFixture]
     public sealed class ErrorCodeToStringServiceTests
     {
-        private Mock<IMarshalService> _marshalService = null!;
         private Mock<ILoggerAdapter> _logger = null!;
         private ErrorCodeToStringService _errorCodeToStringService = null!;
-        private RandomNumberGenerator _generator = null!;
-
-        [OneTimeSetUp]
-        public void OneTimeSetup()
-        {
-            _generator = RandomNumberGenerator.Create();
-        }
 
         [SetUp]
         public void Setup()
         {
             _logger = new Mock<ILoggerAdapter>();
-            _marshalService = new Mock<IMarshalService>();
             _errorCodeToStringService = new ErrorCodeToStringService(_logger.Object);
         }
 
