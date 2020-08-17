@@ -36,6 +36,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [SetUp]
         public void Setup()
         {
+            _apiReturnValue = 0;
             _credReadOutPtr = IntPtr.Zero;
             _credentialApi = new Mock<ICredentialApi>();
             _criticalCredentialHandleFactory = new Mock<ICriticalCredentialHandleFactory>();
@@ -93,6 +94,34 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
 
             Assert.Throws<Win32Exception>(() => _ = _nativeInterop.CredRead(TestData.GetRandomString(),
                 TestData.GetRandomCredentialType(), TestData.GetRandomInteger()));
+        }
+
+        [Test]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
+        public void CredReadShould_ReturnCredentialIfFound(CredentialFlag flag, CredentialType type, CredentialPeristence persistenceType)
+        {
+            var data = TestData.BuildRandomCredential(flag, type, persistenceType);
+            using var intermediate = new IntermediateCredential(data);
+            var handle = new Mock<ICriticalCredentialHandle>();
+            handle
+                .SetupGet(h => h.NativeCredential)
+                .Returns(intermediate.NativeCredential);
+            handle
+                .SetupGet(h => h.IsValid)
+                .Returns(true);
+            _credReadOutPtr = new IntPtr(TestData.GetRandomInteger());
+            _criticalCredentialHandleFactory
+                .Setup(factory => factory.Build(_credReadOutPtr))
+                .Returns(handle.Object);
+            var reservedFlag = TestData.GetRandomInteger();
+
+            var actual = _nativeInterop.CredRead(data.Id, type, reservedFlag);
+
+            Assert.That(actual, Is.Not.Null);
+            if (actual == null)
+                return; // to avoid warnings
+
+            Assert.That(actual.TargetName, Is.EqualTo(data.Id));
         }
 
         [Test]
