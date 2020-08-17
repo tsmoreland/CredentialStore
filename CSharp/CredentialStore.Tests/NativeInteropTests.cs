@@ -28,7 +28,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         private Mock<IMarshalService> _marshalService = null!;
         private Mock<IErrorCodeToStringService> _errorCodeToStringService = null!;
         private Mock<ILoggerAdapter> _logger = null!;
-        private int _credReadReturnValue;
+        private int _apiReturnValue;
         private IntPtr _credReadOutPtr = IntPtr.Zero;
 
         private delegate void CredReadCallback(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
@@ -50,7 +50,11 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                 .Setup(api => api.CredRead(It.IsAny<string>(), It.IsAny<CredentialType>(), It.IsAny<int>(),
                     out _credReadOutPtr))
                 .Callback(new CredReadCallback((string target, CredentialType type, int flag, out IntPtr ptr) => ptr = _credReadOutPtr)) 
-                .Returns(() => _credReadReturnValue);
+                .Returns(() => _apiReturnValue);
+
+            _credentialApi
+                .Setup(api => api.CredDelete(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()))
+                .Returns(() => _apiReturnValue);
         }
 
         [Test]
@@ -85,7 +89,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [Test]
         public void CredReadShould_ThrowExceptionWhenApiReturnsErrorUnlessNotFound()
         {
-            _credReadReturnValue = TestData.GetRandomInteger(0, (int)ExpectedError.NotFound);
+            _apiReturnValue = TestData.GetRandomInteger(0, (int)ExpectedError.NotFound);
 
             Assert.Throws<Win32Exception>(() => _ = _nativeInterop.CredRead(TestData.GetRandomString(),
                 TestData.GetRandomCredentialType(), TestData.GetRandomInteger()));
@@ -94,9 +98,26 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [Test]
         public void CredReadShould_NotThrowExceptionWhenApiReturnsNotFoundError()
         {
-            _credReadReturnValue = (int)ExpectedError.NotFound;
+            _apiReturnValue = (int)ExpectedError.NotFound;
             Assert.DoesNotThrow(() => _ = _nativeInterop.CredRead(TestData.GetRandomString(),
                 TestData.GetRandomCredentialType(), TestData.GetRandomInteger()));
+        }
+
+        [Test]
+        public void CredDeleteShould_ThrowExceptionWhenApiReturnsErrorUnlessNotFound()
+        {
+            _apiReturnValue = TestData.GetRandomInteger(0, (int)ExpectedError.NotFound);
+
+            Assert.Throws<Win32Exception>(() => _nativeInterop.CredDelete(TestData.GetRandomString(),
+                 TestData.GetRandomInteger(), TestData.GetRandomInteger()));
+        }
+
+        [Test]
+        public void CredDeleteShould_NotThrowExceptionWhenApiReturnsNotFoundError()
+        {
+            _apiReturnValue = (int)ExpectedError.NotFound;
+            Assert.DoesNotThrow(() => _nativeInterop.CredDelete(TestData.GetRandomString(),
+                TestData.GetRandomInteger(), TestData.GetRandomInteger()));
         }
     }
 }
