@@ -16,6 +16,9 @@ using System.Runtime.InteropServices;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
+    /// <summary>
+    /// <inheritdoc cref="ICredentialApi"/>
+    /// </summary>
     internal sealed class CredentialApi : ICredentialApi
     {
         private readonly IMarshalService _marshalService;
@@ -35,123 +38,40 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         }
 
         /// <summary>
-        /// The CredRead function reads a credential from the user's 
-        /// credential set. The credential set used is the one associated with 
-        /// the logon session of the current token. The token must not have the 
-        /// user's SID disabled.
+        /// <inheritdoc cref="ICredentialApi.CredRead"/>
         /// </summary>
-        /// <param name="target">
-        /// Pointer to a null-terminated string that contains the name of the
-        /// credential to read.
-        /// </param>
-        /// <param name="type">
-        /// Type of the credential to read. Type must be one of the
-        /// <see cref="CredentialType"/> defined types.
-        /// </param>
-        /// <param name="reservedFlag">Currently reserved and must be zero.</param>
-        /// <param name="credentialPtr">
-        /// Pointer to a single allocated block buffer to return the credential.
-        /// Any pointers contained within the buffer are pointers to locations
-        /// within this single allocated block. The single returned buffer must
-        /// be freed by calling <see cref="CredFree"/>
-        /// </param>
-        /// <returns>The function returns true on success and false on failure</returns>
-        /// <remarks>
-        /// reference: https://www.pinvoke.net/default.aspx/advapi32/CredRead.html
-        /// </remarks>
-        /// <returns>0 on success Last Win32 error on failure</returns>
         public int CredRead(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr) =>
             NativeMethods.CredRead(target, type, reservedFlag, out credentialPtr)
                 ? 0
                 : _marshalService.GetLastWin32Error();
 
         /// <summary>
-        /// The CredWrite function creates a new credential or modifies an 
-        /// existing credential in the user's credential set. The new credential 
-        /// is associated with the logon session of the current token. The token 
-        /// must not have the user's security identifier (SID) disabled.
+        /// <inheritdoc cref="ICredentialApi.CredWrite"/>
         /// </summary>
-        /// <param name="userCredential">
-        /// A pointer to the <see cref="Credential"/> structure to be written.
-        /// </param>
-        /// <param name="flags">
-        /// Flags that control the function's operation.
-        /// <see cref="PreserveFlag"/> for valid values.
-        /// </param>
-        /// <returns>If the function succeeds, the function returns TRUE.</returns>
-        /// <remarks>
-        /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredWrite
-        /// </remarks>
-        /// <returns>0 on success Last Win32 error on failure</returns>
         public int CredWrite(IntPtr userCredential, int flags) =>
             NativeMethods.CredWrite(userCredential, flags)
                 ? 0
                 : _marshalService.GetLastWin32Error();
 
         /// <summary>
-        /// The CredFree function frees a buffer returned by any of the credentials management functions.
+        /// <inheritdoc cref="ICredentialApi.CredFree"/>
         /// </summary>
-        /// <param name="cred">Pointer to the buffer to be freed.</param>
-        /// <returns>If the function succeeds, the function returns true</returns>
-        /// <remarks>
-        /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredFree
-        /// </remarks>
-        /// <returns>0 on success Last Win32 error on failure</returns>
         public int CredFree(IntPtr cred) =>
             NativeMethods.CredFree(cred)
                 ? 0
                 : _marshalService.GetLastWin32Error();
 
         /// <summary>
-        /// The CredDelete function deletes a credential from the user's 
-        /// credential set. The credential set used is the one associated with 
-        /// the logon session of the current token. The token must not have the 
-        /// user's SID disabled.
+        /// <inheritdoc cref="ICredentialApi.CredDelete"/>
         /// </summary>
-        /// <param name="target">
-        /// Pointer to a null-terminated string that contains the name of the
-        /// credential to delete.
-        /// </param>
-        /// <param name="type">
-        /// Type of the credential to delete. Must be one of the
-        /// <see cref="CredentialType"/> defined types. For a list of the
-        /// defined types, see the Type member of the <see cref="Credential"/>
-        /// structure.
-        /// </param>
-        /// <param name="flags">Reserved and must be zero.</param>
-        /// <returns>The function returns true on success and false on failure</returns>
-        /// <remarks>
-        /// reference: https://www.pinvoke.net/default.aspx/advapi32.CredDelete
-        /// </remarks>
-        /// <returns>0 on success Last Win32 error on failure</returns>
         public int CredDelete(string target, int type, int flags) =>
             NativeMethods.CredDelete(target, type, flags)
                 ? 0
                 : _marshalService.GetLastWin32Error();
 
         /// <summary>
-        /// The CredEnumerate function enumerates the credentials from the
-        /// user's credential set. The credential set used is the one
-        /// associated with the logon session of the current token. The token
-        /// must not have the user's SID disabled.
+        /// <inheritdoc cref="ICredentialApi.CredEnumerate"/>
         /// </summary>
-        /// <param name="filter">
-        /// Pointer to a null-terminated string that contains the filter for
-        /// the returned credentials. Only credentials with a TargetName
-        /// matching the filter will be returned. The filter specifies a name
-        /// prefix followed by an asterisk. For instance, the filter "FRED*"
-        /// will return all credentials with a TargetName beginning with the
-        /// string "FRED".
-        /// If null is specified, all credentials will be returned.
-        /// </param>
-        /// <param name="flag">
-        /// The value of this parameter can be zero or more of
-        /// <see cref="EnumerateFlag"/> values combined with a bitwise-OR
-        /// operation.
-        /// </param>
-        /// <param name="count"></param>
-        /// <param name="credentialsPtr"></param>
-        /// <returns>0 on success Last Win32 error on failure</returns>
         public int CredEnumerate(string? filter, int flag, out int count,
             out IntPtr credentialsPtr) =>
             NativeMethods.CredEnumerate(filter, flag, out count, out credentialsPtr)
