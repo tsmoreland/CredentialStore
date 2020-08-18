@@ -74,6 +74,8 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
 
             return value;
         }
+        public static bool GetRandomBool() =>
+            GetRandomInteger() % 2 == 0;
 
         public string Target { get; }
         public string Secret { get; }

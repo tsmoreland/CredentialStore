@@ -20,6 +20,9 @@ using System.Runtime.CompilerServices;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
+    /// <summary>
+    /// <inheritdoc cref="INativeInterop"/>
+    /// </summary>
     internal sealed class NativeInterop : INativeInterop
     {
         private readonly ICredentialApi _credentialApi;
@@ -29,6 +32,12 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         private readonly ILoggerAdapter _logger;
         private const int NativeSuccess = 0;
 
+        /// <summary>
+        /// Instantiates a new instance of the <see cref="NativeInterop"/> class.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">
+        /// if any of the provided arguments are null
+        /// </exception>
         public NativeInterop(ICredentialApi credentialApi, ICriticalCredentialHandleFactory criticalCredentialHandleFactory, IMarshalService marshalService, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
             _credentialApi = credentialApi ?? throw new ArgumentNullException(nameof(credentialApi));
@@ -40,9 +49,8 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         }
 
         /// <summary>
-        /// <see cref="ICredentialApi.CredRead(string, CredentialType, int, out IntPtr)"/>
+        /// <inheritdoc cref="INativeInterop.CredRead"/>
         /// </summary>
-        /// <returns>Credential if found; otherwise, null</returns>
         public Credential? CredRead(string target, CredentialType type, int reservedFlag)
         {
             int result = _credentialApi.CredRead(target, type, reservedFlag, out var credentialPtr);
@@ -55,7 +63,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         }
 
         /// <summary>
-        /// <see cref="NativeApi.CredentialApi.CredWrite(IntPtr, int)"/>
+        /// <inheritdoc cref="INativeInterop.CredWrite"/>
         /// </summary>
         public void CredWrite(Credential credential, int flags)
         {
@@ -77,7 +85,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         }
 
         /// <summary>
-        /// <see cref="NativeApi.CredentialApi.CredDelete(string, int, int)"/>
+        /// <inheritdoc cref="INativeInterop.CredDelete"/>
         /// </summary>
         public void CredDelete(string target, int type, int flags)
         {
@@ -88,14 +96,14 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         }
 
         /// <summary>
-        /// <see cref="NativeApi.CredentialApi.CredEnumerate(string?, int, out int, out IntPtr)"/>
+        /// <inheritdoc cref="INativeInterop.CredEnumerate"/>
         /// </summary>
         public IEnumerable<Credential> CredEnumerate(string? filter, int flag)
         {
             int result = _credentialApi.CredEnumerate(filter, flag, out int count, out IntPtr credentialsPtr);
             if (result != NativeSuccess)
             {
-                _logger.Warning(_errorCodeToStringService.GetMessageFor(result));
+                LogAndThrowWin32Exception(result);
                 yield break;
             }
 
@@ -108,7 +116,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                     var nativeCredential = _marshalService.PtrToStructure<Credential>(currentPtr);
                     if (nativeCredential == null)
                     {
-                        _logger.Error($"pointer failed to pin to structure at index {i}");
+                        LogAndThrowWin32Exception(result);
                         yield break;
                     }
 
@@ -120,10 +128,13 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             {
                 result = _credentialApi.CredFree(credentialsPtr);
                 if (result != NativeSuccess)
-                    _logger.Warning(_errorCodeToStringService.GetMessageFor(result));
+                    LogAndThrowWin32Exception(result);
             }
         }
 
+        /// <summary>
+        /// <inheritdoc cref="INativeInterop.CredFree"/>
+        /// </summary>
         public void CredFree(IntPtr handle)
         {
             int result = _credentialApi.CredFree(handle);

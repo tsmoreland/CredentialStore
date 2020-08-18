@@ -13,6 +13,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using Moq;
 using Moreland.Security.Win32.CredentialStore.NativeApi;
 using NUnit.Framework;
@@ -29,9 +30,12 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         private Mock<IErrorCodeToStringService> _errorCodeToStringService = null!;
         private Mock<ILoggerAdapter> _logger = null!;
         private int _apiReturnValue;
+        private int _credEnumerateOutCount;
+        private IntPtr _credEnumerateOutPtr;
         private IntPtr _credReadOutPtr = IntPtr.Zero;
 
         private delegate void CredReadCallback(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
+        private delegate void CredEnumerateCallback(string? filter, int flag, out int count, out IntPtr credentialPtr);
 
         [SetUp]
         public void Setup()
@@ -65,9 +69,20 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                 .Setup(api => api.CredWrite(It.IsAny<IntPtr>(), It.IsAny<int>()))
                 .Returns(() => _apiReturnValue);
 
+            _credentialApi
+                .Setup(api => api.CredEnumerate(It.IsAny<string?>(), It.IsAny<int>(), out _credEnumerateOutCount, out _credEnumerateOutPtr))
+                .Callback(new CredEnumerateCallback(EnumerateCallback))
+                .Returns(() => _apiReturnValue);
+
             _marshalService
                 .Setup(svc => svc.AllocHGlobal(It.IsAny<int>()))
                 .Returns(new IntPtr(TestData.GetRandomInteger()));
+
+            void EnumerateCallback(string? filter, int flag, out int count, out IntPtr ptr)
+            {
+                count = _credEnumerateOutCount;
+                ptr = _credEnumerateOutPtr;
+            }
         }
 
         [Test]
@@ -163,7 +178,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
-        public void CredFreeShould_ThrowWin32ExceptionOnError()
+        public void CredFreeShould_ThrowExceptionOnError()
         {
             int errorCode = TestData.GetRandomInteger(0);
             _apiReturnValue = errorCode;
@@ -180,7 +195,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
-        public void CredWriteShould_ThrowWin32ExceptionOnError()
+        public void CredWriteShould_ThrowExceptionOnError()
         {
             int errorCode = TestData.GetRandomInteger(0);
             _apiReturnValue = errorCode;
@@ -221,6 +236,19 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             var credential = TestData.BuildRandomCredential();
             using var intermediate = new IntermediateCredential(credential);
             Assert.DoesNotThrow(() => _nativeInterop.CredWrite(intermediate.NativeCredential, TestData.GetRandomInteger()));
+        }
+
+        [Test]
+        public void CredEnumerateShould_ThrowExceptionOnError()
+        {
+            _apiReturnValue = TestData.GetRandomInteger(0);
+            var filter = TestData.GetRandomBool()
+                ? TestData.GetRandomString()
+                : null;
+            var flag = TestData.GetRandomInteger();
+
+            // use of .Any() is to force enumeration which will invoke the method
+            Assert.Throws<Win32Exception>(() => _ = _nativeInterop.CredEnumerate(filter, flag).Any());
         }
     }
 }
