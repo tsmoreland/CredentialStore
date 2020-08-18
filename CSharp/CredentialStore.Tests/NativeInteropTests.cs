@@ -56,6 +56,18 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _credentialApi
                 .Setup(api => api.CredDelete(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()))
                 .Returns(() => _apiReturnValue);
+
+            _credentialApi
+                .Setup(api => api.CredFree(It.IsAny<IntPtr>()))
+                .Returns(() => _apiReturnValue);
+
+            _credentialApi
+                .Setup(api => api.CredWrite(It.IsAny<IntPtr>(), It.IsAny<int>()))
+                .Returns(() => _apiReturnValue);
+
+            _marshalService
+                .Setup(svc => svc.AllocHGlobal(It.IsAny<int>()))
+                .Returns(new IntPtr(TestData.GetRandomInteger()));
         }
 
         [Test]
@@ -93,11 +105,12 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _apiReturnValue = TestData.GetRandomInteger(0, (int)ExpectedError.NotFound);
 
             Assert.Throws<Win32Exception>(() => _ = _nativeInterop.CredRead(TestData.GetRandomString(),
-                TestData.GetRandomCredentialType(), TestData.GetRandomInteger()));
+                TestData.GetRandomEnum<CredentialType>(), TestData.GetRandomInteger()));
         }
 
         [Test]
         [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
         public void CredReadShould_ReturnCredentialIfFound(CredentialFlag flag, CredentialType type, CredentialPeristence persistenceType)
         {
             var data = TestData.BuildRandomCredential(flag, type, persistenceType);
@@ -129,7 +142,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         {
             _apiReturnValue = (int)ExpectedError.NotFound;
             Assert.DoesNotThrow(() => _ = _nativeInterop.CredRead(TestData.GetRandomString(),
-                TestData.GetRandomCredentialType(), TestData.GetRandomInteger()));
+                TestData.GetRandomEnum<CredentialType>(), TestData.GetRandomInteger()));
         }
 
         [Test]
@@ -147,6 +160,67 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _apiReturnValue = (int)ExpectedError.NotFound;
             Assert.DoesNotThrow(() => _nativeInterop.CredDelete(TestData.GetRandomString(),
                 TestData.GetRandomInteger(), TestData.GetRandomInteger()));
+        }
+
+        [Test]
+        public void CredFreeShould_ThrowWin32ExceptionOnError()
+        {
+            int errorCode = TestData.GetRandomInteger(0);
+            _apiReturnValue = errorCode;
+            IntPtr ptr = new IntPtr(TestData.GetRandomInteger());
+            Assert.Throws<Win32Exception>(() => _nativeInterop.CredFree(ptr));
+        }
+
+        [Test]
+        public void CredFreeShould_NotThrowOnSuccess()
+        {
+            IntPtr ptr = new IntPtr(TestData.GetRandomInteger());
+            _apiReturnValue = 0;
+            Assert.DoesNotThrow(() => _nativeInterop.CredFree(ptr));
+        }
+
+        [Test]
+        public void CredWriteShould_ThrowWin32ExceptionOnError()
+        {
+            int errorCode = TestData.GetRandomInteger(0);
+            _apiReturnValue = errorCode;
+            var credential = TestData.BuildRandomCredential();
+            using var intermediate = new IntermediateCredential(credential);
+
+            Assert.Throws<Win32Exception>(() => _nativeInterop.CredWrite(intermediate.NativeCredential, TestData.GetRandomInteger()));
+        }
+
+        [Test]
+        public void CredWriteShould_AlwaysCallFreeHGlobalIfNotZero()
+        {
+            int errorCode = TestData.GetRandomInteger(0);
+            _apiReturnValue = errorCode;
+            var credential = TestData.BuildRandomCredential();
+            using var intermediate = new IntermediateCredential(credential);
+
+            try
+            {
+                _nativeInterop.CredWrite(intermediate.NativeCredential, TestData.GetRandomInteger());
+            }
+            catch (Exception ex) when (ex is Win32Exception)
+            {
+                // ignore, we expect this but aren't tested for it here
+            }
+
+            _apiReturnValue = 0;
+            _nativeInterop.CredWrite(intermediate.NativeCredential, TestData.GetRandomInteger());
+
+            _marshalService.Verify(svc => svc.FreeHGlobal(It.IsAny<IntPtr>()), Times.Exactly(2));
+            Assert.True(true); // prevent warning about lack of asserts, Verify call is the real test
+        }
+
+        [Test]
+        public void CredWriteShould_NotThrowOnSuccess()
+        {
+            _apiReturnValue = 0;
+            var credential = TestData.BuildRandomCredential();
+            using var intermediate = new IntermediateCredential(credential);
+            Assert.DoesNotThrow(() => _nativeInterop.CredWrite(intermediate.NativeCredential, TestData.GetRandomInteger()));
         }
     }
 }

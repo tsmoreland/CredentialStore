@@ -48,16 +48,19 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
 
         public static string GetRandomString() => Guid.NewGuid().ToString("N");
 
-        public static CredentialType GetRandomCredentialType()
+        public static TEnum GetRandomEnum<TEnum>(params TEnum[] exclude) where TEnum : struct, IComparable
         {
-            var values = Enum
-                .GetValues(typeof(CredentialType))
-                .OfType<CredentialType>()
-                .ToArray();
-            int index = Math.Abs(GetRandomInteger()) % values.Length;
-            return values[index];
-        }
+            var values = Enum.GetValues(typeof(TEnum)).OfType<TEnum>().ToArray();
+            TEnum value;
 
+            do
+            {
+                int index = Math.Abs(GetRandomInteger()) % values.Length;
+                value = values[index];
+            } while (exclude.Contains(value));
+
+            return value;
+        }
         public static int GetRandomInteger(params int[] exclude)
         {
             var buffer = new byte[Marshal.SizeOf<int>()];
@@ -78,6 +81,10 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         public IEnumerable<NativeApi.Credential> Credentials { get; }
         public bool IncludesTarget { get; }
 
+
+        public static Credential BuildRandomCredential() =>
+            BuildRandomCredential(GetRandomEnum<CredentialFlag>(), GetRandomEnum(CredentialType.Unknown),
+                GetRandomEnum(CredentialPeristence.Unknown));
         public static Credential BuildRandomCredential(CredentialFlag flags, CredentialType type,
             CredentialPeristence persistanceType) =>
             new Credential($"{Guid.NewGuid():N}@{Guid.NewGuid():N}", $"user-{Guid.NewGuid():N}",
