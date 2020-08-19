@@ -14,6 +14,7 @@
 using Moq;
 using NUnit.Framework;
 using System;
+using System.ComponentModel;
 using NativeCredential = Moreland.Security.Win32.CredentialStore.NativeApi.Credential;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
@@ -21,37 +22,49 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
     [TestFixture]
     public sealed class CredentialManagerTest
     {
-        private Mock<ILoggerAdapter> _logger = null!;
+        private Mock<IErrorCodeToStringService> _errorCodeToStringService = null!;
         private Mock<INativeInterop> _nativeInterop = null!;
         private CredentialManager _manager = null!;
         private NativeCredential _credential = null!;
+        private NativeCredential? _outputCredential;
+        private int _apiErrorCode;
+
+        private delegate void CredReadCallback(string target, CredentialType type, int reservedFlag, out NativeCredential? credentialPtr);
 
         [SetUp]
         public void Setup()
         {
+            _apiErrorCode = 0;
             _nativeInterop = new Mock<INativeInterop>();
-            _logger = new Mock<ILoggerAdapter>();
+            _errorCodeToStringService = new Mock<IErrorCodeToStringService>();
 
-            _manager = new CredentialManager(_nativeInterop.Object, _logger.Object);
+            _manager = new CredentialManager(_nativeInterop.Object, _errorCodeToStringService.Object);
 
             _credential = new NativeCredential 
             { 
                 TargetName = TestData.GetRandomString(),
+                Type = (int)TestData.GetRandomEnum(CredentialType.Unknown),
                 Comment = TestData.GetRandomString(),
                 CredentialBlob = IntPtr.Zero,
                 CredentialBlobSize = 0,
-                Persist = (int)TestData.GetRandomEnum<CredentialPeristence>(),
+                Persist = (int)TestData.GetRandomEnum(CredentialPeristence.Unknown),
                 AttributeCount = 0,
                 Attributes = IntPtr.Zero,
                 TargetAlias = null,
                 UserName = TestData.GetRandomString(),
             };
+
+            _nativeInterop
+                .Setup(api => api.CredRead(It.IsAny<string>(), It.IsAny<CredentialType>(), It.IsAny<int>(), out _outputCredential))
+                .Callback(new CredReadCallback((string target, CredentialType type, int flag, out NativeCredential? ptr) => ptr = _outputCredential)) 
+                .Returns(() => _apiErrorCode);
+
         }
 
         [Test]
         public void Constructor_ThrowsArgumentNullException_WhenNativeInteropIsNull()
         {
-            var ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _logger.Object));
+            var ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _errorCodeToStringService.Object));
             Assert.That(ex.ParamName, Is.EqualTo("nativeInterop"));
         }
 
@@ -59,11 +72,11 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         public void Constructor_ThrowsArgumentNullException_WhenLoggerIsNull()
         {
             var ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeInterop.Object, null!));
-            Assert.That(ex.ParamName, Is.EqualTo("logger"));
+            Assert.That(ex.ParamName, Is.EqualTo("errorCodeToStringService"));
         }
 
         [Test]
-        public void AddShould_ThrowArgumentNullException_WhenCredentialIsNull()
+        public void Add_ThrowArgumentNullException_WhenCredentialIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(() => _manager.Add(null!));
             Assert.That(exception.ParamName, Is.EqualTo("credential"));
@@ -72,10 +85,38 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [Test]
         [TestCase(null!)]
         [TestCase("")]
-        public void FindShould_ThrowArgumentExceptionIfIdIsNullOrEmpty(string id)
+        public void Find_ThrowArgumentException_WhenIdIsNullOrEmpty(string id)
         {
-            var ex = Assert.Throws<ArgumentException>(() => _manager.Find(id, CredentialType.Generic));
+            var ex = Assert.Throws<ArgumentException>(() => _manager.Find(id, TestData.GetRandomEnum(CredentialType.Unknown)));
             Assert.That(ex.ParamName, Is.EqualTo("id"));
+        }
+
+        [Test]
+        public void Find_ThrowWin32Exception_WhenApiReturnsError()
+        {
+            _apiErrorCode = TestData.GetRandomInteger(0, (int)NativeApi.ExpectedError.NotFound);
+            string id = TestData.GetRandomString();
+            var type = TestData.GetRandomEnum(CredentialType.Unknown);
+            Credential? credential = null;
+
+            var ex = Assert.Throws<Win32Exception>(() => credential = _manager.Find(id, type));
+
+            Assert.That(ex.NativeErrorCode, Is.EqualTo(_apiErrorCode));
+            Assert.That(credential, Is.Null);
+        }
+
+        [Test] 
+        public void Find_ReturnsCredential_WhenApiReturnsNonNullSuccess()
+        {
+            _apiErrorCode = 0;
+            _outputCredential = _credential;
+            string id = TestData.GetRandomString();
+            var type = TestData.GetRandomEnum(CredentialType.Unknown);
+
+            var actual = _manager.Find(id, type);
+
+            Assert.That(actual, Is.Not.Null);
+            Assert.That(actual?.Id, Is.EqualTo(_outputCredential.TargetName));
         }
     }
 }

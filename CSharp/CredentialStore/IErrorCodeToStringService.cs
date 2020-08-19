@@ -11,9 +11,9 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-namespace Moreland.Security.Win32.CredentialStore.NativeApi
+namespace Moreland.Security.Win32.CredentialStore
 {
-    internal interface IErrorCodeToStringService
+    public interface IErrorCodeToStringService
     {
         /// <summary>
         /// Gets the error message for <paramref name="errorCode"/> if known,
