@@ -39,8 +39,10 @@ namespace Moreland.Security.Win32.CredentialStore
         /// structure.
         /// </param>
         /// <param name="flags">Reserved and must be zero.</param>
-        /// <exception cref="Win32Exception">on native api error</exception>
-        void CredDelete(string target, int type, int flags);
+        /// <returns>
+        /// 0 on success; otherwise Win32 error code 
+        /// </returns>
+        int CredDelete(string target, int type, int flags);
 
         /// <summary>
         /// Returns an <see cref="IEnumerable{NativeCredential}"/>
@@ -71,8 +73,10 @@ namespace Moreland.Security.Win32.CredentialStore
         /// Frees the buffer allocated by any of the credentials api functions.
         /// </summary>
         /// <param name="handle">Pointer to the buffer to be freed.</param>
-        /// <exception cref="Win32Exception">on native api error</exception>
-        void CredFree(IntPtr handle);
+        /// <returns>
+        /// 0 on success; otherwise Win32 error code 
+        /// </returns>
+        int CredFree(IntPtr handle);
         /// <summary>
         /// Returns <see cref="NativeCredential"/> containing the matching
         /// credential if found; otherwise, null
@@ -86,12 +90,11 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <see cref="CredentialType"/> defined types.
         /// </param>
         /// <param name="reservedFlag">Currently reserved and must be zero.</param>
+        /// <param name="credential">on success stores the found credential</param>
         /// <returns>
-        /// <see cref="NativeCredential"/> containing the matching credential if found;
-        /// otherwise, null
+        /// 0 on success; otherwise Win32 error code 
         /// </returns>
-        /// <exception cref="Win32Exception">on native api error</exception>
-        NativeCredential? CredRead(string target, CredentialType type, int reservedFlag);
+        int CredRead(string target, CredentialType type, int reservedFlag, out NativeCredential? credential);
         /// <summary>
         /// Creates or updates a credential
         /// </summary>
@@ -102,7 +105,9 @@ namespace Moreland.Security.Win32.CredentialStore
         /// Flags that control the function's operation.
         /// <see cref="NativeApi.PreserveFlag"/> for valid values.
         /// </param>
-        /// <exception cref="Win32Exception">on native api error</exception>
-        void CredWrite(NativeApi.Credential credential, int flags);
+        /// <returns>
+        /// 0 on success; otherwise Win32 error code 
+        /// </returns>
+        int CredWrite(NativeApi.Credential credential, int flags);
     }
 }

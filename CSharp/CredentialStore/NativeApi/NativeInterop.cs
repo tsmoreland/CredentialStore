@@ -15,22 +15,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
     /// <summary>
     /// <inheritdoc cref="INativeInterop"/>
     /// </summary>
-    internal sealed class NativeInterop : INativeInterop
+    internal sealed partial class NativeInterop : INativeInterop
     {
-        private readonly ICredentialApi _credentialApi;
         private readonly ICriticalCredentialHandleFactory _criticalCredentialHandleFactory;
-        private readonly IMarshalService _marshalService;
-        private readonly IErrorCodeToStringService _errorCodeToStringService;
-        private readonly ILoggerAdapter _logger;
-        private const int NativeSuccess = 0;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="NativeInterop"/> class.
@@ -38,87 +32,81 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <exception cref="ArgumentNullException">
         /// if any of the provided arguments are null
         /// </exception>
-        public NativeInterop(ICredentialApi credentialApi, ICriticalCredentialHandleFactory criticalCredentialHandleFactory, IMarshalService marshalService, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public NativeInterop(ICriticalCredentialHandleFactory criticalCredentialHandleFactory)
         {
-            _credentialApi = credentialApi ?? throw new ArgumentNullException(nameof(credentialApi));
             _criticalCredentialHandleFactory = criticalCredentialHandleFactory ??
                                                throw new ArgumentNullException(nameof(criticalCredentialHandleFactory));
-            _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
-            _errorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
         /// <inheritdoc cref="INativeInterop.CredRead"/>
         /// </summary>
-        public Credential? CredRead(string target, CredentialType type, int reservedFlag)
+        public int CredRead(string target, CredentialType type, int reservedFlag, out Credential? credential)
         {
-            int result = _credentialApi.CredRead(target, type, reservedFlag, out var credentialPtr);
-            return result switch
+            if (NativeMethods.CredRead(target, type, reservedFlag, out var credentialPtr))
             {
-                NativeSuccess => GetCredentialFromAndFreePtr(credentialPtr),
-                (int)ExpectedError.NotFound => null,
-                _ => LogAndThrowWin32Exception<Credential?>(result),
-            };
+                using var handle = _criticalCredentialHandleFactory.Build(credentialPtr);
+                if (handle.IsValid && handle.NativeCredential != null)
+                    credential = handle.NativeCredential;
+                else
+                    credential = null;
+
+                return 0;
+            }
+            else
+            {
+                credential = null;
+                return Marshal.GetLastWin32Error();
+            }
         }
 
         /// <summary>
         /// <inheritdoc cref="INativeInterop.CredWrite"/>
         /// </summary>
-        public void CredWrite(Credential credential, int flags)
+        public int CredWrite(Credential credential, int flags)
         {
             var nativeCredentialPtr = IntPtr.Zero;
             try
             {
-                nativeCredentialPtr = _marshalService.AllocHGlobal(_marshalService.SizeOf(credential));
-                _marshalService.StructureToPtr(credential, nativeCredentialPtr, false);
+                nativeCredentialPtr = Marshal.AllocHGlobal(Marshal.SizeOf(credential));
+                Marshal.StructureToPtr(credential, nativeCredentialPtr, false);
 
-                int result = _credentialApi.CredWrite(nativeCredentialPtr, flags);
-                if (result != NativeSuccess)
-                    LogAndThrowWin32Exception(result);
+                return NativeMethods.CredWrite(nativeCredentialPtr, flags)
+                    ? 0
+                    : Marshal.GetLastWin32Error();
             }
             finally
             {
                 if (nativeCredentialPtr != IntPtr.Zero)
-                    _marshalService.FreeHGlobal(nativeCredentialPtr);
+                    Marshal.FreeHGlobal(nativeCredentialPtr);
             }
         }
 
         /// <summary>
         /// <inheritdoc cref="INativeInterop.CredDelete"/>
         /// </summary>
-        public void CredDelete(string target, int type, int flags)
-        {
-            var successResultCodes = new[] { NativeSuccess, (int)ExpectedError.NotFound };
-            int result = _credentialApi.CredDelete(target, type, flags);
-            if (!successResultCodes.Contains(result))
-                LogAndThrowWin32Exception(result);
-        }
+        public int CredDelete(string target, int type, int flags) =>
+            NativeMethods.CredDelete(target, type, flags)
+                ? 0
+                : Marshal.GetLastWin32Error();
 
         /// <summary>
         /// <inheritdoc cref="INativeInterop.CredEnumerate"/>
         /// </summary>
         public IEnumerable<Credential> CredEnumerate(string? filter, int flag)
         {
-            int result = _credentialApi.CredEnumerate(filter, flag, out int count, out IntPtr credentialsPtr);
-            if (result != NativeSuccess)
-            {
-                LogAndThrowWin32Exception(result);
-                yield break;
-            }
+            if (!NativeMethods.CredEnumerate(filter, flag, out int count, out IntPtr credentialsPtr))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
 
             try
             {
                 for (int i = 0; i < count; i++)
                 {
                     var nextPtr = IntPtr.Add(credentialsPtr, IntPtr.Size * i);
-                    var currentPtr = _marshalService.ReadIntPtr(nextPtr);
-                    var nativeCredential = _marshalService.PtrToStructure<Credential>(currentPtr);
+                    var currentPtr = Marshal.ReadIntPtr(nextPtr);
+                    var nativeCredential = Marshal.PtrToStructure<Credential>(currentPtr);
                     if (nativeCredential == null)
-                    {
-                        LogAndThrowWin32Exception(result);
-                        yield break;
-                    }
+                        continue;
 
                     Credential copy = nativeCredential;
                     yield return copy;
@@ -126,51 +114,16 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             }
             finally
             {
-                result = _credentialApi.CredFree(credentialsPtr);
-                if (result != NativeSuccess)
-                    LogAndThrowWin32Exception(result);
+                NativeMethods.CredFree(credentialsPtr);
             }
         }
 
         /// <summary>
         /// <inheritdoc cref="INativeInterop.CredFree"/>
         /// </summary>
-        public void CredFree(IntPtr handle)
-        {
-            int result = _credentialApi.CredFree(handle);
-            if (result != NativeSuccess)
-                throw new Win32Exception(_marshalService.GetLastWin32Error());
-        }
-
-        private Credential? GetCredentialFromAndFreePtr(IntPtr credentialPtr, [CallerMemberName] string callerMemberName = "")
-        {
-            if (credentialPtr == IntPtr.Zero)
-            {
-                _logger.Warning("null credential pointer, unable to convert to Credential object", callerMemberName);
-                return null;
-            }
-
-            using var handle = _criticalCredentialHandleFactory.Build(credentialPtr);
-            if (handle.IsValid && handle.NativeCredential != null)
-            {
-                // make a copy so we're not referencing the pinned struct
-                Credential nativeCredential = handle.NativeCredential;
-                return nativeCredential;
-            }
-
-            _logger.Warning("Unable to get structure from credential pointer");
-            return null;
-        }
-        private T LogAndThrowWin32Exception<T>(int error)
-        {
-            LogAndThrowWin32Exception(error);
-            return default!; //unreachable
-        }
-        private void LogAndThrowWin32Exception(int error)
-        {
-            _logger.Error(_errorCodeToStringService.GetMessageFor(error));
-            throw new Win32Exception(error);
-        }
-
+        public int CredFree(IntPtr handle) =>
+            NativeMethods.CredFree(handle)
+                ? 0
+                : Marshal.GetLastWin32Error();
     }
 }
