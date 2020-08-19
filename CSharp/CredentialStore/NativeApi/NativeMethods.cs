@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright © 2020 Terry Moreland
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
 // to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -11,17 +11,29 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
+
 using System;
 using System.Runtime.InteropServices;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
-    internal interface ICredentialApi
+    internal static class NativeMethods
     {
-        int CredDelete([MarshalAs(UnmanagedType.LPWStr)] string target, int type, int flags);
-        int CredEnumerate([MarshalAs(UnmanagedType.LPWStr)] string? filter, int flag, out int count, out IntPtr credentialsPtr);
-        int CredFree([In] IntPtr cred);
-        int CredRead(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
-        int CredWrite(IntPtr userCredential, int flags);
+        public const int Success = 0;
+
+        [DllImport("Advapi32.dll", EntryPoint = "CredReadW", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern bool CredRead([MarshalAs(UnmanagedType.LPWStr)] string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
+
+        [DllImport("Advapi32.dll", SetLastError = true, EntryPoint = "CredWriteW", CharSet = CharSet.Unicode)]
+        public static extern bool CredWrite(IntPtr userCredential, int flags);
+
+        [DllImport("Advapi32.dll", EntryPoint = "CredFree", SetLastError = true)]
+        public static extern bool CredFree([In] IntPtr cred);
+
+        [DllImport("advapi32.dll", EntryPoint = "CredDeleteW", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern bool CredDelete([MarshalAs(UnmanagedType.LPWStr)] string target, int type, int flags);
+
+        [DllImport("advapi32", EntryPoint = "CredEnumerateW", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern bool CredEnumerate([MarshalAs(UnmanagedType.LPWStr)] string? filter, int flag, out int count, out IntPtr credentialsPtr);
     }
 }

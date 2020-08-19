@@ -25,8 +25,6 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// </summary>
     internal sealed class CriticalCredentialHandle : CriticalHandleZeroOrMinusOneIsInvalid, ICriticalCredentialHandle
     {
-        private readonly ICredentialApi _credentialApi;
-        private readonly IMarshalService _marshalService;
         private readonly IErrorCodeToStringService _errorCodeToStringService;
         private readonly ILoggerAdapter _logger;
 
@@ -34,15 +32,11 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// Initializes a new instance of the <see cref="CriticalCredentialHandle"/> class.
         /// </summary>
         /// <param name="handle">handle to <see cref="Credential"/></param>
-        /// <param name="credentialApi">wrapper around Win32 extern methods</param>
-        /// <param name="marshalService">wrapper around <see cref="Marshal"/></param>
         /// <param name="errorCodeToStringService">error code to string translation service</param>
         /// <param name="logger">logger</param>
-        public CriticalCredentialHandle(IntPtr handle, ICredentialApi credentialApi, IMarshalService marshalService, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+        public CriticalCredentialHandle(IntPtr handle, IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
         {
             SetHandle(handle);
-            _credentialApi = credentialApi ?? throw new ArgumentNullException(nameof(credentialApi));
-            _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
             _errorCodeToStringService = errorCodeToStringService ??
                                         throw new ArgumentNullException(nameof(errorCodeToStringService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -58,7 +52,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// otherwise null
         /// </summary>
         public Credential? NativeCredential => IsValid
-            ? (Credential?)_marshalService.PtrToStructure(handle, typeof(Credential))
+            ? (Credential?)Marshal.PtrToStructure(handle, typeof(Credential))
             : null;
 
         /// <summary>
@@ -71,13 +65,19 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
 
             try
             {
-                _credentialApi.CredFree(handle);
+                NativeMethods.CredFree(handle);
                 SetHandleAsInvalid();
                 return true;
             }
             catch (Win32Exception ex)
             {
                 _logger.Error(_errorCodeToStringService.GetMessageFor(ex.NativeErrorCode));
+                return false;
+            }
+            catch (Exception ex) when (ex is NullReferenceException)
+            {
+                // occurs if exception happens during construction leaving these values as null.  Finalizer may still kick in
+                // alternate approach would be to trace the failure and supress finalize
                 return false;
             }
         }

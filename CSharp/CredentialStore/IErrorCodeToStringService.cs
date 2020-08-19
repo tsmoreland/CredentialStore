@@ -11,14 +11,14 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-
-using System;
-
 namespace Moreland.Security.Win32.CredentialStore
 {
-    public interface IPointerMath
+    public interface IErrorCodeToStringService
     {
-        T? GetStructureAtOffsetOrNull<T>(IntPtr arrayPointer, int offset) where T : class;
-
+        /// <summary>
+        /// Gets the error message for <paramref name="errorCode"/> if known,
+        /// ottherwise generic error message
+        /// </summary>
+        string GetMessageFor(int errorCode);
     }
 }

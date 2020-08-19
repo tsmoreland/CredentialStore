@@ -23,48 +23,40 @@ namespace Moreland.Security.Win32.CredentialStore
     /// </summary>
     public sealed class CredentialManager : ICredentialManager
     {
-        private readonly ILoggerAdapter _logger;
         private readonly INativeInterop _nativeInterop;
+        private readonly IErrorCodeToStringService _errorCodeToStringService;
 
-        /// <summary>
-        /// Instantiates a new instance of the 
-        /// <see cref="CredentialManager"/> object
-        /// </summary>
-        /// <param name="logger">logger used to aid in debugging</param>
-        /// <exception cref="ArgumentNullException">
-        /// if <paramref name="logger"/> is null
-        /// </exception>
-        public CredentialManager(ILoggerAdapter logger)
-            : this(new NativeApi.CredentialManagerDependeniesAggregate(logger), logger)
+        public CredentialManager()
+            : this(new NativeApi.ErrorCodeToStringService(TraceLoggerAdapter.DiagnosticsLogger), TraceLoggerAdapter.DiagnosticsLogger)
         {
         }
 
-        private CredentialManager(NativeApi.ICredentialManagerDependeniesAggregate credentialManagerDependeniesAggregate, ILoggerAdapter logger)
-            : this(credentialManagerDependeniesAggregate.NativeInterop, logger)
+        private CredentialManager(IErrorCodeToStringService errorCodeToStringService, ILoggerAdapter logger)
+            : this(new NativeApi.NativeInterop(new NativeApi.CriticalCredentialHandleFactory(errorCodeToStringService, logger)), errorCodeToStringService)
         {
         }
-
 
         /// <summary>
         /// Instantiates a new instance of the 
         /// <see cref="CredentialManager"/> object
         /// </summary>
         /// <param name="nativeInterop">Win32 api wrappers</param>
-        /// <param name="logger">logger used to aid in debugging</param>
+        /// <param name="errorCodeToStringService">translates Win32 error codes to message</param>
         /// <exception cref="ArgumentNullException">
         /// if any of the provided arguments are null
         /// </exception>
-        public CredentialManager(INativeInterop nativeInterop, ILoggerAdapter logger)
+        public CredentialManager(INativeInterop nativeInterop, IErrorCodeToStringService errorCodeToStringService)
         {
             _nativeInterop = nativeInterop ?? throw new ArgumentNullException(nameof(nativeInterop));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _errorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
 
         }
 
         /// <summary>
         /// Returns all Credentials from the Users credential set
         /// </summary>
-        public IEnumerable<Credential> Credentials => GetCredentials(null, NativeApi.EnumerateFlag.EnumerateAllCredentials);
+        public IEnumerable<Credential> Credentials => 
+            GetCredentials(null, NativeApi.EnumerateFlag.EnumerateAllCredentials);
 
         /// <summary>
         /// Finds a credential with the given id value and optionally <see cref="CredentialType"/>
@@ -78,15 +70,18 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <exception cref="ArgumentException">
         /// if <paramref name="id"/> is null or empty or if returned credential structure is malformed
         /// </exception>
-        public Credential? Find(string id, CredentialType type = CredentialType.DomainPassword)
+        public Credential? Find(string id, CredentialType type = CredentialType.Generic)
         {
             if (string.IsNullOrEmpty(id))
                 throw new ArgumentException("id cannot be empty", nameof(id));
 
-            var nativeCredential = _nativeInterop.CredRead(id, type, 0);
-            return nativeCredential != null
-                ? new Credential(nativeCredential)
-                : null;
+            int result = _nativeInterop.CredRead(id, type, 0, out var nativeCredential);
+            return result switch
+            {
+                NativeApi.NativeMethods.Success => nativeCredential != null ? new Credential(nativeCredential) : null,
+                (int)NativeApi.ExpectedError.NotFound => null,
+                _ => throw new Win32Exception(result, _errorCodeToStringService.GetMessageFor(result)),
+            };
         }
 
         /// <summary>
@@ -121,8 +116,9 @@ namespace Moreland.Security.Win32.CredentialStore
             using var intermediate = new NativeApi.IntermediateCredential(credential);
 
             var nativeCredential = intermediate.NativeCredential;
-            _nativeInterop.CredWrite(nativeCredential, 0);
-            _logger.Verbose($"{credential} successfully saved");
+            int result = _nativeInterop.CredWrite(nativeCredential, 0);
+            if (result != NativeApi.NativeMethods.Success)
+                throw new Win32Exception(result, _errorCodeToStringService.GetMessageFor(result));
         }
 
         /// <summary>
@@ -164,17 +160,9 @@ namespace Moreland.Security.Win32.CredentialStore
             if (string.IsNullOrEmpty(id))
                 throw new ArgumentException("id cannot be empty", nameof(id));
 
-            try
-            {
-                _nativeInterop.CredDelete(id, (int)type, 0);
-            }
-            catch (Win32Exception ex)
-            {
-                if (ex.NativeErrorCode != (int)NativeApi.ExpectedError.NotFound)
-                    throw;
-            }
-
-            _logger.Info($"{id} successfully deleted");
+            int result = _nativeInterop.CredDelete(id, (int)type, 0);
+            if (result != NativeApi.NativeMethods.Success && result != (int)NativeApi.ExpectedError.NotFound)
+                throw new Win32Exception(result, _errorCodeToStringService.GetMessageFor(result));
         }
 
         private IEnumerable<Credential> GetCredentials(string? filter, NativeApi.EnumerateFlag flag) =>

@@ -81,7 +81,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <exception cref="ArgumentException">
         /// if <paramref name="id"/> is null or empty or if returned credential structure is malformed
         /// </exception>
-        Credential? Find(string id, CredentialType type = CredentialType.DomainPassword);
+        Credential? Find(string id, CredentialType type = CredentialType.Generic);
         /// <summary>
         /// Returns all credentials matching wildcard based <paramref name="filter"/>
         /// </summary>
