@@ -97,6 +97,12 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// </summary>
         public int SizeOf<T>(T value) =>
             Marshal.SizeOf(value);
+
+        /// <summary>
+        /// <inheritdoc cref="IMarshalService.FreeCoTaskMem"/>
+        /// </summary>
+        public void FreeCoTaskMem(IntPtr ptr) =>
+            Marshal.FreeCoTaskMem(ptr);
     }
 
 }

@@ -12,7 +12,6 @@
 // 
 
 using System;
-using System.ComponentModel;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {

@@ -129,7 +129,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         public void CredReadShould_ReturnCredentialIfFound(CredentialFlag flag, CredentialType type, CredentialPeristence persistenceType)
         {
             var data = TestData.BuildRandomCredential(flag, type, persistenceType);
-            using var intermediate = new IntermediateCredential(data);
+            using var intermediate = new IntermediateCredential(data, _marshalService.Object);
             var handle = new Mock<ICriticalCredentialHandle>();
             handle
                 .SetupGet(h => h.NativeCredential)
@@ -200,9 +200,9 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             int errorCode = TestData.GetRandomInteger(0);
             _apiReturnValue = errorCode;
             var credential = TestData.BuildRandomCredential();
-            using var intermediate = new IntermediateCredential(credential);
-
-            Assert.Throws<Win32Exception>(() => _nativeInterop.CredWrite(intermediate.NativeCredential, TestData.GetRandomInteger()));
+            using var intermediate = new IntermediateCredential(credential, _marshalService.Object);
+            Assert.Throws<Win32Exception>(() =>
+                _nativeInterop.CredWrite(intermediate.NativeCredential, TestData.GetRandomInteger()));
         }
 
         [Test]
@@ -211,7 +211,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             int errorCode = TestData.GetRandomInteger(0);
             _apiReturnValue = errorCode;
             var credential = TestData.BuildRandomCredential();
-            using var intermediate = new IntermediateCredential(credential);
+            using var intermediate = new IntermediateCredential(credential, _marshalService.Object);
 
             try
             {
@@ -234,7 +234,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         {
             _apiReturnValue = 0;
             var credential = TestData.BuildRandomCredential();
-            using var intermediate = new IntermediateCredential(credential);
+            using var intermediate = new IntermediateCredential(credential, _marshalService.Object);
             Assert.DoesNotThrow(() => _nativeInterop.CredWrite(intermediate.NativeCredential, TestData.GetRandomInteger()));
         }
 
@@ -249,6 +249,17 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
 
             // use of .Any() is to force enumeration which will invoke the method
             Assert.Throws<Win32Exception>(() => _ = _nativeInterop.CredEnumerate(filter, flag).Any());
+        }
+
+        [Test]
+        public void CredEnumerateShould_NotThrowOnSuccess()
+        {
+            _apiReturnValue = 0;
+            var filter = TestData.GetRandomBool()
+                ? TestData.GetRandomString()
+                : null;
+            var flag = TestData.GetRandomInteger();
+            Assert.DoesNotThrow(() => _ = _nativeInterop.CredEnumerate(filter, flag).ToArray());
         }
     }
 }

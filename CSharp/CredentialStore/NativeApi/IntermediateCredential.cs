@@ -13,7 +13,6 @@
 
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
@@ -25,6 +24,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     internal sealed class IntermediateCredential : IDisposable
     {
         private readonly IntPtr _credentialBlob;
+        private readonly IMarshalService _marshalService;
 
         /// <summary>
         /// Instantiates a new instance of the 
@@ -34,6 +34,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// <see cref="CredentialStore.Credential"/> to be converted to 
         /// <see cref="Credential"/>
         /// </param>
+        /// <param name="marshalService">marshal services used to work with native memory</param>
         /// <exception cref="ArgumentNullException">
         /// if <paramref name="credential"/> is null
         /// </exception>
@@ -41,10 +42,11 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
         /// if <see cref="CredentialStore.Credential.Id"/> or 
         /// <see cref="CredentialStore.Credential.UserName"/> are null or empty
         /// </exception>
-        public IntermediateCredential(CredentialStore.Credential credential)
+        public IntermediateCredential(CredentialStore.Credential credential, IMarshalService marshalService)
         {
             if (credential == null)
                 throw new ArgumentNullException(nameof(credential));
+            _marshalService = marshalService ?? throw new ArgumentNullException(nameof(marshalService));
 
             if (string.IsNullOrEmpty(credential.Id))
                 throw new ArgumentException("Id cannot be empty");
@@ -56,7 +58,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 _credentialBlob =  IntPtr.Zero;
             else
             {
-                _credentialBlob = Marshal.StringToCoTaskMemUni(credential.Secret);
+                _credentialBlob = _marshalService.StringToCoTaskMemUni(credential.Secret);
                 credentialSize = Encoding.Unicode.GetBytes(credential.Secret).Length;
             }
 
@@ -98,7 +100,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             }
 
             if (_credentialBlob != IntPtr.Zero)
-                Marshal.FreeCoTaskMem(_credentialBlob);
+                _marshalService.FreeCoTaskMem(_credentialBlob);
 
             _disposed = true;
         }

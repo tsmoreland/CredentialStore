@@ -80,6 +80,12 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 _logger.Error(_errorCodeToStringService.GetMessageFor(ex.NativeErrorCode));
                 return false;
             }
+            catch (Exception ex) when (ex is NullReferenceException)
+            {
+                // occurs if exception happens during construction leaving these values as null.  Finalizer may still kick in
+                // alternate approach would be to trace the failure and supress finalize
+                return false;
+            }
         }
     }
 }

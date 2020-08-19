@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Moreland.Security.Win32.CredentialStore.NativeApi;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
@@ -25,6 +26,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
     {
         private Mock<ILoggerAdapter> _logger = null!;
         private Mock<INativeInterop> _nativeInterop = null!;
+        private Mock<NativeApi.IMarshalService> _marshalService = null!;
         private CredentialManager _manager = null!;
         private TestData? _dataSource;
         private NativeApi.IntermediateCredential? _addedCredential;
@@ -33,19 +35,23 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         public void Setup()
         {
             _nativeInterop = new Mock<INativeInterop>();
+            _marshalService = new Mock<IMarshalService>();
             _logger = new Mock<ILoggerAdapter>();
 
-            _manager = new CredentialManager(_nativeInterop.Object, _logger.Object);
+            _manager = new CredentialManager(_nativeInterop.Object, _marshalService.Object, _logger.Object);
             _targetDeleted = false;
         }
 
         [Test]
         public void ConstructorShould_ThrowArgumentNullException_WhenArgumentsAreNull()
         {
-            var ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _logger.Object));
+            var ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(null!, _marshalService.Object, _logger.Object));
             Assert.That(ex.ParamName, Is.EqualTo("nativeInterop"));
 
-            ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeInterop.Object, null!));
+            ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeInterop.Object, null!, _logger.Object));
+            Assert.That(ex.ParamName, Is.EqualTo("marshalService"));
+
+            ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeInterop.Object, _marshalService.Object, null!));
             Assert.That(ex.ParamName, Is.EqualTo("logger"));
         }
 
@@ -219,7 +225,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         private void InitializeFromTestData(TestData dataSource, Credential? toAdd = null, bool successfulAdd = true, string idNotFound = null!, int? lastErrorCode = null)
         {
             if (toAdd != null)
-                _addedCredential = new NativeApi.IntermediateCredential(toAdd);
+                _addedCredential = new NativeApi.IntermediateCredential(toAdd, _marshalService.Object);
 
             _dataSource = dataSource;
             _nativeInterop
