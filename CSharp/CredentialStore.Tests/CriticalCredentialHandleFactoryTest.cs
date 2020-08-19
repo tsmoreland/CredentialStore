@@ -22,8 +22,6 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
     [TestFixture]
     public sealed class CriticalCredentialHandleFactoryTest
     {
-        private Mock<ICredentialApi> _credentialApi = null!;
-        private Mock<IMarshalService> _marshalService = null!;
         private Mock<IErrorCodeToStringService> _errorCodeToStringService = null!;
         private Mock<ILoggerAdapter> _logger = null!;
         private ICriticalCredentialHandleFactory _factory = null!;
@@ -31,36 +29,24 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [SetUp]
         public void Setup()
         {
-            _credentialApi = new Mock<ICredentialApi>();
-            _marshalService = new Mock<IMarshalService>();
             _errorCodeToStringService = new Mock<IErrorCodeToStringService>();
             _logger = new Mock<ILoggerAdapter>();
 
-            _factory = new CriticalCredentialHandleFactory(_credentialApi.Object, _marshalService.Object,
-                _errorCodeToStringService.Object, _logger.Object);
+            _factory = new CriticalCredentialHandleFactory(_errorCodeToStringService.Object, _logger.Object);
         }
 
         [Test]
-        public void ConstructorShould_ThrowArgumentNullExceptionWhenArgumentsAreNull()
+        public void Constructor_ThrowsArgumentNull_WhenErrorCodeToStringServiceIsNull()
         {
             var ex = Assert.Throws<ArgumentNullException>(() =>
-                _ = new CriticalCredentialHandleFactory(null!, _marshalService.Object,
-                    _errorCodeToStringService.Object, _logger.Object));
-            Assert.That(ex.ParamName, Is.EqualTo("credentialApi"));
-
-            ex = Assert.Throws<ArgumentNullException>(() =>
-                _ = new CriticalCredentialHandleFactory(_credentialApi.Object, null!,
-                    _errorCodeToStringService.Object, _logger.Object));
-            Assert.That(ex.ParamName, Is.EqualTo("marshalService"));
-
-            ex = Assert.Throws<ArgumentNullException>(() =>
-                _ = new CriticalCredentialHandleFactory(_credentialApi.Object, _marshalService.Object,
-                    null!, _logger.Object));
+                _ = new CriticalCredentialHandleFactory(null!, _logger.Object));
             Assert.That(ex.ParamName, Is.EqualTo("errorCodeToStringService"));
-
-            ex = Assert.Throws<ArgumentNullException>(() =>
-                _ = new CriticalCredentialHandleFactory(_credentialApi.Object, _marshalService.Object,
-                    _errorCodeToStringService.Object, null!));
+        }
+        [Test]
+        public void Constructor_ThrowsArgumentNull_WhenLoggerIsNull()
+        {
+            var ex = Assert.Throws<ArgumentNullException>(() =>
+                _ = new CriticalCredentialHandleFactory(_errorCodeToStringService.Object, null!));
             Assert.That(ex.ParamName, Is.EqualTo("logger"));
         }
 
