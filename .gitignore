@@ -351,3 +351,7 @@ MigrationBackup/
 
 .vscode/
 /.sonarlint/Util.slconfig
+
+cpp/build
+cpp/CMakeFiles
+cpp/target
