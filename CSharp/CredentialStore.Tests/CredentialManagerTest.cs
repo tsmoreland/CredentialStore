@@ -14,7 +14,9 @@
 using Moq;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using NativeCredential = Moreland.Security.Win32.CredentialStore.NativeApi.Credential;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
@@ -27,7 +29,9 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         private CredentialManager _manager = null!;
         private NativeCredential _credential = null!;
         private NativeCredential? _outputCredential;
+        private IEnumerable<NativeCredential> _credentials = null!;
         private int _apiErrorCode;
+
 
         private delegate void CredReadCallback(string target, CredentialType type, int reservedFlag, out NativeCredential? credentialPtr);
 
@@ -58,7 +62,21 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                 .Setup(api => api.CredRead(It.IsAny<string>(), It.IsAny<CredentialType>(), It.IsAny<int>(), out _outputCredential))
                 .Callback(new CredReadCallback((string target, CredentialType type, int flag, out NativeCredential? ptr) => ptr = _outputCredential)) 
                 .Returns(() => _apiErrorCode);
+            _nativeInterop
+                .Setup(api => api.CredWrite(It.IsAny<NativeCredential>(), It.IsAny<int>()))
+                .Returns(() => _apiErrorCode);
+            _nativeInterop
+                .Setup(api => api.CredEnumerate(It.IsAny<string?>(), It.IsAny<int>()))
+                .Returns(() => _credentials);
+        }
+        private Mock<INativeInterop> SetupNativeInteropThatThrows(int errorCode)
+        {
+            var nativeInterop = new Mock<INativeInterop>();
+            nativeInterop
+                .Setup(api => api.CredEnumerate(It.IsAny<string?>(), It.IsAny<int>()))
+                .Throws(new Win32Exception(errorCode));
 
+            return nativeInterop;
         }
 
         [Test]
@@ -80,6 +98,24 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         {
             var exception = Assert.Throws<ArgumentNullException>(() => _manager.Add(null!));
             Assert.That(exception.ParamName, Is.EqualTo("credential"));
+        }
+
+        [Test]
+        public void Add_ThrowsWin32Exception_WhenApiReturnsError()
+        {
+            _apiErrorCode = TestData.GetRandomInteger(0);
+            var credential = TestData.BuildRandomCredential();
+
+            Assert.Throws<Win32Exception>(() => _manager.Add(credential));
+        }
+
+        [Test]
+        public void Add_NoThrow_OnSuccess()
+        {
+            _apiErrorCode = 0;
+            var credential = TestData.BuildRandomCredential();
+
+            Assert.DoesNotThrow(() => _manager.Add(credential));
         }
 
         [Test]
@@ -118,5 +154,73 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.That(actual, Is.Not.Null);
             Assert.That(actual?.Id, Is.EqualTo(_outputCredential.TargetName));
         }
+
+        [Test]
+        public void Find_ReturnsNull_WhenApiReturnsNotFound()
+        {
+            _apiErrorCode = (int)NativeApi.ExpectedError.NotFound;
+            _outputCredential = _credential;
+            string id = TestData.GetRandomString();
+            var type = TestData.GetRandomEnum(CredentialType.Unknown);
+
+            var actual = _manager.Find(id, type);
+
+            Assert.That(actual, Is.Null);
+        }
+
+        [Test]
+        public void Find_ReturnsCredentials_OnSuccess()
+        {
+            _credentials = TestData.BuildRandomNativeCredentials().ToArray();
+
+            var actualCredentials = _manager.Find(TestData.GetRandomString(), TestData.GetRandomBool());
+
+            Assert.That(actualCredentials.Select(ac => ac.Id), Is.EquivalentTo(_credentials.Select(c => c.TargetName)));
+        }
+
+        [Test]
+        public void Find_Rethrows_WhenCredEnumerateThrows()
+        {
+            int eFail;
+            unchecked
+            {
+                eFail = (int)0x80004005;
+            }
+            var nativeInterop = SetupNativeInteropThatThrows(eFail);
+            var manager = new CredentialManager(nativeInterop.Object, _errorCodeToStringService.Object);
+
+            var ex = Assert.Throws<Win32Exception>(() =>
+                _ = manager.Find(TestData.GetRandomString(), TestData.GetRandomBool()).ToArray());
+            Assert.That(ex.ErrorCode, Is.EqualTo(eFail));
+
+        }
+
+        [Test]
+        public void Credentials_ReturnsAll_OnSuccess()
+        {
+            _credentials = TestData.BuildRandomNativeCredentials().ToArray();
+
+            var actualCredentials = _manager.Credentials;
+
+            Assert.That(actualCredentials.Select(ac => ac.Id), Is.EquivalentTo(_credentials.Select(c => c.TargetName)));
+        }
+
+        [Test]
+        public void Credentials_Rethrows_WhenCredEnumerateThrows()
+        {
+            int eFail;
+            unchecked
+            {
+                eFail = (int)0x80004005;
+            }
+            var nativeInterop = SetupNativeInteropThatThrows(eFail);
+            var manager = new CredentialManager(nativeInterop.Object, _errorCodeToStringService.Object);
+
+            var ex = Assert.Throws<Win32Exception>(() =>
+                _ = manager.Credentials.ToArray());
+            Assert.That(ex.ErrorCode, Is.EqualTo(eFail));
+        }
+
+
     }
 }

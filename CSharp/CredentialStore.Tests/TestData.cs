@@ -18,6 +18,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography;
 using System.Text;
+using NativeCredential = Moreland.Security.Win32.CredentialStore.NativeApi.Credential;
 
 namespace Moreland.Security.Win32.CredentialStore.Tests
 {
@@ -84,6 +85,24 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         public bool IncludesTarget { get; }
 
 
+        public static NativeCredential BuildRandomNativeCredential() =>
+            new NativeCredential 
+            { 
+                TargetName = GetRandomString(),
+                Type = (int)GetRandomEnum(CredentialType.Unknown),
+                Comment = GetRandomString(),
+                CredentialBlob = IntPtr.Zero,
+                CredentialBlobSize = 0,
+                Persist = (int)GetRandomEnum(CredentialPeristence.Unknown),
+                AttributeCount = 0,
+                Attributes = IntPtr.Zero,
+                TargetAlias = null,
+                UserName = GetRandomString(),
+            };
+        public static IEnumerable<NativeCredential> BuildRandomNativeCredentials() =>
+            Enumerable.Range(0, Math.Abs(GetRandomInteger()) % 10)
+                .Select(i => BuildRandomNativeCredential());
+
         public static Credential BuildRandomCredential() =>
             BuildRandomCredential(GetRandomEnum<CredentialFlag>(), GetRandomEnum(CredentialType.Unknown),
                 GetRandomEnum(CredentialPeristence.Unknown));
@@ -91,6 +110,10 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             CredentialPeristence persistanceType) =>
             new Credential($"{Guid.NewGuid():N}@{Guid.NewGuid():N}", $"user-{Guid.NewGuid():N}",
                 $"secret-{Guid.NewGuid():N}", flags, type, persistanceType, DateTime.Now);
+
+        public static IEnumerable<Credential> BuildRandomCredentials() =>
+            Enumerable.Range(0, Math.Abs(GetRandomInteger()) % 10)
+                .Select(i => BuildRandomCredential());
 
         private static NativeApi.Credential BuildRandomNativeCredential(CredentialFlag flags, CredentialType type,
             CredentialPeristence persistanceType) =>
@@ -120,6 +143,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             };
             return credential;
         }
+
 
         #region IDisposable
 
