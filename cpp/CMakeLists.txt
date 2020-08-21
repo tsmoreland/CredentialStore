@@ -39,4 +39,9 @@ endif()
 
 include(CMake/GlobalSettingsInclude.cmake OPTIONAL)
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/target)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/target)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/target)
+
+#include_directories(include)
 add_subdirectory(src)

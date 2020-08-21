@@ -30,7 +30,7 @@ namespace win32::credential_store
     {
     public:
         using string_type = std::basic_string<TCHAR>;
-        using optional_time_point = std::optional<std::chrono::time_point>;
+        using optional_time_point = std::optional<std::chrono::time_point<std::chrono::system_clock>>;
         using deconstruct_type = std::tuple<string_type, string_type, string_type, credential_type, persistence_type, optional_time_point>;
 
         credential(string_type const& id, string_type const& username, string_type const& secret,credential_type const credential_type, persistence_type const persistence_type, optional_time_point const & last_updated)
