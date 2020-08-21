@@ -221,6 +221,28 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.That(ex.ErrorCode, Is.EqualTo(eFail));
         }
 
+        [Test]
+        public void Delete_ThrowsArgumentNullException_WhenArgumentIsNull()
+        {
+            var ex = Assert.Throws<ArgumentNullException>(() => _manager.Delete(null!));
+            Assert.That(ex.ParamName, Is.EqualTo("credential"));
+        }
+
+        [Test]
+        public void Delete_ThrowsArgumentException_WhenIdIsNull()
+        {
+            var credentialType = TestData.GetRandomEnum<CredentialType>();
+            var ex = Assert.Throws<ArgumentException>(() => _manager.Delete(null!, credentialType));
+            Assert.That(ex.ParamName, Is.EqualTo("id"));
+        }
+
+        [Test]
+        public void Delete_ThrowsArgumentException_WhenIdIsEmpty()
+        {
+            var credentialType = TestData.GetRandomEnum<CredentialType>();
+            var ex = Assert.Throws<ArgumentException>(() => _manager.Delete(string.Empty, credentialType));
+            Assert.That(ex.ParamName, Is.EqualTo("id"));
+        }
 
     }
 }
