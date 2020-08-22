@@ -20,8 +20,7 @@ jobs:
         submodules: true
 
     - name: setup visual studio environment
-      shell: powershell
-      run: & 'C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat'
+      run: & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
 
     - name: Download Ninja and CMake
       id: cmake_and_ninja
