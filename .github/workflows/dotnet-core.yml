@@ -6,11 +6,13 @@ on:
     # if/when C++ implementation is added
     paths-ignore:
       - cpp/**
+      - .github/**
   pull_request:
     branches: [ master, develop ]
     # if/when C++ implementation is added
     paths-ignore:
       - cpp/**
+      - .github/**
 
 jobs:
   build:
