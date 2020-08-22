@@ -41,9 +41,6 @@ jobs:
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${cmake_dir}" cmake_dir)
         message("::set-output name=cmake_dir::${cmake_dir}")
 
-    - name: get location
-      run: |
-        dir
     - name: Configure
       shell: cmake -P {0}
       working-directory: ./cpp
@@ -100,6 +97,7 @@ jobs:
 
 #    - name: Run tests
 #      shell: cmake -P {0}
+#      working-directory: ./cpp
 #      run: |
 #        include(ProcessorCount)
 #        ProcessorCount(N)
@@ -119,11 +117,11 @@ jobs:
 
 #    - name: Pack
 #      working-directory: instdir
-#      run: ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake -E tar cJfv ../${{ matrix.config.artifact }} .
+#      run: ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake -E tar cJfv ../windows-msvc.tar.xz .
 
 #    - name: Upload
 #      uses: actions/upload-artifact@v1
 #      with:
-#        path: ./${{ matrix.config.artifact }}
-#        name: ${{ matrix.config.artifact }}
+#        path: ./windows-msvc.tar.xz
+#        name: windows-msvc.tar.xz
         
