@@ -13,8 +13,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      working-directory: ./cpp
       
     steps:
     - uses: actions/checkout@v2
@@ -48,6 +46,7 @@ jobs:
         dir
     - name: Configure
       shell: cmake -P {0}
+      working-directory: ./cpp
       run: |
         set(ENV{CC} cl)
         set(ENV{CXX} cl)
@@ -80,6 +79,7 @@ jobs:
         
     - name: Build
       shell: cmake -P {0}
+      working-directory: ./cpp
       run: |
         set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
 
