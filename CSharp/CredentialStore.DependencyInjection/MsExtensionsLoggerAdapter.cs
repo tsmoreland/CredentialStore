@@ -30,7 +30,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         /// <param name="logger"><see cref="ILogger"/> wrapped by this class, it is used to perform the actual logging</param>
         /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null.</exception>
-        public MsExtensionsLoggerAdapter(ILogger logger)
+        public MsExtensionsLoggerAdapter(ILogger<ICredentialManager> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
