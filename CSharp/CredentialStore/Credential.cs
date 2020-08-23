@@ -39,9 +39,6 @@ namespace Moreland.Security.Win32.CredentialStore
                     // .. log this .. it should be at most 512 but i've had ones come back higher
                 }
 
-                if (credential.CredentialBlobSize > (uint)int.MaxValue)
-                    throw new ArgumentException($"secret is length greater than maximum supported value {int.MaxValue / sizeof(char)}");
-
                 Secret = Marshal.PtrToStringUni(credential.CredentialBlob, (credential.CredentialBlobSize / sizeof(char))) ?? string.Empty;
             }
 

@@ -11,10 +11,37 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-using System.Runtime.CompilerServices;
+using System;
 
-[assembly: InternalsVisibleTo("Moreland.Security.Win32.CredentialStore.Tests")]
-[assembly: InternalsVisibleTo("Moreland.Security.Win32.CredentialStore.DependencyInjection")]
+namespace Moreland.Security.Win32.CredentialStore
+{
+    /// <summary>
+    /// <inheritdoc cref="ILoggerAdapter"/>
+    /// </summary>
+    public sealed class NullLoggerAdapter : ILoggerAdapter
+    {
+        /// <inheritdoc cref="ILoggerAdapter.Error(string, Exception?, string)"/>
+        public void Error(string message, Exception? exception = null, string callerMemberName = "")
+        {
+            // intentionally empty.
+        }
 
-// for unit-testing, needed to generate mock for internal interfaces
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2, PublicKey=0024000004800000940000000602000000240000525341310004000001000100c547cac37abd99c8db225ef2f6c8a3602f3b3606cc9891605d02baa56104f4cfc0734aa39b93bf7852f7d9266654753cc297e7d2edfe0bac1cdcf9f717241550e0a7b191195b7667bb4f64bcb8e2121380fd1d9d46ad2d92d2d15605093924cceaf74c4861eff62abf69b9291ed0a340e113be11e6a7d3113e92484cf7045cc7")]
+        /// <inheritdoc cref="ILoggerAdapter.Info(string, string)"/>
+        public void Info(string message, string callerMemberName = "")
+        {
+            // intentionally empty.
+        }
+
+        /// <inheritdoc cref="ILoggerAdapter.Verbose(string, string)"/>
+        public void Verbose(string message, string callerMemberName = "")
+        {
+            // intentionally empty.
+        }
+
+        /// <inheritdoc cref="ILoggerAdapter.Warning(string, string)"/>
+        public void Warning(string message, string callerMemberName = "")
+        {
+            // intentionally empty.
+        }
+    }
+}

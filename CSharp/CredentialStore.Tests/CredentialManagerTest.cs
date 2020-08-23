@@ -68,6 +68,9 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             _nativeInterop
                 .Setup(api => api.CredEnumerate(It.IsAny<string?>(), It.IsAny<int>()))
                 .Returns(() => _credentials);
+            _nativeInterop
+                .Setup(api => api.CredDelete(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()))
+                .Returns(() => _apiErrorCode);
         }
         private Mock<INativeInterop> SetupNativeInteropThatThrows(int errorCode)
         {
@@ -91,6 +94,12 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         {
             var ex = Assert.Throws<ArgumentNullException>(() => _ = new CredentialManager(_nativeInterop.Object, null!));
             Assert.That(ex.ParamName, Is.EqualTo("errorCodeToStringService"));
+        }
+
+        [Test]
+        public void Constructor_NoException_WhenUsingDefaultConstructor()
+        {
+            Assert.DoesNotThrow(() => _ = new CredentialManager());
         }
 
         [Test]
@@ -244,5 +253,40 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Assert.That(ex.ParamName, Is.EqualTo("id"));
         }
 
+        [Test]
+        public void Delete_NoException_WhenArgumentsAreValid()
+        {
+            var credential = TestData.BuildRandomCredential();
+
+            Assert.DoesNotThrow(() => _manager.Delete(credential));
+        }
+
+        [Test]
+        public void Delete_CallsNativeApi_WhenArgumentsAreValid()
+        {
+            var credential = TestData.BuildRandomCredential();
+
+            _manager.Delete(credential);
+
+            _nativeInterop.Verify(api => api.CredDelete(credential.Id, It.IsAny<int>(), It.IsAny<int>()), Times.Once);
+        }
+
+        [Test]
+        public void Delete_ThrowsWin32Excpetion_WhenNativeApiFails()
+        {
+            var credential = TestData.BuildRandomCredential();
+            _apiErrorCode = TestData.GetRandomInteger(0, (int)NativeApi.ExpectedError.NotFound);
+
+            Assert.Throws<Win32Exception>(() => _manager.Delete(credential));
+        }
+
+        [Test]
+        public void Delete_NoException_WhenApiResultIsNotFound()
+        {
+            var credential = TestData.BuildRandomCredential();
+            _apiErrorCode = (int)NativeApi.ExpectedError.NotFound;
+
+            Assert.DoesNotThrow(() => _manager.Delete(credential));
+        }
     }
 }
