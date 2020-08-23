@@ -12,29 +12,36 @@
 // 
 
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 
+// ReSharper disable once CheckNamespace
 namespace Moreland.Security.Win32.CredentialStore
 {
     /// <summary>
     /// <inheritdoc cref="ILoggerAdapter"/>
     /// </summary>
-    public sealed class TraceLoggerAdapter : ILoggerAdapter
+    internal sealed class MsExtensionsLoggerAdapter : ILoggerAdapter
     {
-        private static readonly TraceSwitch _credentialStoreSwitch =
-            new TraceSwitch("CredentialStore", ".NET Trace diagnostics switch");
+        private readonly ILogger _logger;
 
-        public static ILoggerAdapter DiagnosticsLogger => _diagnosticsLogger.Value;
-        private static readonly Lazy<ILoggerAdapter> _diagnosticsLogger =
-            new Lazy<ILoggerAdapter>(() => new TraceLoggerAdapter());
+        /// <summary>
+        /// Instantiates a new instance of the <see cref="MsExtensionsLoggerAdapter"/> class.
+        /// </summary>
+        /// <param name="logger"><see cref="ILogger"/> wrapped by this class, it is used to perform the actual logging</param>
+        /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null.</exception>
+        public MsExtensionsLoggerAdapter(ILogger logger)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
 
         /// <summary>
         /// <inheritdoc cref="ILoggerAdapter.Error"/>
         /// </summary>
         public void Error(string message, Exception? exception = null, [CallerMemberName] string callerMemberName = "")
         {
-            Trace.WriteLineIf(_credentialStoreSwitch.TraceError, (FormatMessage(TraceLevel.Error, message, callerMemberName)));
+            _logger.LogError(exception, FormatMessage(message, callerMemberName));
         }
 
         /// <summary>
@@ -42,7 +49,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         public void Info(string message, [CallerMemberName] string callerMemberName = "")
         {
-            Trace.WriteLineIf(_credentialStoreSwitch.TraceInfo, (FormatMessage(TraceLevel.Error, message, callerMemberName)));
+            _logger.LogInformation(FormatMessage(message, callerMemberName));
         }
 
         /// <summary>
@@ -50,7 +57,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         public void Verbose(string message, [CallerMemberName] string callerMemberName = "")
         {
-            Trace.WriteLineIf(_credentialStoreSwitch.TraceVerbose, (FormatMessage(TraceLevel.Error, message, callerMemberName)));
+            _logger.LogDebug(FormatMessage(message, callerMemberName));
         }
 
         /// <summary>
@@ -58,10 +65,9 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         public void Warning(string message, [CallerMemberName] string callerMemberName = "")
         {
-            Trace.WriteLineIf(_credentialStoreSwitch.TraceWarning, (FormatMessage(TraceLevel.Error, message, callerMemberName)));
+            _logger.LogWarning(FormatMessage(message, callerMemberName));
         }
-
-        private static string FormatMessage(TraceLevel level, string message, string callerMemberName) =>
-            $"[{DateTime.UtcNow:o}][{level}][{callerMemberName}]: {message}";
+        private static string FormatMessage(string message, string callerMemberName) =>
+            $"[{DateTime.UtcNow:o}][{callerMemberName}]: {message}";
     }
 }
