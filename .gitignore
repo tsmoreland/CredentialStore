@@ -355,3 +355,4 @@ MigrationBackup/
 cpp/build
 cpp/CMakeFiles
 cpp/target
+/CSharp/CredentialStore.DependencyInjection/Moreland.Security.Win32.CredentialStore.DependencyInjection.xmlMoreland.Security.Win32.CredentialStore.DependencyInjection.xml
