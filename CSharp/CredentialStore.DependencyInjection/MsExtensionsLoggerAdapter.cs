@@ -30,7 +30,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         /// <param name="logger"><see cref="ILogger"/> wrapped by this class, it is used to perform the actual logging</param>
         /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null.</exception>
-        public MsExtensionsLoggerAdapter(ILogger logger)
+        public MsExtensionsLoggerAdapter(ILogger<ICredentialManager> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -41,6 +41,8 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         public void Error(string message, Exception? exception = null, [CallerMemberName] string callerMemberName = "")
         {
+            if (string.IsNullOrWhiteSpace(message))
+                return;
             _logger.LogError(exception, FormatMessage(message, callerMemberName));
         }
 
@@ -49,6 +51,8 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         public void Info(string message, [CallerMemberName] string callerMemberName = "")
         {
+            if (string.IsNullOrWhiteSpace(message))
+                return;
             _logger.LogInformation(FormatMessage(message, callerMemberName));
         }
 
@@ -57,6 +61,8 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         public void Verbose(string message, [CallerMemberName] string callerMemberName = "")
         {
+            if (string.IsNullOrWhiteSpace(message))
+                return;
             _logger.LogDebug(FormatMessage(message, callerMemberName));
         }
 
@@ -65,6 +71,8 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         public void Warning(string message, [CallerMemberName] string callerMemberName = "")
         {
+            if (string.IsNullOrWhiteSpace(message))
+                return;
             _logger.LogWarning(FormatMessage(message, callerMemberName));
         }
         private static string FormatMessage(string message, string callerMemberName) =>

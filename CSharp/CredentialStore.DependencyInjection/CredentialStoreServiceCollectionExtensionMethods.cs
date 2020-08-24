@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
         ///  }
         /// </code>
         /// </example>
-        public static IServiceCollection AddCredentialStore(IServiceCollection serviceCollection, CredentialStoreOptions options)
+        public static IServiceCollection AddCredentialStore(this IServiceCollection serviceCollection, CredentialStoreOptions options)
         {
             if (serviceCollection == null)
                 throw new ArgumentNullException(nameof(serviceCollection));
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             serviceCollection
-                .AddSingleton<INativeInterop, INativeInterop>()
+                .AddSingleton<INativeInterop, NativeInterop>()
                 .AddSingleton<ICriticalCredentialHandleFactory, CriticalCredentialHandleFactory>()
                 .AddSingleton<IErrorCodeToStringService, ErrorCodeToStringService>();
 

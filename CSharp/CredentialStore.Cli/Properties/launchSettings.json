@@ -2,7 +2,7 @@
   "profiles": {
     "CredentialStore.Cli": {
       "commandName": "Project",
-      "commandLineArgs": "add generic generic@credential username"
+      "commandLineArgs": "list"
     }
   }
 }

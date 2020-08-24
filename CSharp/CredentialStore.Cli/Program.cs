@@ -32,15 +32,14 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
             ILoggerAdapter? logger = null;
             try
             {
-                var services = new ServiceCollection();
+                IServiceCollection services = new ServiceCollection();
                 services
                     .AddLogging(builder =>
                     {
                         builder.SetMinimumLevel(LogLevel.Information);
                         builder.AddConsole();
                     })
-                    .AddScoped<ICredentialManager, CredentialManager>()
-                    .AddScoped<ILoggerAdapter, ConsoleLoggingAdapter>()
+                    .AddCredentialStore(new CredentialStoreOptions(LoggerType.MsExtensionsLogger, ServiceLifetime.Singleton))
                     .AddScoped<ITextOutputWriter, ConsoleOutputWriter>()
                     .AddScoped<IConsoleInputReader, ConsoleInputReader>()
                     .AddScoped<IObscruredReader, ConsoleObscuredReader>()
