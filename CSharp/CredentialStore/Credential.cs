@@ -60,6 +60,21 @@ namespace Moreland.Security.Win32.CredentialStore
                 throw new ArgumentException("invalid settings", nameof(credential));
         }
 
+        /// <summary>
+        /// Instantiates a new instance of the <see cref="Credential"/> class populated with the provided values
+        /// </summary>
+        /// <param name="id">unique id, maps to Target Name within Native Api</param>
+        /// <param name="username">username</param>
+        /// <param name="secret">secret to be stored securely by Native API</param>
+        /// <param name="characteristics">typically <see cref="CredentialFlag.None"/>, see Win32 CREDENTIAL type for more detail</param>
+        /// <param name="type"><see cref="CredentialType"/></param>
+        /// <param name="persistanceType"><see cref="CredentialPeristence"/></param>
+        /// <param name="lastUpdated">last updated value, not used for newly saved values</param>
+        /// <exception cref="ArgumentException">
+        /// if <paramref name="id"/> is empty; or
+        /// if <paramref name="type"/> is <see cref="CredentialType.Unknown"/>; or
+        /// if <paramref name="persistanceType"/> is <see cref="CredentialPeristence.Unknown"/>
+        /// </exception>
         public Credential(string id, string username, string secret, CredentialFlag characteristics, CredentialType type, CredentialPeristence persistanceType, DateTime lastUpdated)
         {
             Id = id;
@@ -110,12 +125,23 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         public DateTime LastUpdated { get; }
 
+        /// <summary>
+        /// Deconstructs the object into <paramref name="id"/>, <paramref name="username"/>,
+        /// and <paramref name="secret"/>
+        /// </summary>
         public void Deconstruct(out string id, out string username, out string secret)
         {
             id = Id;
             username = UserName;
             secret = Secret;
         }
+        /// <summary>
+        /// Returns a copy of the current object populated with the provided values if non-null;
+        /// otherwise values from the current instance
+        /// </summary>
+        /// <exception cref="ArgumentException">
+        /// thrown by the constructor under the same conditions defined there
+        /// </exception>
         public Credential With(string? id = null, string? username = null, 
             string? secret = null, CredentialFlag? characteristics = null, 
             CredentialType? type = null, 
@@ -125,6 +151,9 @@ namespace Moreland.Security.Win32.CredentialStore
                 characteristics ?? Characteristics, type ?? Type,
                 persistanceType ?? PeristenceType, lastUpdated ?? LastUpdated);
 
+        /// <summary>
+        /// <inheritdoc cref="Object.ToString"/>
+        /// </summary>
         public override string ToString() =>
             $"{Id}: {UserName} {Type}";
 

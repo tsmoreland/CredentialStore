@@ -26,6 +26,13 @@ namespace Moreland.Security.Win32.CredentialStore
         private readonly INativeInterop _nativeInterop;
         private readonly IErrorCodeToStringService _errorCodeToStringService;
 
+        /// <summary>
+        /// Instantiates a new instance of the 
+        /// <see cref="CredentialManager"/> object
+        /// </summary>
+        /// <remarks>
+        /// provided for convenience and will use default concrete types for otherwise injected services
+        /// </remarks>
         public CredentialManager()
             : this(new NativeApi.ErrorCodeToStringService(TraceLoggerAdapter.DiagnosticsLogger), TraceLoggerAdapter.DiagnosticsLogger)
         {

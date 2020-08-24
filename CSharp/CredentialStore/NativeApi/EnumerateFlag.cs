@@ -14,7 +14,7 @@
 namespace Moreland.Security.Win32.CredentialStore.NativeApi
 {
     /// <summary>
-    /// Flags passed to <see cref="CredentialApi.CredEnumerate(string, int, out int, out System.IntPtr)"/>
+    /// Flags passed to <see cref="NativeMethods.CredEnumerate(string, int, out int, out System.IntPtr)"/>
     /// <a href="https://docs.microsoft.com/en-us/windows/win32/api/wincred/nf-wincred-credenumeratew">Win32 CredEnumerateW</a>
     /// </summary>
     internal enum EnumerateFlag : uint

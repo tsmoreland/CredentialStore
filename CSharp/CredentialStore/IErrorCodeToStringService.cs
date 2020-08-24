@@ -13,6 +13,9 @@
 
 namespace Moreland.Security.Win32.CredentialStore
 {
+    /// <summary>
+    /// converts Win32 error codes to string messages
+    /// </summary>
     public interface IErrorCodeToStringService
     {
         /// <summary>

@@ -36,25 +36,48 @@ namespace Moreland.Security.Win32.CredentialStore
     /// </summary>
     public readonly struct CredentialStoreOptions : IEquatable<CredentialStoreOptions>
     {
+        /// <summary>
+        /// Instantiates a new instance of the <see cref="CredentialStoreOptions"/> class.
+        /// </summary>
+        /// <param name="loggerType">Logger Type to be used within injected service</param>
+        /// <param name="serviceLifetime">service life time to be used for injected services</param>
         public CredentialStoreOptions(LoggerType loggerType, ServiceLifetime serviceLifetime)
         {
             LoggerType = loggerType;
             ServiceLifetime = serviceLifetime;
         }
 
+        /// <summary>
+        /// specifies the <see cref="LoggerType"/> to be used
+        /// </summary>
         public LoggerType LoggerType { get; }
+        /// <summary>
+        /// Specified the <see cref="ServiceLifetime"/> to be used.
+        /// </summary>
         public ServiceLifetime ServiceLifetime { get; }
 
+        /// <summary>
+        /// Deconstructs object into individual properties
+        /// </summary>
         public void Deconstruct(out LoggerType loggerType, out ServiceLifetime serviceLifetime)
         {
             loggerType = LoggerType;
             serviceLifetime = ServiceLifetime;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="first"/> is equal to <paramref name="second"/>;
+        /// otherwise <c>false</c>
+        /// </summary>
         public static bool operator ==(CredentialStoreOptions first, CredentialStoreOptions second) =>
             first.LoggerType == second.LoggerType &&
             first.ServiceLifetime == second.ServiceLifetime;
 
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="first"/> is not equal to <paramref name="second"/>;
+        /// otherwise <c>false</c>
+        /// </summary>
+        /// <returns></returns>
         public static bool operator !=(CredentialStoreOptions first, CredentialStoreOptions second) =>
             !(first == second);
 

@@ -25,6 +25,9 @@ namespace Moreland.Security.Win32.CredentialStore
         private static readonly TraceSwitch _credentialStoreSwitch =
             new TraceSwitch("CredentialStore", ".NET Trace diagnostics switch");
 
+        /// <summary>
+        /// Singleton instance of Diagnostics logger used if no other logger is provided
+        /// </summary>
         public static ILoggerAdapter DiagnosticsLogger => _diagnosticsLogger.Value;
         private static readonly Lazy<ILoggerAdapter> _diagnosticsLogger =
             new Lazy<ILoggerAdapter>(() => new TraceLoggerAdapter());

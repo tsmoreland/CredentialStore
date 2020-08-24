@@ -22,6 +22,9 @@ namespace Moreland.Security.Win32.CredentialStore
     [Flags]
     public enum CredentialFlag 
     {
+        /// <summary>
+        /// Empty or No Value, in this case the flag is ignored
+        /// </summary>
         None = 0,
 
         /// <summary>
