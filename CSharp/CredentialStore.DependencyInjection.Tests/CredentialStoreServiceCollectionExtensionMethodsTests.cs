@@ -13,7 +13,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Moreland.Security.Win32.CredentialStore.DependencyInjection.Tests
@@ -21,12 +21,12 @@ namespace Moreland.Security.Win32.CredentialStore.DependencyInjection.Tests
     [TestFixture]
     public sealed class CredentialStoreServiceCollectionExtensionMethodsTests
     {
-        private Mock<IServiceCollection> _serviceCollection = null!;
+        private IServiceCollection _serviceCollection = null!;
 
         [SetUp]
         public void Setup()
         {
-            _serviceCollection = new Mock<IServiceCollection>();
+            _serviceCollection = Substitute.For<IServiceCollection>();
         }
 
         [Test]
@@ -38,5 +38,11 @@ namespace Moreland.Security.Win32.CredentialStore.DependencyInjection.Tests
             Assert.That(ex.ParamName, Is.EqualTo("serviceCollection"));
         }
 
+        [Test]
+        public void AddCredentialStore_NoException_WhenServiceCollectionIsNotNull()
+        {
+            var options = new CredentialStoreOptions(LoggerType.None, ServiceLifetime.Singleton);
+            Assert.DoesNotThrow(() => _serviceCollection.AddCredentialStore(options));
+        }
     }
 }

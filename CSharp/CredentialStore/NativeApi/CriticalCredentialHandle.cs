@@ -56,8 +56,9 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
             : null;
 
         /// <summary>
-        /// <see cref="CriticalHandleZeroOrMinusOneIsInvalid.ReleaseHandle()"/>
+        /// Closes and sets the handle to invalid if valid; otherwise does nothing
         /// </summary>
+        /// <returns><c>true</c> if successful; otherwise,k <c>false</c></returns>
         protected override bool ReleaseHandle()
         {
             if (IsInvalid)

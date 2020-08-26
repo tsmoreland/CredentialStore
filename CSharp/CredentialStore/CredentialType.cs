@@ -19,6 +19,10 @@ namespace Moreland.Security.Win32.CredentialStore
     /// </summary>
     public enum CredentialType 
     {
+        /// <summary>
+        /// Should not be used by new Credentials or returned by a return cred, serves only
+        /// to have a default value which is invalid
+        /// </summary>
         Unknown = 0,
 
         /// <summary>

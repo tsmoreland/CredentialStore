@@ -19,6 +19,9 @@ using Moreland.Security.Win32.CredentialStore.NativeApi;
 // ReSharper disable once CheckNamespace -- intentional namespace to simplify use with IServiceProvider
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// <see cref="IServiceCollection"/> extension methods to simplify addition of CredentialStore service
+    /// </summary>
     public static class CredentialStoreServiceCollectionExtensionMethods
     {
         /// <summary>

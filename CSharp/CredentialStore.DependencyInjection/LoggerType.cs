@@ -14,6 +14,9 @@
 // ReSharper disable once CheckNamespace
 namespace Moreland.Security.Win32.CredentialStore
 {
+    /// <summary>
+    /// Supported Logger Types used by CredentialStore
+    /// </summary>
     public enum LoggerType
     {
         /// <summary>
