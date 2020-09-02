@@ -25,6 +25,8 @@
 
 namespace win32::credential_store
 {
+    using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
+
     template <typename WIN32_CREDENTIAL_TRAITS, typename CREDENTIAL_FACTORY_TRAITS>
     class credential_manager_impl_using_traits final : public credential_manager_impl
     {
@@ -41,7 +43,7 @@ namespace win32::credential_store
                 throw std::invalid_argument("id cannot be empty");
             }
 
-            CREDENTIALW credential;
+            unique_credential_w credential{nullptr, WIN32_CREDENTIAL_TRAITS::credential_deleter};
             if (auto result = WIN32_CREDENTIAL_TRAITS::cred_read(id, type, 0, credential);
                 result == SUCCESS) {
                 return optional_credential_t(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(credential));
@@ -76,7 +78,7 @@ namespace win32::credential_store
         credential_manager_impl_using_traits& operator=(credential_manager_impl_using_traits&& other) noexcept = default;
         ~credential_manager_impl_using_traits() override = default;
     private:
-        const DWORD SUCCESS = 0UL;
+        static const DWORD SUCCESS = 0UL;
 
         [[nodiscard]] static bool is_null_or_empty(wchar_t const *string)
         {

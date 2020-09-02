@@ -19,13 +19,48 @@
 
 namespace win32::credential_store
 {
+    using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
+
     struct win32_credential_traits final
     {
+
+        [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type type, DWORD const flags, unique_credential_w& out_credential)
+        {
+            // this needs reworked to output a unique_ptr with deleter calling CredFree which can be cleaned up by the caller
+            CREDENTIALW* credential_ptr{nullptr};
+            auto const result = CredReadW(id, to_dword(type), 0, &credential_ptr);
+            if (result == SUCCESS) {
+                out_credential = unique_credential_w(credential_ptr, credential_deleter);
+                credential_ptr = nullptr;
+            } 
+            return result;
+        }
+        [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type type, DWORD const flags, CREDENTIALW& out_credential)
+        {
+            // this needs reworked to output a unique_ptr with deleter calling CredFree which can be cleaned up by the caller
+            CREDENTIALW* credential_ptr{nullptr};
+
+            return 0;
+        }
+
         [[nodiscard]] static DWORD cred_delete(wchar_t const* id, credential_type type, DWORD const flags)
         {
             using underlying_type = std::underlying_type<credential_type>::type;
 
-            return CredDeleteW(id, static_cast<DWORD>(static_cast<underlying_type>(type)), flags);
+            return CredDeleteW(id, to_dword(type), flags);
+        }
+
+        static void credential_deleter(CREDENTIALW* credential_ptr)
+        {
+            CredFree(credential_ptr);
+        }
+    private:
+        static const DWORD SUCCESS = 0;
+
+        [[nodiscard]] static DWORD to_dword(credential_type const type)
+        {
+            using underlying_type = std::underlying_type<credential_type>::type;
+            return static_cast<DWORD>(static_cast<underlying_type>(type));
         }
     };
     
