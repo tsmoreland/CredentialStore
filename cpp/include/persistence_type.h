@@ -25,7 +25,7 @@ namespace win32::credential_store
         /// not be visible to other logon sessions of this same user. It will 
         /// not exist after this user logs off and back on.
         /// </summary>
-        Session = 1,
+        session = 1,
 
         /// <summary>
         /// The credential persists for all subsequent logon sessions on this 
@@ -37,7 +37,7 @@ namespace win32::credential_store
         /// Vista Starter and Windows XP Home Edition:  
         /// This value is not supported.
         /// </summary>
-        LocalMachine = 2, 
+        local_machine = 2, 
 
         /// <summary>
         /// The credential persists for all subsequent logon sessions on this 
@@ -53,6 +53,6 @@ namespace win32::credential_store
         /// Windows Vista Starter and Windows XP Home Edition:  
         /// This value is not supported.
         /// </summary>
-        Enterprise = 3,
+        enterprise = 3,
     };
 }

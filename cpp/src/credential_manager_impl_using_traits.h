@@ -46,7 +46,7 @@ namespace win32::credential_store
             unique_credential_w credential{nullptr, WIN32_CREDENTIAL_TRAITS::credential_deleter};
             if (auto result = WIN32_CREDENTIAL_TRAITS::cred_read(id, type, 0, credential);
                 result == SUCCESS) {
-                return optional_credential_t(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(credential));
+                return optional_credential_t(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(credential.get()));
             } else if (result == ERROR_NOT_FOUND) {
                 return std::nullopt;
             } else {
@@ -72,6 +72,7 @@ namespace win32::credential_store
             } 
         }
 
+        explicit credential_manager_impl_using_traits() = default;
         credential_manager_impl_using_traits(const credential_manager_impl_using_traits& other) = delete;
         credential_manager_impl_using_traits(credential_manager_impl_using_traits&& other) noexcept = default;
         credential_manager_impl_using_traits& operator=(const credential_manager_impl_using_traits& other) = delete;

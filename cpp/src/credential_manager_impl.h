@@ -36,6 +36,9 @@ namespace win32::credential_store
 
         credential_manager_impl& operator=(const credential_manager_impl& other) = delete;
         credential_manager_impl& operator=(credential_manager_impl&& other) noexcept = default;
+
+    protected:
+        explicit credential_manager_impl() = default;
     };
     
 }

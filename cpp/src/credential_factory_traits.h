@@ -17,11 +17,73 @@
 
 #include <Windows.h>
 #include <wincred.h>
+#include <credential.h>
 
 namespace win32::credential_store
 {
     struct credential_factory_traits final
     {
+        using credential_t = credential<wchar_t>;
+
+        [[nodiscard]] static credential_t from_win32_credential(CREDENTIALW const * const credential_ptr)
+        {
+            return credential_t(
+                credential_ptr->TargetName,
+                credential_ptr->UserName,
+                get_secret(credential_ptr),
+                to_credential_type(credential_ptr->Type),
+                to_persistence_type(credential_ptr->Persist),
+                std::nullopt);
+        }
+
+    private:
+        static credential_type to_credential_type(DWORD const type)
+        {
+            switch (type) {
+            case CRED_TYPE_DOMAIN_PASSWORD:
+                return credential_type::domain_password;
+            case CRED_TYPE_GENERIC:
+                return credential_type::generic;
+            case CRED_TYPE_DOMAIN_CERTIFICATE:
+                return credential_type::domain_certificate;
+            case CRED_TYPE_DOMAIN_EXTENDED:
+                return credential_type::domain_extended;
+            case CRED_TYPE_DOMAIN_VISIBLE_PASSWORD:
+                return credential_type::domain_visible_password;
+            case CRED_TYPE_GENERIC_CERTIFICATE:
+                return credential_type::generic_certificate;
+            case CRED_TYPE_MAXIMUM:
+                return credential_type::maximum;
+            case CRED_TYPE_MAXIMUM_EX:
+                return credential_type::maximum_ex;
+            default:
+                return credential_type::Unknown;
+            }
+        }
+        static persistence_type to_persistence_type(DWORD const type)
+        {
+            switch (type) {
+            case CRED_PERSIST_ENTERPRISE:
+                return persistence_type::enterprise;
+            case CRED_PERSIST_LOCAL_MACHINE:
+                return persistence_type::local_machine;
+            case CRED_PERSIST_SESSION:
+                return persistence_type::session;
+            default:
+                return persistence_type::Unknown;
+            }
+        }
+
+        static std::wstring get_secret(CREDENTIALW const*const credential_ptr)
+        {
+            switch (credential_ptr->Type) {
+            case CRED_TYPE_DOMAIN_PASSWORD:
+            case CRED_TYPE_GENERIC:
+                return std::wstring(reinterpret_cast<wchar_t*>(credential_ptr->CredentialBlob), credential_ptr->CredentialBlobSize / sizeof(wchar_t));
+            default:
+                return std::wstring();
+            }
+        }
 
     };
     
