@@ -129,6 +129,17 @@ namespace Moreland.Security.Win32.CredentialStore
         }
 
         /// <summary>
+        /// Updates existing credential with <paramref name="credential"/>
+        /// </summary>
+        /// <param name="credential">credential to update with values to update</param>
+        /// <remarks>
+        /// thinly veiled wrapper around <see cref="Add"/> as both do the same write operation,
+        /// provided mostly for readability
+        /// </remarks>
+        public void Update(Credential credential) => 
+            Add(credential);
+
+        /// <summary>
         /// deletes a credential from the user's credential set
         /// </summary>
         /// <param name="credential"></param>

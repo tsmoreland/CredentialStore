@@ -42,6 +42,17 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <see cref="Credential.UserName"/> are null or empty
         /// </exception>
         void Add(Credential credential);
+
+        /// <summary>
+        /// Updates existing credential with <paramref name="credential"/>
+        /// </summary>
+        /// <param name="credential">credential to update with values to update</param>
+        /// <remarks>
+        /// thinly veiled wrapper around <see cref="Add"/> as both do the same write operation,
+        /// provided mostly for readability
+        /// </remarks>
+        void Update(Credential credential);
+
         /// <summary>
         /// deletes a credential from the user's credential set
         /// </summary>
