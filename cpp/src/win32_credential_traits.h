@@ -43,11 +43,9 @@ namespace win32::credential_store
             return 0;
         }
 
-        [[nodiscard]] static DWORD cred_delete(wchar_t const* id, credential_type type, DWORD const flags)
+        [[nodiscard]] static DWORD cred_delete(wchar_t const* id, credential_type type)
         {
-            using underlying_type = std::underlying_type<credential_type>::type;
-
-            return CredDeleteW(id, to_dword(type), flags);
+            return CredDeleteW(id, to_dword(type), 0);
         }
 
         static void credential_deleter(CREDENTIALW* credential_ptr)

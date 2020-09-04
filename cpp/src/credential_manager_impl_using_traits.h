@@ -66,7 +66,7 @@ namespace win32::credential_store
         void remove(wchar_t const* id, credential_type type) const override
         {
             // static_cast<std::underlying_type<credential_type>::type>(type) -- move into WIN32_CREDENTIAL_TRAITS
-            if (auto const result = WIN32_CREDENTIAL_TRAITS::cred_delete(id, type, 0);
+            if (auto const result = WIN32_CREDENTIAL_TRAITS::cred_delete(id, type);
                 result != SUCCESS && result != ERROR_NOT_FOUND) {
                 throw std::system_error(std::error_code(result, std::system_category()));
             } 
