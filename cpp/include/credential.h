@@ -97,7 +97,6 @@ namespace win32::credential_store
         credential_type m_credential_type;
         persistence_type m_persistence_type;
         optional_time_point m_last_updated;
-
     };
 
 }
