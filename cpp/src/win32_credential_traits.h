@@ -20,11 +20,12 @@
 namespace win32::credential_store
 {
     using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
+    using unique_credentials_w = std::unique_ptr<CREDENTIALW*, void (*)(CREDENTIALW*)>;  
 
     struct win32_credential_traits final
     {
 
-        [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type type, DWORD const flags, unique_credential_w& out_credential)
+        [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type const type, unique_credential_w& out_credential)
         {
             // this needs reworked to output a unique_ptr with deleter calling CredFree which can be cleaned up by the caller
             CREDENTIALW* credential_ptr{nullptr};
@@ -35,20 +36,34 @@ namespace win32::credential_store
             } 
             return result;
         }
+        /*
         [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type type, DWORD const flags, CREDENTIALW& out_credential)
         {
             // this needs reworked to output a unique_ptr with deleter calling CredFree which can be cleaned up by the caller
             CREDENTIALW* credential_ptr{nullptr};
 
+
             return 0;
         }
+        */
 
-        [[nodiscard]] static DWORD cred_delete(wchar_t const* id, credential_type type)
+        [[nodiscard]] static DWORD cred_enumerate(wchar_t const* filter, DWORD const flags, DWORD& count, CREDENTIALW**& credentials)
+        {
+            auto const result = CredEnumerateW(filter, flags, &count, &credentials);
+            return result;
+        }
+        
+
+        [[nodiscard]] static DWORD cred_delete(wchar_t const* id, credential_type const type)
         {
             return CredDeleteW(id, to_dword(type), 0);
         }
 
         static void credential_deleter(CREDENTIALW* credential_ptr)
+        {
+            CredFree(credential_ptr);
+        }
+        static void credential_deleter(CREDENTIALW** credential_ptr)
         {
             CredFree(credential_ptr);
         }

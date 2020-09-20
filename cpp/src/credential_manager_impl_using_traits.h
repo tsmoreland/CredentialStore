@@ -44,7 +44,7 @@ namespace win32::credential_store
             }
 
             unique_credential_w credential{nullptr, WIN32_CREDENTIAL_TRAITS::credential_deleter};
-            if (auto result = WIN32_CREDENTIAL_TRAITS::cred_read(id, type, 0, credential);
+            if (auto result = WIN32_CREDENTIAL_TRAITS::cred_read(id, type, credential);
                 result == SUCCESS) {
                 return optional_credential_t(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(credential.get()));
             } else if (result == ERROR_NOT_FOUND) {
@@ -53,11 +53,9 @@ namespace win32::credential_store
                 throw std::system_error(std::error_code(result, std::system_category()));
             }
         }
-        [[nodiscard]] std::vector<credential_t> find(wchar_t const* filter, bool search_all) const override
+        [[nodiscard]] std::vector<credential_t> find(wchar_t const* filter, const bool search_all) const override
         {
-            std::vector<credential_t> matches;
-
-            return matches;
+            return get_credentials(filter, search_all);
         }
         void remove(credential_t const& credential) const override
         {
@@ -85,6 +83,43 @@ namespace win32::credential_store
         {
             return string == nullptr || wcslen(string) == 0;
         }
+
+        [[nodiscard]] std::vector<credential_t> get_credentials(wchar_t const* filter, const bool search_all) const 
+        {
+            std::vector<credential_t> matches;
+
+            auto flags = search_all ? CRED_ENUMERATE_ALL_CREDENTIALS : 0;
+
+            struct credentials_container  
+            {
+                credentials_container() = default;
+                credentials_container(credentials_container const&) = delete;
+                credentials_container(credentials_container &&) noexcept = delete;
+                credentials_container& operator=(credentials_container const&) = delete;
+                credentials_container& operator=(credentials_container &&) noexcept = delete;
+                ~credentials_container()
+                {
+                    if (credentials != nullptr) {
+                        WIN32_CREDENTIAL_TRAITS::credential_deleter(credentials);
+                    }
+                }
+                CREDENTIALW** credentials{nullptr};
+                DWORD count{0};
+            };
+            credentials_container container;
+
+            auto const result = WIN32_CREDENTIAL_TRAITS::cred_enumerate(filter, flags, container.count, container.credentials); 
+            if (result != SUCCESS) {
+                throw std::system_error(std::error_code(result, std::system_category()));
+            }
+
+            for (DWORD i = 0; i< container.count; i++) {
+                matches.push_back(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(container.credentials[i]));
+            }
+
+            return matches;
+        }
+
     };
 
     using win32_credential_manager_impl_using_traits = credential_manager_impl_using_traits<win32_credential_traits, credential_factory_traits>;

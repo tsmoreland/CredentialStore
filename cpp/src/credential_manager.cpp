@@ -49,7 +49,6 @@ std::vector<credential_manager::credential_t> credential_manager::find(wchar_t c
 {
     if (!static_cast<bool>(m_p_impl)) {
     }
-    //return std::vector<credential_t>();
     return m_p_impl->find(filter, search_all);
 }
 
