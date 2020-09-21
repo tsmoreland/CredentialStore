@@ -39,6 +39,7 @@ if (MSVC)
 		/permissive-;
 		/sdl;
 		/W4;
+		/EHsc;
 		${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
 		${DEFAULT_CXX_EXCEPTION_HANDLING}
 	)

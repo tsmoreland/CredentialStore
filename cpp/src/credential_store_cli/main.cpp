@@ -11,9 +11,65 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-#include "credential.h"
+#include <credential_manager.h>
+#include <algorithm>
+#include <iostream>
+#include <string_view>
 
-int main(int argc, char* argv[])
+using std::wcout;
+using std::endl;
+using std::begin;
+using std::end;
+using win32::credential_store::credential_manager;
+
+enum class verb_type
 {
+    none,
+    add,
+    find,
+    list,
+    remove,
+};
+
+//verb_type parse_verb(std::string_view verb_string);
+
+int main(int const argc, char* argv[])
+{
+    /*
+    if (argc < 2)
+    {
+        wcout << L"Usage: credential_store.cli <verb>" << endl;
+        return 1;
+    }
+
+
+    verb_type const verb = parse_verb(argv[1]);
+    if (verb == verb_type::none) {
+        wcout << L"Unrecognized verb" << endl;
+        return 2;
+    }
+
+    credential_manager manager;
+    */
+
     return 0;
 }
+
+/*
+verb_type parse_verb(std::string_view verb_string)
+{
+    std::string upper_verb;
+
+    std::transform(begin(verb_string), end(verb_string), begin(upper_verb), ::toupper);
+
+    if (verb_string.find("ADD", 0) != std::string::npos)
+        return verb_type::add;
+    if (verb_string.find("FIND", 0) != std::string::npos)
+        return verb_type::add;
+    if (verb_string.find("LIST", 0) != std::string::npos)
+        return verb_type::add;
+    if (verb_string.find("REMOVE", 0) != std::string::npos)
+        return verb_type::add;
+    return verb_type::none;
+}
+*/
