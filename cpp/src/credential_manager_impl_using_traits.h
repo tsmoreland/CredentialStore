@@ -22,6 +22,7 @@
 #include "credential_manager_impl.h"
 #include "win32_credential_traits.h"
 #include "credential_factory_traits.h"
+#include "credential_w_facade.h"
 
 namespace win32::credential_store
 {
@@ -36,6 +37,17 @@ namespace win32::credential_store
 
         void add_or_update(credential_t const& credential) override
         {
+            credential_w_facade win32_credential;
+            win32_credential
+                .set_target_name(credential.get_id())
+                .set_username(credential.get_username())
+                .set_credential_blob(credential.get_secret())
+                .set_credential_type(WIN32_CREDENTIAL_TRAITS::to_dword(credential.get_credential_type()))
+                .set_persistence_type(WIN32_CREDENTIAL_TRAITS::to_dword(credential.get_persistence_type()));
+
+            auto const result = WIN32_CREDENTIAL_TRAITS::cred_write(&win32_credential.get_credential(), CRED_PRESERVE_CREDENTIAL_BLOB);
+            if (result != SUCCESS)
+                throw std::system_error(std::error_code(result, std::system_category()));
         }
         [[nodiscard]] optional_credential_t find(wchar_t const* id, credential_type type) const override
         {
@@ -90,7 +102,7 @@ namespace win32::credential_store
 
             auto flags = search_all ? CRED_ENUMERATE_ALL_CREDENTIALS : 0;
 
-            struct credentials_container  
+            struct credentials_container
             {
                 credentials_container() = default;
                 credentials_container(credentials_container const&) = delete;

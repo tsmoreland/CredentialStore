@@ -36,16 +36,12 @@ namespace win32::credential_store
             } 
             return result;
         }
-        /*
-        [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type type, DWORD const flags, CREDENTIALW& out_credential)
+
+        [[nodiscard]] static DWORD cred_write(PCREDENTIALW credential, DWORD const flags)
         {
-            // this needs reworked to output a unique_ptr with deleter calling CredFree which can be cleaned up by the caller
-            CREDENTIALW* credential_ptr{nullptr};
-
-
-            return 0;
+            auto const result = CredWriteW(credential, flags);
+            return result;
         }
-        */
 
         [[nodiscard]] static DWORD cred_enumerate(wchar_t const* filter, DWORD const flags, DWORD& count, CREDENTIALW**& credentials)
         {
@@ -67,14 +63,21 @@ namespace win32::credential_store
         {
             CredFree(credential_ptr);
         }
-    private:
-        static const DWORD SUCCESS = 0;
 
         [[nodiscard]] static DWORD to_dword(credential_type const type)
         {
             using underlying_type = std::underlying_type<credential_type>::type;
             return static_cast<DWORD>(static_cast<underlying_type>(type));
         }
+
+        [[nodiscard]] static DWORD to_dword(persistence_type const type)
+        {
+            using underlying_type = std::underlying_type<persistence_type>::type;
+            return static_cast<DWORD>(static_cast<underlying_type>(type));
+        }
+    private:
+        static const DWORD SUCCESS = 0;
+
     };
     
 }

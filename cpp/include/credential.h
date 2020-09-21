@@ -17,6 +17,7 @@
 #include <chrono>
 #include <tuple>
 #include <optional>
+#include <utility>
 #include "credential_type.h"
 #include "persistence_type.h"
 
@@ -33,10 +34,10 @@ namespace win32::credential_store
         using optional_time_point = std::optional<std::chrono::time_point<std::chrono::system_clock>>;
         using deconstruct_type = std::tuple<string_type, string_type, string_type, credential_type, persistence_type, optional_time_point>;
 
-        credential(string_type const& id, string_type const& username, string_type const& secret,credential_type const credential_type, persistence_type const persistence_type, optional_time_point const & last_updated)
-            : m_id{id}
-            , m_username{username}
-            , m_secret{secret}
+        credential(string_type id, string_type username, string_type secret,credential_type const credential_type, persistence_type const persistence_type, optional_time_point const & last_updated)
+            : m_id{std::move(id)}
+            , m_username{std::move(username)}
+            , m_secret{std::move(secret)}
             , m_credential_type{credential_type}
             , m_persistence_type{persistence_type}
             , m_last_updated{last_updated}
