@@ -31,11 +31,10 @@ enum class verb_type
     remove,
 };
 
-//verb_type parse_verb(std::string_view verb_string);
+verb_type parse_verb(std::string_view verb_string);
 
 int main(int const argc, char* argv[])
 {
-    /*
     if (argc < 2)
     {
         wcout << L"Usage: credential_store.cli <verb>" << endl;
@@ -49,13 +48,11 @@ int main(int const argc, char* argv[])
         return 2;
     }
 
-    credential_manager manager;
-    */
+    //credential_manager manager;
 
     return 0;
 }
 
-/*
 verb_type parse_verb(std::string_view verb_string)
 {
     std::string upper_verb;
@@ -72,4 +69,3 @@ verb_type parse_verb(std::string_view verb_string)
         return verb_type::add;
     return verb_type::none;
 }
-*/

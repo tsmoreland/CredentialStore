@@ -7,6 +7,8 @@ set (SOURCE "main.cpp")
 
 add_executable(${CLI_PROJECT_NAME} WIN32 ${SOURCE})
 
+set_target_properties(${CLI_PROJECT_NAME} PROPERTIES VS_GLOBAL_KEYWORD "Win32Proj")
+
 # Output directory
 set_target_properties(${CLI_PROJECT_NAME} PROPERTIES
 	OUTPUT_DIRECTORY_DEBUG   "${CMAKE_SOURCE_DIR}/target/${CMAKE_VS_PLATFORM_NAME}/$<CONFIG>/"
