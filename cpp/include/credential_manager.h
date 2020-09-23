@@ -51,7 +51,14 @@ namespace win32::credential_store
         /// <summary>
         /// 
         /// </summary>
+        /// <returns></returns>
+        [[nodiscard]] std::vector<credential_t> get_credentials() const;
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="credential"></params>
+        /// <returns></returns>
         void add_or_update(credential_t const& credential) const;
 
         /// <summary>

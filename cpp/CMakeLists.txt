@@ -22,6 +22,11 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "")
     set(CMAKE_CXX_FLAGS_RELEASE "")
 
+    set(DEFAULT_CXX_DEBUG_RUNTIME_LIBRARY "/MDd")
+    set(DEFAULT_CXX_RUNTIME_LIBRARY "/MD")
+    set(DEFAULT_CXX_EXCEPTION_HANDLING "/EHsc")
+    set(DEFAULT_CXX_DEBUG_INFORMATION_FORMAT "/Zi")
+
     # remove default flags provided with CMake for MSVC
     set(CMAKE_EXE_LINKER_FLAGS "")
     set(CMAKE_MODULE_LINKER_FLAGS "")

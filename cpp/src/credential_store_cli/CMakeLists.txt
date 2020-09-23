@@ -7,11 +7,14 @@ set (SOURCE "main.cpp")
 
 add_executable(${CLI_PROJECT_NAME} WIN32 ${SOURCE})
 
+set_target_properties(${CLI_PROJECT_NAME} PROPERTIES VS_GLOBAL_KEYWORD "Win32Proj")
+
 # Output directory
 set_target_properties(${CLI_PROJECT_NAME} PROPERTIES
 	OUTPUT_DIRECTORY_DEBUG   "${CMAKE_SOURCE_DIR}/target/${CMAKE_VS_PLATFORM_NAME}/$<CONFIG>/"
 	OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/target/${CMAKE_VS_PLATFORM_NAME}/$<CONFIG>/"
 )
+target_link_libraries(${CLI_PROJECT_NAME} PUBLIC ${CMAKE_PROJECT_NAME}_static)
 
 target_compile_definitions(${CLI_PROJECT_NAME} PRIVATE
 	"$<$<CONFIG:DEBUG>:" 
@@ -39,6 +42,7 @@ if (MSVC)
 		/permissive-;
 		/sdl;
 		/W4;
+		/EHsc;
 		${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
 		${DEFAULT_CXX_EXCEPTION_HANDLING}
 	)
