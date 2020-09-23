@@ -31,29 +31,36 @@ namespace win32::credential_store
             // this needs reworked to output a unique_ptr with deleter calling CredFree which can be cleaned up by the caller
             CREDENTIALW* credential_ptr{nullptr};
             auto const result = CredReadW(id, to_dword(type), 0, &credential_ptr);
-            if (result == SUCCESS) {
+            if (result == TRUE) {
                 out_credential = unique_credential_w(credential_ptr, credential_deleter);
                 credential_ptr = nullptr;
+                return SUCCESS;
             } 
-            return result;
+            return GetLastError();
         }
 
         [[nodiscard]] static DWORD cred_write(PCREDENTIALW credential, DWORD const flags)
         {
             auto const result = CredWriteW(credential, flags);
-            return result;
+            return result == TRUE 
+                ? SUCCESS
+                : GetLastError();
         }
 
         [[nodiscard]] static DWORD cred_enumerate(wchar_t const* filter, DWORD const flags, DWORD& count, CREDENTIALW**& credentials)
         {
             auto const result = CredEnumerateW(filter, flags, &count, &credentials);
-            return result;
+            return result == TRUE 
+                ? SUCCESS
+                : GetLastError();
         }
         
 
         [[nodiscard]] static DWORD cred_delete(wchar_t const* id, credential_type const type)
         {
-            return CredDeleteW(id, to_dword(type), 0);
+            return CredDeleteW(id, to_dword(type), 0) == TRUE
+                ? SUCCESS
+                : GetLastError();
         }
 
         static void credential_deleter(CREDENTIALW* credential_ptr)
