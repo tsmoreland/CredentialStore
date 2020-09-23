@@ -14,6 +14,7 @@
 #pragma once
 
 #include <credential_type.h>
+#include <memory>
 #include <Windows.h>
 #include <wincred.h>
 

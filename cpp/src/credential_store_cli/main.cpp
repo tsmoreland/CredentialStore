@@ -48,7 +48,7 @@ int main(int const argc, char* argv[])
         return 2;
     }
 
-    //credential_manager manager;
+    credential_manager manager;
 
     return 0;
 }

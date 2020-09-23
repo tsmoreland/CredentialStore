@@ -7,6 +7,8 @@ set (SOURCE "../credential_manager.cpp")
 
 add_library(${STATIC_LIBRARY_NAME} STATIC ${SOURCE})
 
+set_target_properties(${CMAKE_PROJECT_NAME}_static PROPERTIES VS_GLOBAL_KEYWORD "Win32Proj")
+
 # Output directory
 set_target_properties(${STATIC_LIBRARY_NAME} PROPERTIES
 	OUTPUT_DIRECTORY_DEBUG   "${CMAKE_SOURCE_DIR}/target/${CMAKE_VS_PLATFORM_NAME}/$<CONFIG>/"
