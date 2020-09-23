@@ -35,6 +35,10 @@ namespace win32::credential_store
         using credential_t = credential<wchar_t>;
         using optional_credential_t = std::optional<credential<wchar_t>>;
 
+        [[nodiscard]] std::vector<credential_t> get_credentials() const override
+        {
+            return get_credentials(nullptr, true);
+        }
         void add_or_update(credential_t const& credential) override
         {
             credential_w_facade win32_credential;

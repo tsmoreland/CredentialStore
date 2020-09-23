@@ -28,6 +28,7 @@ namespace win32::credential_store
         credential_manager_impl(credential_manager_impl&& other) noexcept = delete;
         virtual ~credential_manager_impl() = default;
 
+        virtual std::vector<credential_t> get_credentials() const = 0;
         virtual void add_or_update(credential_t const& credential) = 0;
         [[nodiscard]] virtual optional_credential_t find(wchar_t const* id, credential_type type) const = 0;
         [[nodiscard]] virtual std::vector<credential_t> find(wchar_t const* filter, bool search_all) const = 0;

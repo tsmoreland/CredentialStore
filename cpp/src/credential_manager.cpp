@@ -30,6 +30,14 @@ credential_manager::~credential_manager()
     m_p_impl.reset();
 }
 
+std::vector<credential_manager::credential_t> credential_manager::get_credentials() const
+{
+    if (!static_cast<bool>(m_p_impl)) {
+    }
+
+    return m_p_impl->get_credentials();
+}
+
 void credential_manager::add_or_update(credential_t const& credential) const
 {
     if (!static_cast<bool>(m_p_impl)) {
