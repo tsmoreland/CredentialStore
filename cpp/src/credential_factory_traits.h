@@ -28,8 +28,8 @@ namespace win32::credential_store
         [[nodiscard]] static credential_t from_win32_credential(CREDENTIALW const * const credential_ptr)
         {
             return credential_t(
-                credential_ptr->TargetName,
-                credential_ptr->UserName,
+                value_or_empty(credential_ptr->TargetName),
+                value_or_empty(credential_ptr->UserName),
                 get_secret(credential_ptr),
                 to_credential_type(credential_ptr->Type),
                 to_persistence_type(credential_ptr->Persist),
@@ -91,6 +91,10 @@ namespace win32::credential_store
 
         static std::wstring get_secret(CREDENTIALW const*const credential_ptr)
         {
+            if (credential_ptr->CredentialBlobSize == 0UL || credential_ptr->CredentialBlob == nullptr) {
+                return std::wstring();
+            }
+
             switch (credential_ptr->Type) {
             case CRED_TYPE_DOMAIN_PASSWORD:
             case CRED_TYPE_GENERIC:
@@ -99,7 +103,12 @@ namespace win32::credential_store
                 return std::wstring();
             }
         }
-
+        static wchar_t const* value_or_empty(wchar_t const* const value)
+        {
+            return value != nullptr
+                ? value
+                : L"";
+        }
     };
     
 }
