@@ -58,25 +58,15 @@ namespace Moreland.Security.Win32.CredentialStore
             _errorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
 
         }
-
         /// <summary>
-        /// Returns all Credentials from the Users credential set
+        /// <inheritdoc cref="ICredentialManager.Credentials"/>
         /// </summary>
         public IEnumerable<Credential> Credentials => 
             GetCredentials(null, NativeApi.EnumerateFlag.EnumerateAllCredentials);
 
         /// <summary>
-        /// Finds a credential with the given id value and optionally <see cref="CredentialType"/>
+        /// <inheritdoc cref="ICredentialManager.Find(string, CredentialType)"/>
         /// </summary>
-        /// <param name="id">id of the credential to be found</param>
-        /// <param name="type">
-        /// <see cref="CredentialType"/> of <see cref="Credential"/> to be found, 
-        /// by default <see cref="CredentialType.DomainPassword"/>
-        /// </param>
-        /// <returns><see cref="Credential"/> found or null</returns>
-        /// <exception cref="ArgumentException">
-        /// if <paramref name="id"/> is null or empty or if returned credential structure is malformed
-        /// </exception>
         public Credential? Find(string id, CredentialType type = CredentialType.Generic)
         {
             if (string.IsNullOrEmpty(id))
@@ -92,29 +82,16 @@ namespace Moreland.Security.Win32.CredentialStore
         }
 
         /// <summary>
-        /// Returns all credentials matching wildcard based <paramref name="filter"/>
+        /// <inheritdoc cref="ICredentialManager.Find(string, bool)"/>
         /// </summary>
-        /// <param name="filter">filter using wildcards</param>
-        /// <param name="searchAll">if true all credentials are searched</param>
-        /// <returns><see cref="IEnumerable{Credential}"/> of credentials matching filter</returns>
         public IEnumerable<Credential> Find(string filter, bool searchAll) =>
             GetCredentials(filter, searchAll
                 ? NativeApi.EnumerateFlag.EnumerateAllCredentials
                 : NativeApi.EnumerateFlag.None);
 
         /// <summary>
-        /// Adds <paramref name="credential"/> to Win32 
-        /// Credential Manager
+        /// <inheritdoc cref="ICredentialManager.Add"/>
         /// </summary>
-        /// <param name="credential">credential to be saved</param>
-        /// <returns>true on success; otherwise, false</returns>
-        /// <exception cref="ArgumentNullException">
-        /// if <paramref name="credential"/> is null
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// if <see cref="Credential.Id"/> or 
-        /// <see cref="Credential.UserName"/> are null or empty
-        /// </exception>
         public void Add(Credential credential)
         {
             if (credential == null)
@@ -129,30 +106,14 @@ namespace Moreland.Security.Win32.CredentialStore
         }
 
         /// <summary>
-        /// Updates existing credential with <paramref name="credential"/>
+        /// <inheritdoc cref="ICredentialManager.Update"/>
         /// </summary>
-        /// <param name="credential">credential to update with values to update</param>
-        /// <remarks>
-        /// thinly veiled wrapper around <see cref="Add"/> as both do the same write operation,
-        /// provided mostly for readability
-        /// </remarks>
         public void Update(Credential credential) => 
             Add(credential);
 
         /// <summary>
-        /// deletes a credential from the user's credential set
+        /// <inheritdoc cref="ICredentialManager.Delete(Credential)"/>
         /// </summary>
-        /// <param name="credential"></param>
-        /// <returns>The function returns true on success and false</returns>
-        /// <exception cref="ArgumentNullException">
-        /// if <paramref name="credential"/> is null
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// if <paramref name="credential.Id"/> is null or empty
-        /// </exception>
-        /// <exception cref="Win32Exception">
-        /// if error occurs calling native api
-        /// </exception>
         public void Delete(Credential credential)
         {
             if (credential == null)
@@ -162,17 +123,8 @@ namespace Moreland.Security.Win32.CredentialStore
         }
 
         /// <summary>
-        /// deletes a credential from the user's credential set
+        /// <inheritdoc cref="ICredentialManager.Delete(string, CredentialType)"/>
         /// </summary>
-        /// <param name="id">id of item to be deleted</param>
-        /// <param name="type">credential type of item to be deleted</param>
-        /// <returns>true if item not found successfully deleted, otherwise false</returns>
-        /// <exception cref="ArgumentException">
-        /// if <paramref name="id"/> is null or empty
-        /// </exception>
-        /// <exception cref="Win32Exception">
-        /// if error occurs calling native api
-        /// </exception>
         public void Delete(string id, CredentialType type)
         {
             if (string.IsNullOrEmpty(id))

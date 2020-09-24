@@ -11,42 +11,37 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
+#pragma once
+
 #include <credential_manager.h>
-#include <iostream>
 #include <string_view>
-#include "credential_executor.h"
+#include <functional>
+#include <vector>
+#include "verb_type.h"
 
-using std::wcout;
-using std::endl;
-using win32::credential_store::credential_manager;
-using win32::credential_store::cli::credential_executor;
-
-int main(int const argc, char* argv[])
+namespace win32::credential_store::cli
 {
-    try {
-        if (argc < 2)
-        {
-            wcout << L"Usage: credential_store.cli <verb>" << endl;
-            //return 1;
-        }
+    //using verb_processor = void (*)(credential_manager const& manager, std::vector<std::string_view> const& arguments);
+    using verb_processor = std::function<void (std::vector<std::string_view> const&)>;
+    
+    class credential_executor final
+    {
+    public:
+        explicit credential_executor(credential_manager const& manager);
 
-         auto const* raw_verb = argc >= 2
-             ? argv[1]
-             : "list";
+        [[nodiscard]] verb_processor get_operation(std::string_view const& verb) const;
 
-        std::vector<std::string_view> arguments;
-        for (int i=2; i < argc; i++)
-            arguments.emplace_back(argv[i]);
+        void none(std::vector<std::string_view> const& arguments) const;
+        void add(std::vector<std::string_view> const& arguments) const;
+        void find(std::vector<std::string_view> const& arguments) const;
+        void list(std::vector<std::string_view> const& arguments) const;
+        void remove(std::vector<std::string_view> const& arguments) const;
 
-        credential_manager const manager;
-        credential_executor const executor(manager);
+    private:
+        credential_manager const& m_manager;
 
-        executor.get_operation(raw_verb)(arguments);
+        [[nodiscard]] static verb_type get_verb_type(std::string_view const& verb);
 
-    } catch (std::exception const& ex) {
-        std::cout << "Error: " << ex.what() << endl;
-    }
+    };
 
-    return 0;
 }
-

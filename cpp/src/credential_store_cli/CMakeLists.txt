@@ -3,7 +3,7 @@ set (CMAKE_CXX_STANDARD 17)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-set (SOURCE "main.cpp")
+set (SOURCE "main.cpp" "credential_executor.cpp")
 
 add_executable(${CLI_PROJECT_NAME} WIN32 ${SOURCE})
 

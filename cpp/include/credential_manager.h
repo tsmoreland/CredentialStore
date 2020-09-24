@@ -18,6 +18,7 @@
 #include <optional>
 #include <credential.h>
 #include <credential_type.h>
+#include <credential_manager_traits.h>
 
 namespace win32::credential_store
 {
@@ -27,12 +28,9 @@ namespace win32::credential_store
     /// Win32 Credential Manager (Credential Repository) providing CRUD 
     /// operations for Windows Credential Manager 
     /// </summary>
-    class credential_manager final
+    class credential_manager final : public credential_manager_traits
     {
     public:
-        using credential_t = credential<wchar_t>;
-        using optional_credential_t = std::optional<credential_t>;
-
         /// <summary>
         /// 
         /// </summary>
@@ -46,20 +44,20 @@ namespace win32::credential_store
         /// <summary>
         /// 
         /// </summary>
-        ~credential_manager();
+        ~credential_manager() override;
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        [[nodiscard]] std::vector<credential_t> get_credentials() const;
+        [[nodiscard]] std::vector<credential_t> get_credentials() const override;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="credential"></params>
         /// <returns></returns>
-        void add_or_update(credential_t const& credential) const;
+        void add_or_update(credential_t const& credential) const override;
 
         /// <summary>
         /// 
@@ -67,7 +65,7 @@ namespace win32::credential_store
         /// <param name="id"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        [[nodiscard]] optional_credential_t find(wchar_t const* id, credential_type type) const;
+        [[nodiscard]] optional_credential_t find(wchar_t const* id, credential_type type) const override;
 
         /// <summary>
         /// 
@@ -75,13 +73,13 @@ namespace win32::credential_store
         /// <param name="filter"></param>
         /// <param name="search_all"></param>
         /// <returns></returns>
-        [[nodiscard]] std::vector<credential_t> find(wchar_t const* filter, bool const search_all) const;
+        [[nodiscard]] std::vector<credential_t> find(wchar_t const* filter, bool const search_all) const override;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="credential"></param>
-        void remove(credential_t const& credential) const;
+        void remove(credential_t const& credential) const override;
 
         /// <summary>
         /// 
