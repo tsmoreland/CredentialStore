@@ -11,42 +11,19 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-#include <credential_manager.h>
-#include <iostream>
-#include <string_view>
-#include "credential_executor.h"
+#pragma once
 
-using std::wcout;
-using std::endl;
-using win32::credential_store::credential_manager;
-using win32::credential_store::cli::credential_executor;
-
-int main(int const argc, char* argv[])
+namespace win32::credential_store::cli
 {
-    try {
-        if (argc < 2)
-        {
-            wcout << L"Usage: credential_store.cli <verb>" << endl;
-            //return 1;
-        }
 
-         auto const* raw_verb = argc >= 2
-             ? argv[1]
-             : "list";
+    enum class verb_type
+    {
+        none,
+        add,
+        find,
+        list,
+        remove,
+    };
 
-        std::vector<std::string_view> arguments;
-        for (int i=2; i < argc; i++)
-            arguments.emplace_back(argv[i]);
 
-        credential_manager const manager;
-        credential_executor const executor(manager);
-
-        executor.get_operation(raw_verb)(arguments);
-
-    } catch (std::exception const& ex) {
-        std::cout << "Error: " << ex.what() << endl;
-    }
-
-    return 0;
 }
-

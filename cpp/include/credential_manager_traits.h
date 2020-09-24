@@ -14,50 +14,35 @@
 #pragma once
 
 #include <vector>
-#include <memory>
-#include <optional>
 #include <credential.h>
-#include <credential_type.h>
-#include <credential_manager_traits.h>
 
 namespace win32::credential_store
 {
-    class credential_manager_impl;
 
-    /// <summary>
-    /// Win32 Credential Manager (Credential Repository) providing CRUD 
-    /// operations for Windows Credential Manager 
-    /// </summary>
-    class credential_manager final : public credential_manager_traits
+    class credential_manager_traits
     {
     public:
+        using credential_t = credential<wchar_t>;
+        using optional_credential_t = std::optional<credential_t>;
+
+        credential_manager_traits(credential_manager_traits const&) = delete;
         /// <summary>
         /// 
         /// </summary>
-        explicit credential_manager();
-        credential_manager(credential_manager const&) = delete;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        credential_manager(credential_manager &&other) noexcept;
-        /// <summary>
-        /// 
-        /// </summary>
-        ~credential_manager() override;
+        virtual ~credential_manager_traits() = default;
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        [[nodiscard]] std::vector<credential_t> get_credentials() const override;
+        [[nodiscard]] virtual std::vector<credential_t> get_credentials() const = 0;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="credential"></params>
         /// <returns></returns>
-        void add_or_update(credential_t const& credential) const override;
+        virtual void add_or_update(credential_t const& credential) const = 0;
 
         /// <summary>
         /// 
@@ -65,7 +50,7 @@ namespace win32::credential_store
         /// <param name="id"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        [[nodiscard]] optional_credential_t find(wchar_t const* id, credential_type type) const override;
+        [[nodiscard]] virtual optional_credential_t find(wchar_t const* id, credential_type type) const = 0;
 
         /// <summary>
         /// 
@@ -73,38 +58,38 @@ namespace win32::credential_store
         /// <param name="filter"></param>
         /// <param name="search_all"></param>
         /// <returns></returns>
-        [[nodiscard]] std::vector<credential_t> find(wchar_t const* filter, bool const search_all) const override;
+        [[nodiscard]] virtual std::vector<credential_t> find(wchar_t const* filter, bool const search_all) const = 0;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="credential"></param>
-        void remove(credential_t const& credential) const override;
+        virtual void remove(credential_t const& credential) const = 0;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        [[nodiscard]] credential_manager& operator=(const credential_manager& other) = delete;
+        [[nodiscard]] credential_manager_traits& operator=(const credential_manager_traits& other) = delete;
+    protected:
+        /// <summary>
+        /// 
+        /// </summary>
+        credential_manager_traits() = default;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        credential_manager_traits(credential_manager_traits &&other) noexcept = default;
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        [[nodiscard]] credential_manager& operator=(credential_manager&& other) noexcept;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="first"></param>
-        /// <param name="second"></param>
-        /// <returns></returns>
-        friend void swap(credential_manager& first, credential_manager& second) noexcept;
-    private:
-        std::unique_ptr<credential_manager_impl> m_p_impl;
+        [[nodiscard]] credential_manager_traits& operator=(credential_manager_traits&& other) noexcept = default;
     };
-
-
 
 }
