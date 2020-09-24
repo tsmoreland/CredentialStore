@@ -56,8 +56,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <summary>
         /// deletes a credential from the user's credential set
         /// </summary>
-        /// <param name="credential"></param>
-        /// <returns>The function returns true on success and false</returns>
+        /// <param name="credential">credential to be removed</param>
         /// <exception cref="ArgumentNullException">
         /// if <paramref name="credential"/> is null
         /// </exception>
@@ -71,7 +70,6 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         /// <param name="id">id of item to be deleted</param>
         /// <param name="type">credential type of item to be deleted</param>
-        /// <returns>true if item not found successfully deleted, otherwise false</returns>
         /// <exception cref="ArgumentException">
         /// if <paramref name="id"/> is null or empty
         /// </exception>

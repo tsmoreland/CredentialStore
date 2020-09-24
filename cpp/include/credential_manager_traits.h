@@ -26,69 +26,53 @@ namespace win32::credential_store
         using optional_credential_t = std::optional<credential_t>;
 
         credential_manager_traits(credential_manager_traits const&) = delete;
-        /// <summary>
-        /// 
-        /// </summary>
         virtual ~credential_manager_traits() = default;
 
         /// <summary>
-        /// 
+        /// Returns all credentials from the Users credential set
         /// </summary>
-        /// <returns></returns>
         [[nodiscard]] virtual std::vector<credential_t> get_credentials() const = 0;
 
         /// <summary>
-        /// 
+        /// Adds or updates <paramref name="credential"/> to Win32
+        /// credential manager
         /// </summary>
-        /// <param name="credential"></params>
-        /// <returns></returns>
+        /// <param name="credential">credential to be saved</params>
+        /// <returns>true on success; otherwise, false</returns>
+        /// <exception cref="std::system_error">
+        /// if native api returns error
+        /// </exception>
         virtual void add_or_update(credential_t const& credential) const = 0;
 
         /// <summary>
-        /// 
+        /// Finds a credential with the given id value and optionally credential_type
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
+        /// <param name="id">id of the credential to be found</param>
+        /// <param name="type">credential type of the credential to be found</param>
+        /// <returns>optional of credential with value if found; otherwise nullopt</returns>
+        /// <exception cref="std::system_error">
+        /// if native api returns error
+        /// </exception>
         [[nodiscard]] virtual optional_credential_t find(wchar_t const* id, credential_type type) const = 0;
 
         /// <summary>
-        /// 
+        /// Returns all credentials matching wildcard based <paramref name="filter"/>
         /// </summary>
-        /// <param name="filter"></param>
-        /// <param name="search_all"></param>
-        /// <returns></returns>
+        /// <param name="filter">filter using wildcards</param>
+        /// <param name="search_all">if true all credentials are searched</param>
+        /// <returns>vector containing all credentials returned </returns>
         [[nodiscard]] virtual std::vector<credential_t> find(wchar_t const* filter, bool const search_all) const = 0;
 
         /// <summary>
-        /// 
+        /// removes a credential from the user's credential set
         /// </summary>
-        /// <param name="credential"></param>
+        /// <param name="credential">credential to be removed</param>
         virtual void remove(credential_t const& credential) const = 0;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         [[nodiscard]] credential_manager_traits& operator=(const credential_manager_traits& other) = delete;
     protected:
-        /// <summary>
-        /// 
-        /// </summary>
         credential_manager_traits() = default;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
         credential_manager_traits(credential_manager_traits &&other) noexcept = default;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         [[nodiscard]] credential_manager_traits& operator=(credential_manager_traits&& other) noexcept = default;
     };
 
