@@ -18,9 +18,7 @@ using System.Linq;
 
 namespace Moreland.Security.Win32.CredentialStore
 {
-    /// <summary>
     /// <inheritdoc cref="ICredentialManager"/>
-    /// </summary>
     public sealed class CredentialManager : ICredentialManager
     {
         private readonly INativeInterop _nativeInterop;
@@ -58,15 +56,12 @@ namespace Moreland.Security.Win32.CredentialStore
             _errorCodeToStringService = errorCodeToStringService ?? throw new ArgumentNullException(nameof(errorCodeToStringService));
 
         }
-        /// <summary>
+
         /// <inheritdoc cref="ICredentialManager.Credentials"/>
-        /// </summary>
         public IEnumerable<Credential> Credentials => 
             GetCredentials(null, NativeApi.EnumerateFlag.EnumerateAllCredentials);
 
-        /// <summary>
         /// <inheritdoc cref="ICredentialManager.Find(string, CredentialType)"/>
-        /// </summary>
         public Credential? Find(string id, CredentialType type = CredentialType.Generic)
         {
             if (string.IsNullOrEmpty(id))
@@ -81,17 +76,13 @@ namespace Moreland.Security.Win32.CredentialStore
             };
         }
 
-        /// <summary>
         /// <inheritdoc cref="ICredentialManager.Find(string, bool)"/>
-        /// </summary>
         public IEnumerable<Credential> Find(string filter, bool searchAll) =>
             GetCredentials(filter, searchAll
                 ? NativeApi.EnumerateFlag.EnumerateAllCredentials
                 : NativeApi.EnumerateFlag.None);
 
-        /// <summary>
         /// <inheritdoc cref="ICredentialManager.Add"/>
-        /// </summary>
         public void Add(Credential credential)
         {
             if (credential == null)
@@ -105,15 +96,11 @@ namespace Moreland.Security.Win32.CredentialStore
                 throw new Win32Exception(result, _errorCodeToStringService.GetMessageFor(result));
         }
 
-        /// <summary>
         /// <inheritdoc cref="ICredentialManager.Update"/>
-        /// </summary>
         public void Update(Credential credential) => 
             Add(credential);
 
-        /// <summary>
         /// <inheritdoc cref="ICredentialManager.Delete(Credential)"/>
-        /// </summary>
         public void Delete(Credential credential)
         {
             if (credential == null)
@@ -122,9 +109,7 @@ namespace Moreland.Security.Win32.CredentialStore
             Delete(credential.Id, credential.Type);
         }
 
-        /// <summary>
         /// <inheritdoc cref="ICredentialManager.Delete(string, CredentialType)"/>
-        /// </summary>
         public void Delete(string id, CredentialType type)
         {
             if (string.IsNullOrEmpty(id))
