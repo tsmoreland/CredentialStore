@@ -37,7 +37,7 @@ namespace win32::credential_store
         /// Adds or updates <paramref name="credential"/> to Win32
         /// credential manager
         /// </summary>
-        /// <param name="credential">credential to be saved</params>
+        /// <param name="credential">credential to be saved</param>
         /// <returns>true on success; otherwise, false</returns>
         /// <exception cref="std::system_error">
         /// if native api returns error
