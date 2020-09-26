@@ -24,7 +24,15 @@ using std::endl;
 
 namespace win32::credential_store::cli
 {
-    credential_executor::credential_executor(credential_manager const& manager)
+    [[nodiscard]] verb_type get_verb_type(std::string_view const& verb);
+    [[nodiscard]] credential_type get_credential_type(std::string_view const& type);
+    void print_unreognized_type();
+
+    void print_credential(credential<wchar_t> const& credential) {
+        wcout << credential.get_id() << L" " << credential.get_username() << endl;
+    }
+
+    credential_executor::credential_executor(credential_manager_interface const& manager)
         : m_manager{manager}
     {
     }
@@ -56,12 +64,51 @@ void credential_executor::none(std::vector<std::string_view> const& arguments) c
 
 void credential_executor::add(std::vector<std::string_view> const& arguments) const
 {
-    static_cast<void>(arguments);
+    if (arguments.size() < 3) {
+        wcout << L"Usage: credential_store.cli add <type> <target> <username>" << endl;
+        return;
+    }
+    if (auto const type = get_credential_type(arguments[0]);
+        type != credential_type::unknown) {
+
+        std::wstring const& id{begin(arguments[1]), end(arguments[1])};
+        std::wstring const& username{begin(arguments[2]), end(arguments[2])};
+
+        credential<wchar_t> credential{id, username, L"", type, persistence_type::local_machine, std::nullopt};
+
+    } else {
+        print_unreognized_type();
+    }
+
     static_cast<void>(m_manager);
 }
 void credential_executor::find(std::vector<std::string_view> const& arguments) const
 {
-    static_cast<void>(arguments);
+    if (arguments.size() < 2) {
+        wcout << L"Usage: credential_store.cli find <type> <target>" << endl;
+        return;
+    }
+    if (auto const type = get_credential_type(arguments[0]);
+        type != credential_type::unknown) {
+
+        try {
+            std::wstring const& id{begin(arguments[1]), end(arguments[1])};
+
+            auto credential = m_manager.find(id.c_str(), type);
+
+            if (credential.has_value())
+                print_credential(credential.value());
+            else
+                wcout << id << L" not found." << endl;
+
+        } catch (std::system_error const& e) {
+            std::cout << "Error occured: " << e.what() << endl;
+        }
+
+    } else {
+        print_unreognized_type();
+    }
+
     static_cast<void>(m_manager);
 }
 void credential_executor::list(std::vector<std::string_view> const& arguments) const
@@ -71,23 +118,44 @@ void credential_executor::list(std::vector<std::string_view> const& arguments) c
     auto credentials =  m_manager.get_credentials();
 
     for (auto const& credential : credentials) {
-        wcout << credential.get_id() << L" " << credential.get_username() << endl;
+        print_credential(credential);
     }
 }
 void credential_executor::remove(std::vector<std::string_view> const& arguments) const
 {
-    static_cast<void>(arguments);
+    if (arguments.size() < 2) {
+        wcout << L"Usage: credential_store.cli remove <type> <target>" << endl;
+        return;
+    }
+    if (auto const type = get_credential_type(arguments[0]);
+        type != credential_type::unknown) {
+        try {
+            std::wstring const& id{begin(arguments[1]), end(arguments[1])};
+            auto credential = m_manager.find(id.c_str(), type);
+
+            if (credential.has_value())
+                m_manager.remove(credential.value());
+            else
+                wcout << id << L" not found." << endl;
+
+        } catch (std::system_error const& e) {
+            std::cout << "Error occured: " << e.what() << endl;
+        }
+
+    } else {
+        print_unreognized_type();
+    }
     static_cast<void>(m_manager);
 }
 
-verb_type credential_executor::get_verb_type(std::string_view const& verb)
+char to_upper(char const ch)
+{
+    return static_cast<char>(::toupper(static_cast<int>(ch)));
+};
+
+verb_type get_verb_type(std::string_view const& verb)
 {
     std::string upper_verb(verb.size(), '\0');
-
-    auto to_upper = [](auto ch) {
-        return static_cast<char>(::toupper(static_cast<int>(ch)));
-    };
-
     std::transform(begin(verb), end(verb), begin(upper_verb), to_upper);
 
     if (upper_verb.find("ADD", 0) != std::string::npos)
@@ -99,6 +167,44 @@ verb_type credential_executor::get_verb_type(std::string_view const& verb)
     if (upper_verb.find("REMOVE", 0) != std::string::npos)
         return verb_type::remove;
     return verb_type::none;
+}
+
+credential_type get_credential_type(std::string_view const& type)
+{
+    std::string upper_type(type.size(), '\0');
+    std::transform(begin(type), end(type), begin(upper_type), to_upper);
+
+    if (upper_type.find("GENERIC", 0) != std::string::npos)
+        return credential_type::generic;
+    if (upper_type.find("DOMAIN_CERTIFICATE", 0) != std::string::npos)
+        return credential_type::domain_certificate;
+    if (upper_type.find("DOMAIN_EXTENDED", 0) != std::string::npos)
+        return credential_type::domain_extended;
+    if (upper_type.find("DOMAIN_PASSWORD", 0) != std::string::npos)
+        return credential_type::domain_password;
+    if (upper_type.find("DOMAIN_VISIBLE_PASSWORD", 0) != std::string::npos)
+        return credential_type::domain_visible_password;
+    if (upper_type.find("GENERIC_CERTIFICATE", 0) != std::string::npos)
+        return credential_type::generic_certificate;
+    if (upper_type.find("MAXIMUM", 0) != std::string::npos)
+        return credential_type::maximum;
+    if (upper_type.find("MAXIMUM_EX", 0) != std::string::npos)
+        return credential_type::maximum_ex;
+
+    return credential_type::unknown;
+}
+void print_unreognized_type()
+{
+    wcout
+        << L"Unrecognized credential type, must be one of: " << endl
+        << L"\tgeneric" << endl
+        << L"\tdomain_certificate" << endl
+        << L"\tdomain_extended" << endl
+        << L"\tdomain_password" << endl
+        << L"\tdomain_visible_password" << endl
+        << L"\tgeneric_certificate" << endl
+        << L"\tmaximum" << endl
+        << L"\tmaximum_ex" << endl;
 }
 
 }

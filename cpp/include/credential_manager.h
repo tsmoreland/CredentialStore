@@ -18,7 +18,7 @@
 #include <optional>
 #include <credential.h>
 #include <credential_type.h>
-#include <credential_manager_traits.h>
+#include <credential_manager_interface.h>
 
 namespace win32::credential_store
 {
@@ -28,7 +28,7 @@ namespace win32::credential_store
     /// Win32 Credential Manager (Credential Repository) providing CRUD 
     /// operations for Windows Credential Manager 
     /// </summary>
-    class credential_manager final : public credential_manager_traits
+    class credential_manager final : public credential_manager_interface
     {
     public:
         /// <summary>

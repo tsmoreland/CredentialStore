@@ -20,7 +20,7 @@ namespace win32::credential_store
     /// </summary>
     enum class credential_type : int
     {
-        Unknown = 0,
+        unknown = 0,
 
         /// <summary>
         /// The credential is a generic credential. The credential will not be 

@@ -72,7 +72,7 @@ namespace win32::credential_store
             case CRED_TYPE_MAXIMUM_EX:
                 return credential_type::maximum_ex;
             default:
-                return credential_type::Unknown;
+                return credential_type::unknown;
             }
         }
         static persistence_type to_persistence_type(DWORD const type)
