@@ -19,14 +19,14 @@
 namespace win32::credential_store
 {
 
-    class credential_manager_traits
+    class credential_manager_interface
     {
     public:
         using credential_t = credential<wchar_t>;
         using optional_credential_t = std::optional<credential_t>;
 
-        credential_manager_traits(credential_manager_traits const&) = delete;
-        virtual ~credential_manager_traits() = default;
+        credential_manager_interface(credential_manager_interface const&) = delete;
+        virtual ~credential_manager_interface() = default;
 
         /// <summary>
         /// Returns all credentials from the Users credential set
@@ -69,11 +69,11 @@ namespace win32::credential_store
         /// <param name="credential">credential to be removed</param>
         virtual void remove(credential_t const& credential) const = 0;
 
-        [[nodiscard]] credential_manager_traits& operator=(const credential_manager_traits& other) = delete;
+        [[nodiscard]] credential_manager_interface& operator=(const credential_manager_interface& other) = delete;
     protected:
-        credential_manager_traits() = default;
-        credential_manager_traits(credential_manager_traits &&other) noexcept = default;
-        [[nodiscard]] credential_manager_traits& operator=(credential_manager_traits&& other) noexcept = default;
+        credential_manager_interface() = default;
+        credential_manager_interface(credential_manager_interface &&other) noexcept = default;
+        [[nodiscard]] credential_manager_interface& operator=(credential_manager_interface&& other) noexcept = default;
     };
 
 }

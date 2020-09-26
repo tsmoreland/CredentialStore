@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <credential_manager.h>
+#include <credential_manager_interface.h>
 #include <string_view>
 #include <functional>
 #include <vector>
@@ -27,7 +27,7 @@ namespace win32::credential_store::cli
     class credential_executor final
     {
     public:
-        explicit credential_executor(credential_manager const& manager);
+        explicit credential_executor(credential_manager_interface const& manager);
 
         [[nodiscard]] verb_processor get_operation(std::string_view const& verb) const;
 
@@ -38,10 +38,7 @@ namespace win32::credential_store::cli
         void remove(std::vector<std::string_view> const& arguments) const;
 
     private:
-        credential_manager const& m_manager;
-
-        [[nodiscard]] static verb_type get_verb_type(std::string_view const& verb);
-
+        credential_manager_interface const& m_manager;
     };
 
 }
