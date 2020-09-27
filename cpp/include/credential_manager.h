@@ -32,75 +32,61 @@ namespace win32::credential_store
     {
     public:
         /// <summary>
-        /// 
+        /// Returns all credentials from the Users credential set
         /// </summary>
-        explicit credential_manager();
-        credential_manager(credential_manager const&) = delete;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        credential_manager(credential_manager &&other) noexcept;
-        /// <summary>
-        /// 
-        /// </summary>
-        ~credential_manager() override;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         [[nodiscard]] std::vector<credential_t> get_credentials() const override;
 
         /// <summary>
-        /// 
+        /// Adds or updates <paramref name="credential"/> to Win32
+        /// credential manager
         /// </summary>
-        /// <param name="credential"></params>
-        /// <returns></returns>
+        /// <param name="credential">credential to be saved</param>
+        /// <returns>true on success; otherwise, false</returns>
+        /// <exception cref="std::system_error">
+        /// if native api returns error
+        /// </exception>
         void add_or_update(credential_t const& credential) const override;
 
         /// <summary>
-        /// 
+        /// Finds a credential with the given id value and optionally credential_type
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
+        /// <param name="id">id of the credential to be found</param>
+        /// <param name="type">credential type of the credential to be found</param>
+        /// <returns>optional of credential with value if found; otherwise nullopt</returns>
+        /// <exception cref="std::system_error">
+        /// if native api returns error
+        /// </exception>
         [[nodiscard]] optional_credential_t find(wchar_t const* id, credential_type type) const override;
 
         /// <summary>
-        /// 
+        /// Returns all credentials matching wildcard based <paramref name="filter"/>
         /// </summary>
-        /// <param name="filter"></param>
-        /// <param name="search_all"></param>
-        /// <returns></returns>
+        /// <param name="filter">filter using wildcards</param>
+        /// <param name="search_all">if true all credentials are searched</param>
+        /// <returns>vector containing all credentials returned </returns>
         [[nodiscard]] std::vector<credential_t> find(wchar_t const* filter, bool const search_all) const override;
 
         /// <summary>
-        /// 
+        /// removes a credential from the user's credential set
         /// </summary>
-        /// <param name="credential"></param>
+        /// <param name="credential">credential to be removed</param>
         void remove(credential_t const& credential) const override;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        explicit credential_manager();
+        credential_manager(credential_manager const&) = delete;
+        credential_manager(credential_manager &&other) noexcept;
+        ~credential_manager() override;
+
         [[nodiscard]] credential_manager& operator=(const credential_manager& other) = delete;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         [[nodiscard]] credential_manager& operator=(credential_manager&& other) noexcept;
 
         /// <summary>
-        /// 
+        /// Swaps the values first and second
         /// </summary>
-        /// <param name="first"></param>
-        /// <param name="second"></param>
-        /// <returns></returns>
+        /// <param name="first">value to be swapped</param>
+        /// <param name="second">value to be swapped</param>
         friend void swap(credential_manager& first, credential_manager& second) noexcept;
+
     private:
         std::unique_ptr<credential_manager_impl> m_p_impl;
     };

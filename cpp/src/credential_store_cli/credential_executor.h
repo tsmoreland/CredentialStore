@@ -17,7 +17,6 @@
 #include <string_view>
 #include <functional>
 #include <vector>
-#include "verb_type.h"
 
 namespace win32::credential_store::cli
 {

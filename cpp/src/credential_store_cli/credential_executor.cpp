@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <iostream>
 #include "credential_executor.h"
-
+#include "verb_type.h"
 #include <functional>
 
 using std::begin;
