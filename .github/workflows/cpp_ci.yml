@@ -19,6 +19,13 @@ jobs:
       with:
         submodules: true
 
+    - name: Bootstrap vcpkg
+      id: vckpg_bootstrap
+      shell: 'powershell'
+      working-directory: ./cpp
+      run: |
+        vcpkg/bootstrap-vcpkg.bat
+
     - name: Download Ninja and CMake
       id: cmake_and_ninja
       shell: cmake -P {0}
