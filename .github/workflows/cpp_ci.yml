@@ -25,7 +25,13 @@ jobs:
       working-directory: ./cpp
       run: |
         vcpkg/bootstrap-vcpkg.bat
-
+    - name: Install GTest package
+      id: vckpkg_install_gtest
+      shell: 'powershell'
+      working-directory: ./cpp
+      run: |
+        vcpkg/vcpkg install gtest:x64-windows
+        
     - name: Download Ninja and CMake
       id: cmake_and_ninja
       shell: cmake -P {0}
