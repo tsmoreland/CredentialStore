@@ -9,6 +9,8 @@ endif()
 message("${CMAKE_VS_PLATFORM_NAME} architecture in use")
 
 project(credential_store CXX)
+enable_testing()
+
 
 set(CMAKE_CONFIGURATION_TYPES
     "Debug"
@@ -52,6 +54,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/target/${CMAKE_BUILD_TYPE
 
 endif()
 
-
-#include_directories(include)
 add_subdirectory(src)
+add_subdirectory(test)
