@@ -18,6 +18,7 @@
 #include <tuple>
 #include <optional>
 #include <utility>
+#include <stdexcept>
 #include "credential_type.h"
 #include "persistence_type.h"
 
@@ -34,6 +35,12 @@ namespace win32::credential_store
         using optional_time_point = std::optional<std::chrono::time_point<std::chrono::system_clock>>;
         using deconstruct_type = std::tuple<string_type, string_type, string_type, credential_type, persistence_type, optional_time_point>;
 
+        /// <summary>
+        /// initializes a new instance with provided values
+        /// </summary>
+        /// <exception cref="std::invalid_argument">
+        /// when id is empty, credential_type is unknown or persistent_type is unknown
+        /// </exception>
         credential(string_type id, string_type username, string_type secret,credential_type const credential_type, persistence_type const persistence_type, optional_time_point const & last_updated)
             : m_id{std::move(id)}
             , m_username{std::move(username)}
@@ -42,6 +49,10 @@ namespace win32::credential_store
             , m_persistence_type{persistence_type}
             , m_last_updated{last_updated}
         {
+            if (char const *invalid_argument_name = get_invalid_argument_name_or_nullptr();
+                invalid_argument_name != nullptr) {
+                throw std::invalid_argument(invalid_argument_name);
+            }
         }
 
         /// <summary>
@@ -98,6 +109,18 @@ namespace win32::credential_store
         credential_type m_credential_type;
         persistence_type m_persistence_type;
         optional_time_point m_last_updated;
+
+        [[nodiscard]] char const* get_invalid_argument_name_or_nullptr() const noexcept
+        {
+            if (get_id().empty())
+                return "id";
+            if (get_credential_type() == credential_type::unknown)
+                return "credential_type";
+            if (get_persistence_type() == persistence_type::unknown)
+                return "persistence_type";
+            return nullptr;
+        }
+        
     };
 
 }

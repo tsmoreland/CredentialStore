@@ -85,7 +85,7 @@ namespace win32::credential_store
             case CRED_PERSIST_SESSION:
                 return persistence_type::session;
             default:
-                return persistence_type::Unknown;
+                return persistence_type::unknown;
             }
         }
 
