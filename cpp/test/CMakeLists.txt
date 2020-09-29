@@ -5,8 +5,8 @@ find_package(GTest REQUIRED)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set (SOURCE 
-	credential_test.cpp
-)
+ "credential_tests.cpp"
+ "credential_manager_tests.cpp")
 
 add_executable(${TEST_PROJECT_NAME} WIN32 ${SOURCE})
 add_test(NAME ${TEST_PROJECT_NAME} COMMAND ${TEST_PROJECT_NAME})
