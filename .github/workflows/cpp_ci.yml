@@ -25,6 +25,12 @@ jobs:
       working-directory: ./cpp
       run: |
         vcpkg/bootstrap-vcpkg.bat
+    - name: Integrate vcpkg
+      id: vckpkg_integrate
+      shell: 'powershell'
+      working-directory: ./cpp
+      run: |
+        vcpkg/vcpkg.exe integrate install
     - name: Install GTest package
       id: vckpkg_install_gtest
       shell: 'powershell'
