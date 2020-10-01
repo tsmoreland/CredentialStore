@@ -49,7 +49,10 @@ namespace win32::credential_store
 
         [[nodiscard]] static DWORD cred_enumerate(wchar_t const* filter, DWORD const flags, DWORD& count, CREDENTIALW**& credentials)
         {
+#pragma warning(push)
+#pragma warning(disable : 6388) // flags might not be 0, spec says it can be 0x1 or CRED_ENUMERATE_ALL_CREDENTIALS
             auto const result = CredEnumerateW(filter, flags, &count, &credentials);
+#pragma warning(pop)
             return result == TRUE 
                 ? SUCCESS
                 : GetLastError();

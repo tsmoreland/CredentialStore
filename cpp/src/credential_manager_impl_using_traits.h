@@ -39,7 +39,7 @@ namespace win32::credential_store
         {
             return get_credentials(nullptr, true);
         }
-        void add_or_update(credential_t const& credential) override
+        [[nodiscard]] result_detail add_or_update(credential_t const& credential) override
         {
             credential_w_facade win32_credential;
             win32_credential
@@ -48,42 +48,43 @@ namespace win32::credential_store
                 .set_credential_blob(credential.get_secret())
                 .set_credential_type(CREDENTIAL_TRAITS::to_dword(credential.get_credential_type()))
                 .set_persistence_type(CREDENTIAL_TRAITS::to_dword(credential.get_persistence_type()));
-
-            auto const result = CREDENTIAL_TRAITS::cred_write(&win32_credential.get_credential(), CRED_PRESERVE_CREDENTIAL_BLOB);
-            if (result != SUCCESS)
-                throw std::system_error(std::error_code(result, std::system_category()));
+            return result_detail::from_win32_error(CREDENTIAL_TRAITS::cred_write(&win32_credential.get_credential(), CRED_PRESERVE_CREDENTIAL_BLOB));
         }
-        [[nodiscard]] optional_credential_t find(wchar_t const* id, credential_type type) const override
+        [[nodiscard]] credential_or_error_detail find(wchar_t const* id, credential_type type) const override
         {
             if (is_null_or_empty(id)) {
-                throw std::invalid_argument("id cannot be empty");
+                return make_right<credential_t, result_detail>(result_detail::from_error_code(std::errc::invalid_argument));
             }
 
             unique_credential_w credential{nullptr, CREDENTIAL_TRAITS::credential_deleter};
             if (auto result = CREDENTIAL_TRAITS::cred_read(id, type, credential);
                 result == SUCCESS) {
-                return optional_credential_t(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(credential.get()));
+                return make_left<credential_t, result_detail>(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(credential.get()));
+
             } else if (result == ERROR_NOT_FOUND) {
-                return std::nullopt;
+                return make_right<credential_t, result_detail>(result_detail::from_win32_error(result));
+
             } else {
-                throw std::system_error(std::error_code(result, std::system_category()));
+                return make_right<credential_t, result_detail>(result_detail::from_win32_error(result));
             }
         }
         [[nodiscard]] std::vector<credential_t> find(wchar_t const* filter, const bool search_all) const override
         {
             return get_credentials(filter, search_all);
         }
-        void remove(credential_t const& credential) const override
+        [[nodiscard]] result_detail remove(credential_t const& credential) const override
         {
-            remove(credential.get_id().c_str(), credential.get_credential_type());
+            return remove(credential.get_id().c_str(), credential.get_credential_type());
         }
-        void remove(wchar_t const* id, credential_type type) const override
+        [[nodiscard]] result_detail remove(wchar_t const* id, credential_type type) const override
         {
             // static_cast<std::underlying_type<credential_type>::type>(type) -- move into CREDENTIAL_TRAITS
             if (auto const result = CREDENTIAL_TRAITS::cred_delete(id, type);
                 result != SUCCESS && result != ERROR_NOT_FOUND) {
-                throw std::system_error(std::error_code(result, std::system_category()));
-            } 
+                return result_detail::from_win32_error(result);
+            } else {
+                return result_detail::success();
+            }
         }
 
         explicit credential_manager_impl_using_traits() = default;

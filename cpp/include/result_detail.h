@@ -14,7 +14,7 @@
 #pragma once
 
 #include <string>
-#include <result_code.h>
+#include <system_error>
 
 namespace win32::credential_store
 {
@@ -22,30 +22,39 @@ namespace win32::credential_store
     class result_detail final 
     {
         std::string m_error_message{};
-        result_code m_result_code;
+        std::optional<std::error_code> m_error_code;
 
     public:
-        explicit result_detail() 
-            : result_detail("", result_code::success)
+        using optional_error_code = std::optional<std::error_code>;
+        static const DWORD SUCCESS = 0UL;
+
+        [[nodiscard]] static result_detail from_error_code(std::errc const error_code)
         {
+            return from_error_code("", error_code);
         }
-        explicit result_detail(result_code const result_code) 
-            : result_detail("", result_code)
+        [[nodiscard]] static result_detail from_error_code(char const* message, std::errc const error_code)
         {
+            return result_detail(message, std::make_error_code(error_code));
         }
-        explicit result_detail(char const* message) 
-            : result_detail(message, result_code::unknown)
+        [[nodiscard]] static result_detail from_win32_error(DWORD const& error_value)
         {
+            return from_win32_error("", error_value);
         }
-        explicit result_detail(char const* message, result_code const result_code)
-            : m_error_message{message}
-            , m_result_code(result_code)
+        [[nodiscard]] static result_detail from_win32_error(char const* message, DWORD const& error_value)
         {
+            return error_value == SUCCESS
+                ? success() 
+                : result_detail(message, optional_error_code(std::error_code(error_value, std::system_category())));
+
+        }
+        [[nodiscard]] static result_detail success()
+        {
+            return result_detail();
         }
 
-        [[nodiscard]] constexpr result_code value() const noexcept
+        [[nodiscard]] constexpr std::optional<std::error_code> const& value() const noexcept
         {
-            return m_result_code;
+            return m_error_code;
         }
         [[nodiscard]] constexpr std::string const& message() const noexcept
         {
@@ -54,7 +63,25 @@ namespace win32::credential_store
 
         [[nodiscard]] explicit operator bool() const
         {
-            return m_result_code == result_code::success;
+            return !m_error_code.has_value();
+        }
+
+        explicit result_detail() 
+            : result_detail("", std::nullopt)
+        {
+        }
+        explicit result_detail(optional_error_code const result_code) 
+            : result_detail("", result_code)
+        {
+        }
+        explicit result_detail(char const* message) 
+            : result_detail(message, std::nullopt)
+        {
+        }
+        explicit result_detail(char const* message, optional_error_code const result_code)
+            : m_error_message{message}
+            , m_error_code(result_code)
+        {
         }
 
     };

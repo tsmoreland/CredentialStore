@@ -196,5 +196,4 @@ namespace win32::credential_store
         return either<TLeft, TRight>(right_value);
     }
 
-
 }

@@ -185,7 +185,7 @@ namespace win32::credential_store
             return make_left<credential<TCHAR>, result_detail>({id, username, secret, credential_type, persistence_type, last_updated});
 
         } catch (std::invalid_argument const& e) {
-            return make_right<credential<TCHAR>, result_detail>(result_detail(e.what(), result_code::invalid_argument));
+            return make_right<credential<TCHAR>, result_detail>(result_detail::from_error_code(e.what(), std::errc::invalid_argument));
         }
     }
 

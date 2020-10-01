@@ -91,18 +91,17 @@ void credential_executor::find(std::vector<std::string_view> const& arguments) c
     if (auto const type = get_credential_type(arguments[0]);
         type != credential_type::unknown) {
 
-        try {
-            std::wstring const& id{begin(arguments[1]), end(arguments[1])};
+        std::wstring const& id{begin(arguments[1]), end(arguments[1])};
 
-            auto credential = m_manager.find(id.c_str(), type);
+        auto credential = m_manager.find(id.c_str(), type);
 
-            if (credential.has_value())
-                print_credential(credential.value());
-            else
-                wcout << id << L" not found." << endl;
-
-        } catch (std::system_error const& e) {
-            std::cout << "Error occured: " << e.what() << endl;
+        if (credential.has_value<win32::credential_store::credential<wchar_t>>())
+            print_credential(credential.value<win32::credential_store::credential<wchar_t>>());
+        else if (credential.value<result_detail>().value().value().value() == ERROR_NOT_FOUND)
+            wcout << id << L" not found." << endl;
+        else {
+            auto const& result = credential.value<result_detail>();
+            std::cout << "Error occured: " << result.value().value() << " " << result.message() << endl;
         }
 
     } else {
@@ -129,18 +128,15 @@ void credential_executor::remove(std::vector<std::string_view> const& arguments)
     }
     if (auto const type = get_credential_type(arguments[0]);
         type != credential_type::unknown) {
-        try {
             std::wstring const& id{begin(arguments[1]), end(arguments[1])};
-            auto credential = m_manager.find(id.c_str(), type);
 
-            if (credential.has_value())
-                m_manager.remove(credential.value());
-            else
-                wcout << id << L" not found." << endl;
+        auto credential = m_manager.find(id.c_str(), type);
 
-        } catch (std::system_error const& e) {
-            std::cout << "Error occured: " << e.what() << endl;
-        }
+        if (credential.has_value<win32::credential_store::credential<wchar_t>>())
+            static_cast<void>(m_manager.remove(credential.value<win32::credential_store::credential<wchar_t>>()));
+        else
+            wcout << id << L" not found." << endl;
+
 
     } else {
         print_unreognized_type();

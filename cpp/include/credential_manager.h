@@ -18,6 +18,7 @@
 #include <optional>
 #include <credential.h>
 #include <credential_type.h>
+#include <result_detail.h>
 #include <credential_manager_interface.h>
 
 namespace win32::credential_store
@@ -41,11 +42,8 @@ namespace win32::credential_store
         /// credential manager
         /// </summary>
         /// <param name="credential">credential to be saved</param>
-        /// <returns>true on success; otherwise, false</returns>
-        /// <exception cref="std::system_error">
-        /// if native api returns error
-        /// </exception>
-        void add_or_update(credential_t const& credential) const override;
+        /// <returns>result_detail with value() of result_code::success on success</returns>
+        [[nodiscard]] result_detail add_or_update(credential_t const& credential) const override;
 
         /// <summary>
         /// Finds a credential with the given id value and optionally credential_type
@@ -56,7 +54,7 @@ namespace win32::credential_store
         /// <exception cref="std::system_error">
         /// if native api returns error
         /// </exception>
-        [[nodiscard]] optional_credential_t find(wchar_t const* id, credential_type type) const override;
+        [[nodiscard]] credential_or_error_detail find(wchar_t const* id, credential_type type) const override;
 
         /// <summary>
         /// Returns all credentials matching wildcard based <paramref name="filter"/>
@@ -70,7 +68,8 @@ namespace win32::credential_store
         /// removes a credential from the user's credential set
         /// </summary>
         /// <param name="credential">credential to be removed</param>
-        void remove(credential_t const& credential) const override;
+        /// <returns>result_detail with value() of result_code::success on success</returns>
+        [[nodiscard]] result_detail remove(credential_t const& credential) const override;
 
         explicit credential_manager();
         credential_manager(credential_manager const&) = delete;

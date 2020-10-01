@@ -9,7 +9,7 @@ set (SOURCE
 	"${CMAKE_SOURCE_DIR}/include/credential_manager_interface.h"
 	"${CMAKE_SOURCE_DIR}/include/credential_type.h"
 	"${CMAKE_SOURCE_DIR}/include/either.h"
-	"${CMAKE_SOURCE_DIR}/include/result_code.h"
+	
 	"${CMAKE_SOURCE_DIR}/include/result_detail.h"
 	"${CMAKE_SOURCE_DIR}/include/persistence_type.h"
 	"${CMAKE_SOURCE_DIR}/include/win32_exception.h"
