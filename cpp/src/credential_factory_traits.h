@@ -36,21 +36,6 @@ namespace win32::credential_store
                 std::nullopt);
         }
 
-            /*
-        static CREDENTIALW to_credential_w(credential_t const& credential)
-        {
-            CREDENTIALW credential_w{};
-             TODO: change return type to tuple containing the CREDENTIAL_W + unique_ptr to the strings?
-                   -or- take the easy route and use &credential.get_id()[0]
-            credential_w.TargetName = credential.get_id().c_str();
-            credential_w.UserName = credential.get_username().c_str();
-            credential_w.Type = 
-            credential_w.
-            credential_w.
-            credential_w.
-        }
-                */
-
     private:
         static credential_type to_credential_type(DWORD const type)
         {
