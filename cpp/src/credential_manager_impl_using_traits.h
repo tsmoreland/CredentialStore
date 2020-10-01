@@ -20,7 +20,7 @@
 #include <optional>
 #include <credential.h>
 #include "credential_manager_impl.h"
-#include "win32_credential_traits.h"
+#include "credential_traits.h"
 #include "credential_factory_traits.h"
 #include "credential_w_facade.h"
 
@@ -28,7 +28,7 @@ namespace win32::credential_store
 {
     using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
 
-    template <typename WIN32_CREDENTIAL_TRAITS, typename CREDENTIAL_FACTORY_TRAITS>
+    template <typename CREDENTIAL_TRAITS, typename CREDENTIAL_FACTORY_TRAITS>
     class credential_manager_impl_using_traits final : public credential_manager_impl
     {
     public:
@@ -46,10 +46,10 @@ namespace win32::credential_store
                 .set_target_name(credential.get_id())
                 .set_username(credential.get_username())
                 .set_credential_blob(credential.get_secret())
-                .set_credential_type(WIN32_CREDENTIAL_TRAITS::to_dword(credential.get_credential_type()))
-                .set_persistence_type(WIN32_CREDENTIAL_TRAITS::to_dword(credential.get_persistence_type()));
+                .set_credential_type(CREDENTIAL_TRAITS::to_dword(credential.get_credential_type()))
+                .set_persistence_type(CREDENTIAL_TRAITS::to_dword(credential.get_persistence_type()));
 
-            auto const result = WIN32_CREDENTIAL_TRAITS::cred_write(&win32_credential.get_credential(), CRED_PRESERVE_CREDENTIAL_BLOB);
+            auto const result = CREDENTIAL_TRAITS::cred_write(&win32_credential.get_credential(), CRED_PRESERVE_CREDENTIAL_BLOB);
             if (result != SUCCESS)
                 throw std::system_error(std::error_code(result, std::system_category()));
         }
@@ -59,8 +59,8 @@ namespace win32::credential_store
                 throw std::invalid_argument("id cannot be empty");
             }
 
-            unique_credential_w credential{nullptr, WIN32_CREDENTIAL_TRAITS::credential_deleter};
-            if (auto result = WIN32_CREDENTIAL_TRAITS::cred_read(id, type, credential);
+            unique_credential_w credential{nullptr, CREDENTIAL_TRAITS::credential_deleter};
+            if (auto result = CREDENTIAL_TRAITS::cred_read(id, type, credential);
                 result == SUCCESS) {
                 return optional_credential_t(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(credential.get()));
             } else if (result == ERROR_NOT_FOUND) {
@@ -79,8 +79,8 @@ namespace win32::credential_store
         }
         void remove(wchar_t const* id, credential_type type) const override
         {
-            // static_cast<std::underlying_type<credential_type>::type>(type) -- move into WIN32_CREDENTIAL_TRAITS
-            if (auto const result = WIN32_CREDENTIAL_TRAITS::cred_delete(id, type);
+            // static_cast<std::underlying_type<credential_type>::type>(type) -- move into CREDENTIAL_TRAITS
+            if (auto const result = CREDENTIAL_TRAITS::cred_delete(id, type);
                 result != SUCCESS && result != ERROR_NOT_FOUND) {
                 throw std::system_error(std::error_code(result, std::system_category()));
             } 
@@ -116,7 +116,7 @@ namespace win32::credential_store
                 ~credentials_container()
                 {
                     if (credentials != nullptr) {
-                        WIN32_CREDENTIAL_TRAITS::credential_deleter(credentials);
+                        CREDENTIAL_TRAITS::credential_deleter(credentials);
                     }
                 }
                 CREDENTIALW** credentials{nullptr};
@@ -124,7 +124,7 @@ namespace win32::credential_store
             };
             credentials_container container;
 
-            auto const result = WIN32_CREDENTIAL_TRAITS::cred_enumerate(filter, flags, container.count, container.credentials); 
+            auto const result = CREDENTIAL_TRAITS::cred_enumerate(filter, flags, container.count, container.credentials); 
             if (result != SUCCESS) {
                 throw std::system_error(std::error_code(result, std::system_category()));
             }
@@ -138,6 +138,6 @@ namespace win32::credential_store
 
     };
 
-    using win32_credential_manager_impl_using_traits = credential_manager_impl_using_traits<win32_credential_traits, credential_factory_traits>;
+    using win32_credential_manager_impl_using_traits = credential_manager_impl_using_traits<credential_traits, credential_factory_traits>;
     
 }

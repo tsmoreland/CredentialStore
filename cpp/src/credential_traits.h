@@ -23,7 +23,7 @@ namespace win32::credential_store
     using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
     using unique_credentials_w = std::unique_ptr<CREDENTIALW*, void (*)(CREDENTIALW*)>;  
 
-    struct win32_credential_traits final
+    struct credential_traits final
     {
 
         [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type const type, unique_credential_w& out_credential)

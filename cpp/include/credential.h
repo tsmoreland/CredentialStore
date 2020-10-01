@@ -23,7 +23,7 @@
 #include <wincred.h>
 
 #include <either.h>
-#include <error_details.h>
+#include <result_detail.h>
 #include <credential_type.h>
 #include <persistence_type.h>
 
@@ -130,7 +130,7 @@ namespace win32::credential_store
     };
 
     template <typename TCHAR>
-    using credential_or_error = either<credential<TCHAR>, error_details>;
+    using credential_or_error = either<credential<TCHAR>, result_detail>;
 
     [[nodiscard]] constexpr credential_type to_credential_type(DWORD const type)
     {
@@ -182,13 +182,13 @@ namespace win32::credential_store
         typename credential<TCHAR>::optional_time_point const & last_updated)
     {
         try {
-            return make_left<credential<TCHAR>, error_details>({id, username, secret, credential_type, persistence_type, last_updated});
+            return make_left<credential<TCHAR>, result_detail>({id, username, secret, credential_type, persistence_type, last_updated});
 
         } catch (std::invalid_argument const& e) {
-            return make_right<credential<TCHAR>, error_details>(error_details(e.what(), error_code::invalid_argument));
+            return make_right<credential<TCHAR>, result_detail>(result_detail(e.what(), result_code::invalid_argument));
         }
     }
 
-    [[nodiscard]] static either<credential<wchar_t>, error_details> from_win32_credential(CREDENTIALW const * const credential_ptr);
+    [[nodiscard]] static either<credential<wchar_t>, result_detail> from_win32_credential(CREDENTIALW const * const credential_ptr);
 
 }
