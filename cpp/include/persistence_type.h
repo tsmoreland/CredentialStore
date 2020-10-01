@@ -20,7 +20,7 @@ namespace win32::credential_store
     /// </summary>
     enum class persistence_type
     {
-        Unknown = 0,
+        unknown = 0,
 
         /// <summary>
         /// The credential persists for the life of the logon session. It will 

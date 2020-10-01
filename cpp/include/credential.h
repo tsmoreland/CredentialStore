@@ -18,8 +18,14 @@
 #include <tuple>
 #include <optional>
 #include <utility>
-#include "credential_type.h"
-#include "persistence_type.h"
+#include <stdexcept>
+#include <Windows.h>
+#include <wincred.h>
+
+#include <either.h>
+#include <error_details.h>
+#include <credential_type.h>
+#include <persistence_type.h>
 
 namespace win32::credential_store
 {
@@ -30,10 +36,17 @@ namespace win32::credential_store
     class credential final
     {
     public:
+
         using string_type = std::basic_string<TCHAR>;
         using optional_time_point = std::optional<std::chrono::time_point<std::chrono::system_clock>>;
         using deconstruct_type = std::tuple<string_type, string_type, string_type, credential_type, persistence_type, optional_time_point>;
 
+        /// <summary>
+        /// initializes a new instance with provided values
+        /// </summary>
+        /// <exception cref="std::invalid_argument">
+        /// when id is empty, credential_type is unknown or persistent_type is unknown
+        /// </exception>
         credential(string_type id, string_type username, string_type secret,credential_type const credential_type, persistence_type const persistence_type, optional_time_point const & last_updated)
             : m_id{std::move(id)}
             , m_username{std::move(username)}
@@ -42,6 +55,10 @@ namespace win32::credential_store
             , m_persistence_type{persistence_type}
             , m_last_updated{last_updated}
         {
+            if (char const *invalid_argument_name = get_invalid_argument_name_or_nullptr();
+                invalid_argument_name != nullptr) {
+                throw std::invalid_argument(invalid_argument_name);
+            }
         }
 
         /// <summary>
@@ -98,6 +115,81 @@ namespace win32::credential_store
         credential_type m_credential_type;
         persistence_type m_persistence_type;
         optional_time_point m_last_updated;
+
+        [[nodiscard]] char const* get_invalid_argument_name_or_nullptr() const noexcept
+        {
+            if (get_id().empty())
+                return "id";
+            if (get_credential_type() == credential_type::unknown)
+                return "credential_type";
+            if (get_persistence_type() == persistence_type::unknown)
+                return "persistence_type";
+            return nullptr;
+        }
+        
     };
+
+    template <typename TCHAR>
+    using credential_or_error = either<credential<TCHAR>, error_details>;
+
+    [[nodiscard]] constexpr credential_type to_credential_type(DWORD const type)
+    {
+        switch (type) {
+        case CRED_TYPE_DOMAIN_PASSWORD:
+            return credential_type::domain_password;
+        case CRED_TYPE_GENERIC:
+            return credential_type::generic;
+        case CRED_TYPE_DOMAIN_CERTIFICATE:
+            return credential_type::domain_certificate;
+        case CRED_TYPE_DOMAIN_EXTENDED:
+            return credential_type::domain_extended;
+        case CRED_TYPE_DOMAIN_VISIBLE_PASSWORD:
+            return credential_type::domain_visible_password;
+        case CRED_TYPE_GENERIC_CERTIFICATE:
+            return credential_type::generic_certificate;
+        case CRED_TYPE_MAXIMUM:
+            return credential_type::maximum;
+        case CRED_TYPE_MAXIMUM_EX:
+            return credential_type::maximum_ex;
+        default:
+            return credential_type::unknown;
+        }
+    }
+    [[nodiscard]] constexpr persistence_type to_persistence_type(DWORD const type)
+    {
+        switch (type) {
+        case CRED_PERSIST_ENTERPRISE:
+            return persistence_type::enterprise;
+        case CRED_PERSIST_LOCAL_MACHINE:
+            return persistence_type::local_machine;
+        case CRED_PERSIST_SESSION:
+            return persistence_type::session;
+        default:
+            return persistence_type::unknown;
+        }
+    }
+
+    [[nodiscard]] std::wstring get_secret(CREDENTIALW const*const credential_ptr);
+    [[nodiscard]] inline wchar_t const* value_or_empty(wchar_t const* const value);
+
+    template<typename TCHAR>
+    [[nodiscard]] static credential_or_error<TCHAR> build_credential(
+        typename credential<TCHAR>::string_type id, 
+        typename credential<TCHAR>::string_type username, 
+        typename credential<TCHAR>::string_type secret,
+        credential_type const credential_type, 
+        persistence_type const persistence_type, 
+        typename credential<TCHAR>::optional_time_point const & last_updated)
+    {
+        using either_t = either<credential<TCHAR>, error_details>;
+        try {
+            return make_left(id, username, secret, credential_type, persistence_type, last_updated);
+
+        } catch (std::invalid_argument const& e) {
+            return make_right<credential<TCHAR>, error_details>(error_details(e.what()));
+        }
+    }
+
+    [[nodiscard]] static either<credential<wchar_t>, error_details> from_win32_credential(CREDENTIALW const * const credential_ptr);
 
 }
