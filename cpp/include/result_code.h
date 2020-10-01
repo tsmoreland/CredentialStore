@@ -13,41 +13,13 @@
 
 #pragma once
 
-#include <string>
-#include <error_code.h>
-
 namespace win32::credential_store
 {
-
-    class error_details final 
+    enum class result_code : int
     {
-        std::string m_error_message{};
-        error_code m_error_code{};
-    public:
-        explicit error_details(error_code const error_code) 
-            : error_details("", error_code)
-        {
-        }
-        explicit error_details(char const* message) 
-            : error_details(message, error_code::unknown)
-        {
-        }
-        explicit error_details(char const* message, error_code const error_code)
-            : m_error_message{message}
-            , m_error_code(error_code)
-        {
-        }
-
-        [[nodiscard]] constexpr error_code error_code() const noexcept
-        {
-            return m_error_code;
-        }
-        [[nodiscard]] constexpr std::string const& error_message() const noexcept
-        {
-            return m_error_message;
-        }
-
-
+        unknown = -1,
+        success = 0,
+        invalid_argument,
     };
     
 }

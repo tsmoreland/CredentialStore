@@ -13,12 +13,46 @@
 
 #pragma once
 
+#include <string>
+#include <result_code.h>
+
 namespace win32::credential_store
 {
-    enum class error_code : int
+
+    class result final 
     {
-        unknown = 0,
-        invalid_argument,
+        std::string m_error_message{};
+        result_code m_result_code;
+
+    public:
+        explicit result() 
+            : result("", result_code::success)
+        {
+        }
+        explicit result(result_code const result_code) 
+            : result("", result_code)
+        {
+        }
+        explicit result(char const* message) 
+            : result(message, result_code::unknown)
+        {
+        }
+        explicit result(char const* message, result_code const result_code)
+            : m_error_message{message}
+            , m_result_code(result_code)
+        {
+        }
+
+        [[nodiscard]] constexpr result_code value() const noexcept
+        {
+            return m_result_code;
+        }
+        [[nodiscard]] constexpr std::string const& message() const noexcept
+        {
+            return m_error_message;
+        }
+
+
     };
     
 }
