@@ -24,7 +24,7 @@ namespace win32::credential_store
     public:
         using credential_t = credential<wchar_t>;
         using optional_credential_t = std::optional<credential_t>;
-        using credential_or_error_detail = either<credential<wchar_t>, result_detail>;
+        using credential_or_error_detail = either<credential<wchar_t>, result_t>;
 
         credential_manager_interface(credential_manager_interface const&) = delete;
         virtual ~credential_manager_interface() = default;
@@ -39,8 +39,8 @@ namespace win32::credential_store
         /// credential manager
         /// </summary>
         /// <param name="credential">credential to be saved</param>
-        /// <returns>result_detail with value() of result_code::success on success</returns>
-        [[nodiscard]] virtual result_detail add_or_update(credential_t const& credential) const = 0;
+        /// <returns>result_t with value() of result_code::success on success</returns>
+        [[nodiscard]] virtual result_t add_or_update(credential_t const& credential) const = 0;
 
         /// <summary>
         /// Finds a credential with the given id value and optionally credential_type
@@ -65,8 +65,8 @@ namespace win32::credential_store
         /// removes a credential from the user's credential set
         /// </summary>
         /// <param name="credential">credential to be removed</param>
-        /// <returns>result_detail with value() of result_code::success on success</returns>
-        [[nodiscard]] virtual result_detail remove(credential_t const& credential) const = 0;
+        /// <returns>result_t with value() of result_code::success on success</returns>
+        [[nodiscard]] virtual result_t remove(credential_t const& credential) const = 0;
 
         [[nodiscard]] credential_manager_interface& operator=(const credential_manager_interface& other) = delete;
     protected:

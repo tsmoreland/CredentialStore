@@ -9,17 +9,17 @@ set (SOURCE
 	"${CMAKE_SOURCE_DIR}/include/credential_manager_interface.h"
 	"${CMAKE_SOURCE_DIR}/include/credential_type.h"
 	"${CMAKE_SOURCE_DIR}/include/either.h"
-	
-	"${CMAKE_SOURCE_DIR}/include/result_detail.h"
 	"${CMAKE_SOURCE_DIR}/include/persistence_type.h"
+	"${CMAKE_SOURCE_DIR}/include/result_t.h"
 	"${CMAKE_SOURCE_DIR}/include/win32_exception.h"
-	"../credential_manager.cpp"
+
 	"../credential.cpp"
 	"../credential_factory_traits.h"
+	"../credential_manager.cpp"
 	"../credential_manager_impl.h"
 	"../credential_manager_impl_using_traits.h"
-	"../credential_w_facade.h"
 	"../credential_traits.h"
+	"../credential_w_facade.h"
 )
 
 add_library(${STATIC_LIBRARY_NAME} STATIC ${SOURCE})

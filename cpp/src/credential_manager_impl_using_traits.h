@@ -39,7 +39,7 @@ namespace win32::credential_store
         {
             return get_credentials(nullptr, true);
         }
-        [[nodiscard]] result_detail add_or_update(credential_t const& credential) override
+        [[nodiscard]] result_t add_or_update(credential_t const& credential) override
         {
             credential_w_facade win32_credential;
             win32_credential
@@ -48,42 +48,42 @@ namespace win32::credential_store
                 .set_credential_blob(credential.get_secret())
                 .set_credential_type(CREDENTIAL_TRAITS::to_dword(credential.get_credential_type()))
                 .set_persistence_type(CREDENTIAL_TRAITS::to_dword(credential.get_persistence_type()));
-            return result_detail::from_win32_error(CREDENTIAL_TRAITS::cred_write(&win32_credential.get_credential(), CRED_PRESERVE_CREDENTIAL_BLOB));
+            return result_t::from_win32_error(CREDENTIAL_TRAITS::cred_write(&win32_credential.get_credential(), CRED_PRESERVE_CREDENTIAL_BLOB));
         }
         [[nodiscard]] credential_or_error_detail find(wchar_t const* id, credential_type type) const override
         {
             if (is_null_or_empty(id)) {
-                return make_right<credential_t, result_detail>(result_detail::from_error_code(std::errc::invalid_argument));
+                return make_right<credential_t, result_t>(result_t::from_error_code(std::errc::invalid_argument));
             }
 
             unique_credential_w credential{nullptr, CREDENTIAL_TRAITS::credential_deleter};
             if (auto result = CREDENTIAL_TRAITS::cred_read(id, type, credential);
                 result == SUCCESS) {
-                return make_left<credential_t, result_detail>(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(credential.get()));
+                return make_left<credential_t, result_t>(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(credential.get()));
 
             } else if (result == ERROR_NOT_FOUND) {
-                return make_right<credential_t, result_detail>(result_detail::from_win32_error(result));
+                return make_right<credential_t, result_t>(result_t::from_win32_error(result));
 
             } else {
-                return make_right<credential_t, result_detail>(result_detail::from_win32_error(result));
+                return make_right<credential_t, result_t>(result_t::from_win32_error(result));
             }
         }
         [[nodiscard]] std::vector<credential_t> find(wchar_t const* filter, const bool search_all) const override
         {
             return get_credentials(filter, search_all);
         }
-        [[nodiscard]] result_detail remove(credential_t const& credential) const override
+        [[nodiscard]] result_t remove(credential_t const& credential) const override
         {
             return remove(credential.get_id().c_str(), credential.get_credential_type());
         }
-        [[nodiscard]] result_detail remove(wchar_t const* id, credential_type type) const override
+        [[nodiscard]] result_t remove(wchar_t const* id, credential_type type) const override
         {
             // static_cast<std::underlying_type<credential_type>::type>(type) -- move into CREDENTIAL_TRAITS
             if (auto const result = CREDENTIAL_TRAITS::cred_delete(id, type);
                 result != SUCCESS && result != ERROR_NOT_FOUND) {
-                return result_detail::from_win32_error(result);
+                return result_t::from_win32_error(result);
             } else {
-                return result_detail::success();
+                return result_t::success();
             }
         }
 

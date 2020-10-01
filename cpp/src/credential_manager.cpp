@@ -38,7 +38,7 @@ std::vector<credential_manager::credential_t> credential_manager::get_credential
     return m_p_impl->get_credentials();
 }
 
-result_detail credential_manager::add_or_update(credential_t const& credential) const
+result_t credential_manager::add_or_update(credential_t const& credential) const
 {
     if (!static_cast<bool>(m_p_impl)) {
     }
@@ -49,7 +49,7 @@ result_detail credential_manager::add_or_update(credential_t const& credential) 
 credential_manager::credential_or_error_detail credential_manager::find(wchar_t const* id, credential_type type) const
 {
     if (!static_cast<bool>(m_p_impl)) {
-        return make_right<credential_t, result_detail>(result_detail::from_error_code(std::errc::owner_dead));
+        return make_right<credential_t, result_t>(result_t::from_error_code(std::errc::owner_dead));
     }
     return m_p_impl->find(id, type);
 }
@@ -62,10 +62,10 @@ std::vector<credential_manager::credential_t> credential_manager::find(wchar_t c
     return m_p_impl->find(filter, search_all);
 }
 
-result_detail credential_manager::remove(credential_t const& credential) const
+result_t credential_manager::remove(credential_t const& credential) const
 {
     if (!static_cast<bool>(m_p_impl)) {
-        return result_detail::from_error_code(std::errc::owner_dead);
+        return result_t::from_error_code(std::errc::owner_dead);
     }
     return m_p_impl->remove(credential);
 }

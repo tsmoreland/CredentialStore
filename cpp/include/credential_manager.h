@@ -18,7 +18,7 @@
 #include <optional>
 #include <credential.h>
 #include <credential_type.h>
-#include <result_detail.h>
+#include <result_t.h>
 #include <credential_manager_interface.h>
 
 namespace win32::credential_store
@@ -42,8 +42,8 @@ namespace win32::credential_store
         /// credential manager
         /// </summary>
         /// <param name="credential">credential to be saved</param>
-        /// <returns>result_detail with value() of result_code::success on success</returns>
-        [[nodiscard]] result_detail add_or_update(credential_t const& credential) const override;
+        /// <returns>result_t with value() of result_code::success on success</returns>
+        [[nodiscard]] result_t add_or_update(credential_t const& credential) const override;
 
         /// <summary>
         /// Finds a credential with the given id value and optionally credential_type
@@ -68,8 +68,8 @@ namespace win32::credential_store
         /// removes a credential from the user's credential set
         /// </summary>
         /// <param name="credential">credential to be removed</param>
-        /// <returns>result_detail with value() of result_code::success on success</returns>
-        [[nodiscard]] result_detail remove(credential_t const& credential) const override;
+        /// <returns>result_t with value() of result_code::success on success</returns>
+        [[nodiscard]] result_t remove(credential_t const& credential) const override;
 
         explicit credential_manager();
         credential_manager(credential_manager const&) = delete;
