@@ -11,26 +11,14 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-#pragma warning(push)
-#pragma warning(disable : 26495 26812)
-#include <gtest/gtest.h>
-#include <credential.h>
-#include <string>
-#pragma warning(pop)
+#pragma once
 
-using namespace win32::credential_store;
-
-TEST(credential, build_credential__returns_error__when_id_is_empty)
+namespace win32::credential_store
 {
-    auto const result = build_credential<wchar_t>(L"", L"username", L"secret", credential_type::generic, persistence_type::local_machine, std::nullopt);
-
-    ASSERT_TRUE(result.has_value<error_details>());
+    enum class error_code : int
+    {
+        unknown = 0,
+        invalid_argument,
+    };
+    
 }
-
-TEST(credential, build_credential__error_is_invalid_argument__when_id_is_empty)
-{
-    auto const result = build_credential<wchar_t>(L"", L"username", L"secret", credential_type::generic, persistence_type::local_machine, std::nullopt);
-
-    ASSERT_EQ(result.value<error_details>().error_code(), error_code::invalid_argument);
-}
-

@@ -75,11 +75,12 @@ namespace win32::credential_store
         {
             static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
 
-            if constexpr (std::is_same_v<TValueType, TLeft>()) {
+            if constexpr (std::is_same_v<TValueType, TLeft>) {
                 return m_left_value.has_value();
             } else {
                 return m_right_value.has_value();
             }
+
         }
 
         template <typename TValueType>
@@ -87,7 +88,7 @@ namespace win32::credential_store
         {
             static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
 
-            if constexpr (std::is_same_v<TValueType, TLeft>()) {
+            if constexpr (std::is_same_v<TValueType, TLeft>) {
                 return m_left_value.value();
             } else {
                 return m_right_value.value();
@@ -99,7 +100,7 @@ namespace win32::credential_store
         {
             static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
 
-            if constexpr (std::is_same_v<TValueType, TLeft>()) {
+            if constexpr (std::is_same_v<TValueType, TLeft>) {
                 return m_left_value.value();
             } else {
                 return m_right_value.value();
@@ -116,7 +117,7 @@ namespace win32::credential_store
         [[nodiscard]] constexpr TValueType const& value_or(TValueType const& else_value) const
         {
             static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
-            if constexpr (std::is_same_v<TValueType, TLeft>()) {
+            if constexpr (std::is_same_v<TValueType, TLeft>) {
                 return m_left_value.value_or(else_value);
             } else {
                 return m_right_value.value_or(else_value);
@@ -136,13 +137,17 @@ namespace win32::credential_store
                 return value<TValueType>();
             return supplier();
         }
-        template <typename TValueType, typename TSupplier, std::enable_if_t<std::is_trivially_copy_assignable_v<TLeft>>>
+        /*
+         * TODO: fix the template issues prventing this from specializing
+        template <typename TValueType, typename TSupplier,
+            std::enable_if_t<std::is_trivially_copy_assignable_v<TLeft>, int> = 0>
         [[nodiscard]] constexpr TValueType value_or(TSupplier const& supplier)
         {
             if (has_value<TValueType>()) 
                 return value<TValueType>();
             return supplier();
         }
+        */
 
         [[nodiscard]] constexpr explicit operator TLeft&() 
         {
@@ -170,25 +175,25 @@ namespace win32::credential_store
     template <typename TLeft, typename TRight>
     constexpr either<TLeft, TRight> make_left(TLeft&& left_value)
     {
-        return either(left_value);
+        return either<TLeft, TRight>(left_value);
     }
     template <typename TLeft, typename TRight, class... TArgs,
         std::enable_if_t<std::is_constructible_v<TLeft, TArgs...>, int> = 0>
     constexpr either<TLeft, TRight> make_left(std::in_place_t, TArgs&&... arguments)
     {
-        return either(std::in_place, std::forward<TArgs>(arguments)...);
+        return either<TLeft, TRight>(std::in_place, std::forward<TArgs>(arguments)...);
     }
     template <typename TLeft, typename TRight, class TElement, class... TArgs,
         std::enable_if_t<std::is_constructible_v<TLeft, std::initializer_list<TElement>&, TArgs...>, int> = 0>
     constexpr either<TLeft, TRight> make_left(std::in_place_t, std::initializer_list<TElement> list, TArgs&&... arguments)
     {
-        return either(std::in_place, list, std::forward<TArgs>(arguments)...);
+        return either<TLeft, TRight>(std::in_place, list, std::forward<TArgs>(arguments)...);
     }
 
     template <typename TLeft, typename TRight>
     constexpr either<TLeft, TRight> make_right(TRight&& right_value)
     {
-        return either(right_value);
+        return either<TLeft, TRight>(right_value);
     }
 
 
