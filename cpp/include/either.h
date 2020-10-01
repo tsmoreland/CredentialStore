@@ -17,9 +17,15 @@
 
 namespace win32::credential_store 
 {
+    /// <summary>
+    /// class storing one of two possible value types
+    /// </summary>
+    /// <typeparam name="TLeft">Primary value type allowing a wider range of construction</typeparam>
+    /// <typeparam name="TRight">Seconary value type, typically a fall back or error value</typeparam>
     template <typename TLeft, typename TRight>
     class either final
     {
+        static_assert(!std::is_same_v<TLeft, TRight>, "Types cannot be the same");
         std::optional<TLeft> m_left_value;
         std::optional<TRight> m_right_value;
 
@@ -64,23 +70,80 @@ namespace win32::credential_store
         {
         }
 
-        [[nodiscard]] constexpr bool has_right_value() const
+        template <typename TValueType>
+        [[nodiscard]] constexpr bool has_value() const
         {
-            return m_left_value.has_value();
-        }
-        [[nodiscard]] constexpr bool has_left_value() const
-        {
-            return m_left_value.has_value();
+            static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
+
+            if constexpr (std::is_same_v<TValueType, TLeft>()) {
+                return m_left_value.has_value();
+            } else {
+                return m_right_value.has_value();
+            }
         }
 
-        [[nodiscard]] constexpr TLeft& get_left_value() 
+        template <typename TValueType>
+        [[nodiscard]] constexpr TValueType& value()
         {
-            return m_left_value.value();
+            static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
+
+            if constexpr (std::is_same_v<TValueType, TLeft>()) {
+                return m_left_value.value();
+            } else {
+                return m_right_value.value();
+            }
         }
-        [[nodiscard]] constexpr TLeft const& get_left_value() const
+
+        template <typename TValueType>
+        [[nodiscard]] constexpr TValueType const& value() const
         {
-            return m_left_value.value();
+            static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
+
+            if constexpr (std::is_same_v<TValueType, TLeft>()) {
+                return m_left_value.value();
+            } else {
+                return m_right_value.value();
+            }
         }
+
+        template <typename TValueType>
+        [[nodiscard]] constexpr TValueType& value_or(TValueType& else_value)
+        {
+            static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
+            return m_left_value.value_or(else_value);
+        }
+        template <typename TValueType>
+        [[nodiscard]] constexpr TValueType const& value_or(TValueType const& else_value) const
+        {
+            static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
+            if constexpr (std::is_same_v<TValueType, TLeft>()) {
+                return m_left_value.value_or(else_value);
+            } else {
+                return m_right_value.value_or(else_value);
+            }
+        }
+        template <typename TValueType, typename TSupplier>
+        [[nodiscard]] constexpr TValueType& value_or(TSupplier const& supplier)
+        {
+            if (has_value<TValueType>()) 
+                return value<TValueType>();
+            return supplier();
+        }
+        template <typename TValueType, typename TSupplier>
+        [[nodiscard]] constexpr TValueType const& value_or(TSupplier const& supplier) const
+        {
+            if (has_value<TValueType>()) 
+                return value<TValueType>();
+            return supplier();
+        }
+        template <typename TValueType, typename TSupplier, std::enable_if_t<std::is_trivially_copy_assignable_v<TLeft>>>
+        [[nodiscard]] constexpr TValueType value_or(TSupplier const& supplier)
+        {
+            if (has_value<TValueType>()) 
+                return value<TValueType>();
+            return supplier();
+        }
+
         [[nodiscard]] constexpr explicit operator TLeft&() 
         {
             return m_left_value.value();
@@ -88,47 +151,6 @@ namespace win32::credential_store
         [[nodiscard]] constexpr explicit operator TLeft const&() const
         {
             return m_left_value.value();
-        }
-
-        [[nodiscard]] constexpr TLeft& left_value_or(TLeft& else_value)
-        {
-            return m_left_value.value_or(else_value);
-        }
-        [[nodiscard]] constexpr TLeft const& left_value_or(TLeft const& else_value) const
-        {
-            return m_left_value.value_or(else_value);
-        }
-
-        template <typename TSupplier>
-        [[nodiscard]] constexpr TLeft& left_value_or(TSupplier const& supplier)
-        {
-            if (m_left_value.has_value())
-                return m_left_value.value();
-            return supplier();
-        }
-        template <typename TSupplier, std::enable_if_t<std::is_trivially_copy_assignable_v<TLeft>>>
-        [[nodiscard]] constexpr TLeft left_value_or(TLeft& else_value, TSupplier const& supplier)
-        {
-            if (m_left_value.has_value())
-                return m_left_value.value();
-            return supplier();
-        }
-        template <typename TSupplier>
-        [[nodiscard]] constexpr TLeft const& left_value_or(TLeft& else_value, TSupplier const& supplier) const
-        {
-            if (m_left_value.has_value())
-                return m_left_value.value();
-            return supplier();
-        }
-
-        [[nodiscard]] constexpr TRight& get_right_value() 
-        {
-            return m_right_value.value();
-        }
-        
-        [[nodiscard]] constexpr TRight const& get_right_value() const
-        {
-            return m_right_value.value();
         }
 
         constexpr explicit operator TRight&() 
