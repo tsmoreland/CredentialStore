@@ -14,39 +14,39 @@
 #pragma once
 
 #include <string>
+#include <error_code.h>
 
 namespace win32::credential_store
 {
 
     class error_details final 
     {
+        std::string m_error_message{};
+        error_code m_error_code{};
     public:
-        explicit error_details(unsigned int const error_code)
+        explicit error_details(error_code const error_code) 
             : error_details("", error_code)
         {
         }
-        explicit error_details(char const* message)
-            : error_details(message, 0x0)
+        explicit error_details(char const* message) 
+            : error_details(message, error_code::unknown)
         {
         }
-        explicit error_details(char const* message, unsigned int const error_code)
+        explicit error_details(char const* message, error_code const error_code)
             : m_error_message{message}
             , m_error_code(error_code)
         {
         }
 
-        [[nodiscard]] constexpr unsigned int get_error_code() const noexcept
+        [[nodiscard]] constexpr error_code error_code() const noexcept
         {
             return m_error_code;
         }
-        [[nodiscard]] constexpr std::string const& get_error_message() const noexcept
+        [[nodiscard]] constexpr std::string const& error_message() const noexcept
         {
             return m_error_message;
         }
 
-    private:
-        std::string m_error_message{};
-        unsigned int m_error_code{};
 
     };
     

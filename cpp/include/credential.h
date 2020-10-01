@@ -174,19 +174,18 @@ namespace win32::credential_store
 
     template<typename TCHAR>
     [[nodiscard]] static credential_or_error<TCHAR> build_credential(
-        typename credential<TCHAR>::string_type id, 
-        typename credential<TCHAR>::string_type username, 
-        typename credential<TCHAR>::string_type secret,
+        typename credential<TCHAR>::string_type const& id, 
+        typename credential<TCHAR>::string_type const& username, 
+        typename credential<TCHAR>::string_type const& secret,
         credential_type const credential_type, 
         persistence_type const persistence_type, 
         typename credential<TCHAR>::optional_time_point const & last_updated)
     {
-        using either_t = either<credential<TCHAR>, error_details>;
         try {
-            return make_left(id, username, secret, credential_type, persistence_type, last_updated);
+            return make_left<credential<TCHAR>, error_details>({id, username, secret, credential_type, persistence_type, last_updated});
 
         } catch (std::invalid_argument const& e) {
-            return make_right<credential<TCHAR>, error_details>(error_details(e.what()));
+            return make_right<credential<TCHAR>, error_details>(error_details(e.what(), error_code::invalid_argument));
         }
     }
 

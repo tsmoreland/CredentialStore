@@ -3,7 +3,24 @@ set (CMAKE_CXX_STANDARD 17)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-set (SOURCE "../credential_manager.cpp")
+set (SOURCE 
+	"${CMAKE_SOURCE_DIR}/include/credential.h"
+	"${CMAKE_SOURCE_DIR}/include/credential_manager.h"
+	"${CMAKE_SOURCE_DIR}/include/credential_manager_interface.h"
+	"${CMAKE_SOURCE_DIR}/include/credential_type.h"
+	"${CMAKE_SOURCE_DIR}/include/either.h"
+	"${CMAKE_SOURCE_DIR}/include/error_code.h"
+	"${CMAKE_SOURCE_DIR}/include/error_details.h"
+	"${CMAKE_SOURCE_DIR}/include/persistence_type.h"
+	"${CMAKE_SOURCE_DIR}/include/win32_exception.h"
+	"../credential_manager.cpp"
+	"../credential.cpp"
+	"../credential_factory_traits.h"
+	"../credential_manager_impl.h"
+	"../credential_manager_impl_using_traits.h"
+	"../credential_w_facade.h"
+	"../win32_credential_traits.h"
+)
 
 add_library(${STATIC_LIBRARY_NAME} STATIC ${SOURCE})
 
