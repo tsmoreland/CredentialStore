@@ -52,6 +52,15 @@ namespace win32::credential_store
             return result_t();
         }
 
+        [[nodiscard]] constexpr bool is_success() const noexcept
+        {
+            return !has_error();
+        }
+        [[nodiscard]] constexpr bool has_error() const noexcept
+        {
+            return m_error_code.has_value();
+        }
+
         [[nodiscard]] constexpr std::error_code const& error() const 
         {
             return m_error_code.value();
