@@ -122,7 +122,7 @@ jobs:
         include(ProcessorCount)
         ProcessorCount(N)
         execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/ctest -j ${N}
+          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/ctest -V -j ${N}
           WORKING_DIRECTORY build
           RESULT_VARIABLE result
         )
