@@ -47,15 +47,54 @@ namespace win32::credential_store
                 : result_t(message, optional_error_code(std::error_code(error_value, std::system_category())));
 
         }
-        [[nodiscard]] static result_t success()
+        [[nodiscard]] static result_t success() noexcept
         {
             return result_t();
         }
 
-        [[nodiscard]] constexpr std::optional<std::error_code> const& value() const noexcept
+        [[nodiscard]] constexpr std::error_code const& error() const 
         {
-            return m_error_code;
+            return m_error_code.value();
         }
+        [[nodiscard]] int error_value_or_zero() const noexcept
+        {
+            try {
+                if (m_error_code.has_value()) {
+                    auto const& error = m_error_code.value();
+                    return error.value();
+                } else {
+                    return 0;
+                }
+
+            } catch (std::bad_optional_access const&) {
+                return 0;
+            }
+        }
+
+        template <typename TErrorCode>
+        [[nodiscard]] bool error_equals(TErrorCode value)
+        {
+            auto const error_code = error_value_or_zero();
+            if (error_code == SUCCESS) {
+                return false;
+            }
+
+            static_assert(
+                std::is_integral_v<TErrorCode> || std::is_same_v<std::error_code, TErrorCode> || std::is_same_v<std::errc, TErrorCode>,
+                "unsupported type, must be one of integral, std::error_code or std::errc");
+            if constexpr(std::is_integral_v<TErrorCode>) {
+                return error_code != 0 && error_code == static_cast<int const>(value);
+
+            } else if constexpr (std::is_same_v<std::errc, TErrorCode>) {
+                return error_code != 0 && error_code == static_cast<int const>(value);
+
+            } else /* std::error_code */ {
+                return error_code != 0 && error_code == value.error();
+            }
+        }
+
+
+
         [[nodiscard]] constexpr std::string const& message() const noexcept
         {
             return m_error_message;

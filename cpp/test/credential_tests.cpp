@@ -31,6 +31,6 @@ TEST(credential, build_credential__error_is_invalid_argument__when_id_is_empty)
 {
     auto const result = build_credential<wchar_t>(L"", L"username", L"secret", credential_type::generic, persistence_type::local_machine, std::nullopt);
 
-    ASSERT_EQ(result.value<result_t>().value().value().value(), static_cast<int>(std::errc::invalid_argument));
+    ASSERT_EQ(result.value<result_t>().error().value(), static_cast<int>(std::errc::invalid_argument));
 }
 

@@ -93,15 +93,16 @@ void credential_executor::find(std::vector<std::string_view> const& arguments) c
 
         std::wstring const& id{begin(arguments[1]), end(arguments[1])};
 
-        auto credential = m_manager.find(id.c_str(), type);
-
-        if (credential.has_value<win32::credential_store::credential<wchar_t>>())
+        if (auto credential = m_manager.find(id.c_str(), type);
+            credential.has_value<win32::credential_store::credential<wchar_t>>()) {
             print_credential(credential.value<win32::credential_store::credential<wchar_t>>());
-        else if (credential.value<result_t>().value().value().value() == ERROR_NOT_FOUND)
+
+        } else if (credential.value<result_t>().error_equals(ERROR_NOT_FOUND)) {
             wcout << id << L" not found." << endl;
-        else {
+
+        } else {
             auto const& result = credential.value<result_t>();
-            std::cout << "Error occured: " << result.value().value() << " " << result.message() << endl;
+            std::cout << "Error occured: " << result.error().value() << " " << result.message() << endl;
         }
 
     } else {

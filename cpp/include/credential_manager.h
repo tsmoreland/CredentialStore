@@ -42,15 +42,15 @@ namespace win32::credential_store
         /// credential manager
         /// </summary>
         /// <param name="credential">credential to be saved</param>
-        /// <returns>result_t with value() of result_code::success on success</returns>
+        /// <returns>result_t with error() of result_code::success on success</returns>
         [[nodiscard]] result_t add_or_update(credential_t const& credential) const override;
 
         /// <summary>
-        /// Finds a credential with the given id value and optionally credential_type
+        /// Finds a credential with the given id error and optionally credential_type
         /// </summary>
         /// <param name="id">id of the credential to be found</param>
         /// <param name="type">credential type of the credential to be found</param>
-        /// <returns>optional of credential with value if found; otherwise nullopt</returns>
+        /// <returns>optional of credential with error if found; otherwise nullopt</returns>
         /// <exception cref="std::system_error">
         /// if native api returns error
         /// </exception>
@@ -68,7 +68,7 @@ namespace win32::credential_store
         /// removes a credential from the user's credential set
         /// </summary>
         /// <param name="credential">credential to be removed</param>
-        /// <returns>result_t with value() of result_code::success on success</returns>
+        /// <returns>result_t with error() of result_code::success on success</returns>
         [[nodiscard]] result_t remove(credential_t const& credential) const override;
 
         explicit credential_manager();
@@ -82,8 +82,8 @@ namespace win32::credential_store
         /// <summary>
         /// Swaps the values first and second
         /// </summary>
-        /// <param name="first">value to be swapped</param>
-        /// <param name="second">value to be swapped</param>
+        /// <param name="first">error to be swapped</param>
+        /// <param name="second">error to be swapped</param>
         friend void swap(credential_manager& first, credential_manager& second) noexcept;
 
     private:
