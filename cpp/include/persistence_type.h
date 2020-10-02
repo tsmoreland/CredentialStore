@@ -37,7 +37,7 @@ namespace win32::credential_store
         ///
         /// Windows Vista Home Basic, Windows Vista Home Premium, Windows 
         /// Vista Starter and Windows XP Home Edition:  
-        /// This value is not supported.
+        /// This error is not supported.
         /// </summary>
         local_machine = 2, 
 
@@ -53,7 +53,7 @@ namespace win32::credential_store
         ///
         /// Windows Vista Home Basic, Windows Vista Home Premium, 
         /// Windows Vista Starter and Windows XP Home Edition:  
-        /// This value is not supported.
+        /// This error is not supported.
         /// </summary>
         enterprise = 3,
     };

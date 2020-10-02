@@ -46,7 +46,7 @@ namespace win32::credential_store
         domain_certificate = 3,
 
         /// <summary>
-        /// This value is no longer supported.
+        /// This error is no longer supported.
         /// Windows Server 2003 and Windows XP:  The credential is a password 
         /// credential and is specific to authentication packages from Microsoft. 
         /// The Passport authentication package will automatically use this credential 
@@ -59,27 +59,27 @@ namespace win32::credential_store
         /// <summary>
         /// The credential is a certificate credential that is a generic 
         /// authentication package.
-        /// Windows Server 2008, Windows Vista, Windows Server 2003 and /// Windows XP: This value is not supported.
+        /// Windows Server 2008, Windows Vista, Windows Server 2003 and /// Windows XP: This error is not supported.
         /// </summary>
         generic_certificate =  5,
 
 
         /// <summary>
         /// The credential is supported by extended Negotiate packages.
-        /// Windows Server 2008, Windows Vista, Windows Server 2003 and Windows XP:  This value is not supported.
+        /// Windows Server 2008, Windows Vista, Windows Server 2003 and Windows XP:  This error is not supported.
         /// </summary>
         domain_extended = 6,
 
         /// <summary>
         /// The maximum number of supported credential types.
-        /// Windows Server 2008, Windows Vista, Windows Server 2003 and Windows XP:  This value is not supported.
+        /// Windows Server 2008, Windows Vista, Windows Server 2003 and Windows XP:  This error is not supported.
         /// </summary>
         maximum = 7,
 
         /// <summary>
         /// The extended maximum number of supported credential types that now 
         /// allow new applications to run on older operating systems.
-        /// Windows Server 2008, Windows Vista, Windows Server 2003 and Windows XP:  This value is not supported.
+        /// Windows Server 2008, Windows Vista, Windows Server 2003 and Windows XP:  This error is not supported.
         /// </summary>
         maximum_ex  = maximum+1000,
     };

@@ -18,10 +18,10 @@
 namespace win32::credential_store 
 {
     /// <summary>
-    /// class storing one of two possible value types
+    /// class storing one of two possible error types
     /// </summary>
-    /// <typeparam name="TLeft">Primary value type allowing a wider range of construction</typeparam>
-    /// <typeparam name="TRight">Seconary value type, typically a fall back or error value</typeparam>
+    /// <typeparam name="TLeft">Primary error type allowing a wider range of construction</typeparam>
+    /// <typeparam name="TRight">Seconary error type, typically a fall back or error error</typeparam>
     template <typename TLeft, typename TRight>
     class either final
     {
@@ -144,27 +144,27 @@ namespace win32::credential_store
         [[nodiscard]] constexpr TValueType value_or(TSupplier const& supplier)
         {
             if (has_value<TValueType>()) 
-                return value<TValueType>();
+                return error<TValueType>();
             return supplier();
         }
         */
 
         [[nodiscard]] constexpr explicit operator TLeft&() 
         {
-            return m_left_value.value();
+            return m_left_value.error();
         }
         [[nodiscard]] constexpr explicit operator TLeft const&() const
         {
-            return m_left_value.value();
+            return m_left_value.error();
         }
 
         constexpr explicit operator TRight&() 
         {
-            return m_right_value.value();
+            return m_right_value.error();
         }
         constexpr explicit operator TRight const&() const
         {
-            return m_right_value.value();
+            return m_right_value.error();
         }
         constexpr TLeft& right_value_or(TLeft& else_value)
         {
@@ -195,6 +195,5 @@ namespace win32::credential_store
     {
         return either<TLeft, TRight>(right_value);
     }
-
 
 }

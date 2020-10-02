@@ -5,6 +5,11 @@ find_package(GTest REQUIRED)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set (SOURCE 
+"${CMAKE_SOURCE_DIR}/include/credential.h"
+"${CMAKE_SOURCE_DIR}/include/credential_manager.h"
+"${CMAKE_SOURCE_DIR}/include/either.h"
+"${CMAKE_SOURCE_DIR}/include/result_t.h"
+
  "credential_tests.cpp"
  "credential_manager_tests.cpp")
 

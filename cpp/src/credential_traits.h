@@ -23,7 +23,7 @@ namespace win32::credential_store
     using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
     using unique_credentials_w = std::unique_ptr<CREDENTIALW*, void (*)(CREDENTIALW*)>;  
 
-    struct win32_credential_traits final
+    struct credential_traits final
     {
 
         [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type const type, unique_credential_w& out_credential)
@@ -49,7 +49,10 @@ namespace win32::credential_store
 
         [[nodiscard]] static DWORD cred_enumerate(wchar_t const* filter, DWORD const flags, DWORD& count, CREDENTIALW**& credentials)
         {
+#pragma warning(push)
+#pragma warning(disable : 6388) // flags might not be 0, spec says it can be 0x1 or CRED_ENUMERATE_ALL_CREDENTIALS
             auto const result = CredEnumerateW(filter, flags, &count, &credentials);
+#pragma warning(pop)
             return result == TRUE 
                 ? SUCCESS
                 : GetLastError();
