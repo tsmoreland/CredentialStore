@@ -13,8 +13,9 @@ set (SOURCE
 	"${CMAKE_SOURCE_DIR}/include/result_t.h"
 	"${CMAKE_SOURCE_DIR}/include/win32_exception.h"
 
-	"../credential.cpp"
+	
 	"../credential_factory_traits.h"
+	"../credential_factory_traits.cpp"
 	"../credential_manager.cpp"
 	"../credential_manager_impl.h"
 	"../credential_manager_impl_using_traits.h"
