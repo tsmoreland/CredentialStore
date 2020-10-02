@@ -262,4 +262,38 @@ namespace win32::credential_store
 
     [[nodiscard]] static either<credential<wchar_t>, result_t> from_win32_credential(CREDENTIALW const * const credential_ptr);
 
+
+}
+
+namespace std  // NOLINT(cert-dcl58-cpp) -- haven't found an alternate way to add template specialization
+{
+    using namespace win32::credential_store;
+
+    template <typename TCHAR>
+    struct hash<credential<TCHAR>>
+    {
+        [[nodiscard]] size_t operator()(credential<TCHAR> const& key_value) const noexcept
+        {
+            using string_type = basic_string<TCHAR>;
+            size_t hash_code = 0;
+            hash_code ^= 397 * hash<string_type>()(key_value.get_id());
+            hash_code ^= 397 * hash<string_type>()(key_value.get_username());
+            hash_code ^= 397 * hash<DWORD>()(to_dword(key_value.get_credential_type()));
+            hash_code ^= 397 * hash<DWORD>()(to_dword(key_value.get_persistence_type()));
+
+            return hash_code;
+        }
+    private:
+        [[nodiscard]] static DWORD to_dword(credential_type const value) 
+        {
+            using underlying_type = std::underlying_type<credential_type>::type;
+            return static_cast<DWORD>(static_cast<underlying_type>(value));
+        };
+        [[nodiscard]] static DWORD to_dword(persistence_type const value) 
+        {
+            using underlying_type = std::underlying_type<persistence_type>::type;
+            return static_cast<DWORD>(static_cast<underlying_type>(value));
+        };
+    };
+
 }

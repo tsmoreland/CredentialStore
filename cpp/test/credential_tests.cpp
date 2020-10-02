@@ -14,14 +14,16 @@
 #pragma warning(push)
 #pragma warning(disable : 26495 26812)
 #include <gtest/gtest.h>
+#pragma warning(pop)
+
 #include <credential.h>
 #include <string>
 #include "credential_builder.h"
-#pragma warning(pop)
+
+using std::nullopt;
 
 namespace win32::credential_store::tests
 {
-using std::nullopt;
 
 using credential_t = credential<wchar_t>;
 using string_type = std::wstring;
@@ -227,6 +229,37 @@ TEST(credential, equal__returns_false__when_values_not_equal)
     bool const is_equal = equal(left, right);
 
     ASSERT_FALSE(is_equal);
+}
+
+TEST(credential, hash__returns_equal_code__when_using_equal_values)
+{
+    auto builder = initialize_builder();
+    auto left = builder.build_if_valid().value();
+    auto right = builder.build_if_valid().value();
+
+    EXPECT_TRUE(equal(left, right));
+
+    auto const left_code = std::hash<credential_t>()(left);
+    auto const right_code = std::hash<credential_t>()(right);
+
+    ASSERT_EQ(left, right);
+}
+
+TEST(credential, hash__returns_non_equal_code__when_using_non_equal_values)
+{
+    auto builder = initialize_builder();
+    auto left = builder.build_if_valid().value();
+    auto right = builder
+        .with_id(to_upper(left.get_id()))
+        .build_if_valid()
+        .value();
+
+    EXPECT_FALSE(equal(left, right));
+
+    auto const left_code = std::hash<credential_t>()(left);
+    auto const right_code = std::hash<credential_t>()(right);
+
+    ASSERT_NE(left, right);
 }
 
 TEST(credential, swap__swaps_left_and_right__always)
