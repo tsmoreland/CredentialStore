@@ -20,6 +20,7 @@ set (SOURCE
 	"../credential_manager_impl.h"
 	"../credential_manager_impl_using_traits.h"
 	"../credential_traits.h"
+	"../credential_traits.cpp"
 	"../credential_w_facade.h"
 )
 
