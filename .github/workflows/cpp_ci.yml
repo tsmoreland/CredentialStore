@@ -2,11 +2,11 @@ name: C++ Continuous Integration
 
 on:   
   push:
-    branches: [ master, develop ]
+    branches: [ main, develop ]
     paths-ignore:
       - CSharp/**
   pull_request:
-    branches: [ master, develop ]
+    branches: [ main, develop ]
     paths-ignore:
       - CSharp/**
 
