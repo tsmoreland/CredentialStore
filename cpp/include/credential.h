@@ -36,7 +36,18 @@ namespace win32::credential_store
     class credential final
     {
     public:
+        using string_type = std::basic_string<TCHAR>;
+        using optional_time_point = std::optional<std::chrono::time_point<std::chrono::system_clock>>;
+        using deconstruct_type = std::tuple<string_type, string_type, string_type, credential_type, persistence_type, optional_time_point>;
+    private:
+        string_type m_id;
+        string_type m_username;
+        string_type m_secret;
+        credential_type m_credential_type;
+        persistence_type m_persistence_type;
+        optional_time_point m_last_updated;
 
+    public:
         using string_type = std::basic_string<TCHAR>;
         using optional_time_point = std::optional<std::chrono::time_point<std::chrono::system_clock>>;
         using deconstruct_type = std::tuple<string_type, string_type, string_type, credential_type, persistence_type, optional_time_point>;
@@ -64,7 +75,7 @@ namespace win32::credential_store
         /// <summary>
         /// Returns the unqiue Identifier, representing the target name of the credential
         /// </summary>
-        [[nodiscard]] string_type get_id() const
+        [[nodiscard]] string_type const& get_id() const
         {
             return m_id;
         }
@@ -72,7 +83,7 @@ namespace win32::credential_store
         /// <summary>
         /// Returns the the user name of the account used to connect to <see cref="Id"/> 
         /// </summary>
-        [[nodiscard]] string_type get_username() const
+        [[nodiscard]] string_type const& get_username() const
         {
             return m_username;
         }
@@ -80,7 +91,7 @@ namespace win32::credential_store
         /// <summary>
         /// Returns the secret (password)
         /// </summary>
-        [[nodiscard]] string_type get_secret() const
+        [[nodiscard]] string_type const& get_secret() const
         {
             return m_secret;
         }
@@ -88,7 +99,7 @@ namespace win32::credential_store
         /// <summary>
         /// <see cref="credential_type"/>
         /// </summary>
-        [[nodiscard]] credential_type get_credential_type() const
+        [[nodiscard]] credential_type const& get_credential_type() const
         {
             return m_credential_type;
         }
@@ -96,7 +107,7 @@ namespace win32::credential_store
         /// <summary>
         /// <see cref="persistence_type"/>
         /// </summary>
-        [[nodiscard]] persistence_type get_persistence_type() const
+        [[nodiscard]] persistence_type const& get_persistence_type() const
         {
             return m_persistence_type;
         }
@@ -104,17 +115,53 @@ namespace win32::credential_store
         /// <summary>
         /// Returns the last update time, this may be nullopt for credentials which have no yet been saved
         /// </summary>
-        [[nodiscard]] optional_time_point get_last_updated() const
+        [[nodiscard]] optional_time_point const& get_last_updated() const
         {
             return m_last_updated;
         }
+
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type
+        /// </summary>
+        /// <remarks>
+        /// Only compares id, username, credential_type and persistent_type
+        /// </remarks>
+        [[nodiscard]] friend bool equal(credential const& first, credential const& second) noexcept
+        {
+            using std::equal;
+            return
+                equal(begin(first.get_id()), end(first.get_id()), begin(second.get_id())) &&
+                equal(begin(first.get_username()), end(first.get_username()), begin(second.get_username())) &&
+                first.get_credential_type() == second.get_credential_type() &&
+                first.get_persistence_type() == second.get_persistence_type();
+        }
+
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type
+        /// </summary>
+        /// <remarks>
+        /// Only compares id, username, credential_type and persistent_type
+        /// </remarks>
+        [[nodiscard]] bool equals(credential const& other) const noexcept
+        {
+            return equal(*this, other);
+        }
+
+        [[nodiscard]] deconstruct_type deconstruct() const
+        {
+            return std::make_tuple(m_id, m_username, m_secret, m_credential_type, m_persistence_type, m_last_updated);
+        }
+
+        friend void swap(credential& left, credential& right) noexcept
+        {
+            std::swap(left.m_id, right.m_id);
+            std::swap(left.m_username, right.m_username);
+            std::swap(left.m_secret, right.m_secret);
+            std::swap(left.m_credential_type, right.m_credential_type);
+            std::swap(left.m_persistence_type, right.m_persistence_type);
+            std::swap(left.m_last_updated, right.m_last_updated);
+        }
     private:
-        string_type m_id;
-        string_type m_username;
-        string_type m_secret;
-        credential_type m_credential_type;
-        persistence_type m_persistence_type;
-        optional_time_point m_last_updated;
 
         [[nodiscard]] char const* get_invalid_argument_name_or_nullptr() const noexcept
         {
@@ -129,48 +176,32 @@ namespace win32::credential_store
         
     };
 
+    /// <summary>
+    /// Indicates whether the current object is equal to another object of the same type
+    /// </summary>
+    /// <remarks>
+    /// Only compares id, username, credential_type and persistent_type
+    /// </remarks>
+    template <typename TCHAR>
+    [[nodiscard]] bool operator==(credential<TCHAR> const& first, credential<TCHAR> const& second) noexcept
+    {
+        return equal(first, second);
+    }
+    /// <summary>
+    /// Indicates whether the current object is not equal to another object of the same type
+    /// </summary>
+    /// <remarks>
+    /// Only compares id, username, credential_type and persistent_type
+    /// </remarks>
+    template <typename TCHAR>
+    [[nodiscard]] bool operator!=(credential<TCHAR> const& first, credential<TCHAR> const& second) noexcept
+    {
+        return !equal(first, second);
+    }
+
+
     template <typename TCHAR>
     using credential_or_error = either<credential<TCHAR>, result_t>;
-
-    [[nodiscard]] constexpr credential_type to_credential_type(DWORD const type)
-    {
-        switch (type) {
-        case CRED_TYPE_DOMAIN_PASSWORD:
-            return credential_type::domain_password;
-        case CRED_TYPE_GENERIC:
-            return credential_type::generic;
-        case CRED_TYPE_DOMAIN_CERTIFICATE:
-            return credential_type::domain_certificate;
-        case CRED_TYPE_DOMAIN_EXTENDED:
-            return credential_type::domain_extended;
-        case CRED_TYPE_DOMAIN_VISIBLE_PASSWORD:
-            return credential_type::domain_visible_password;
-        case CRED_TYPE_GENERIC_CERTIFICATE:
-            return credential_type::generic_certificate;
-        case CRED_TYPE_MAXIMUM:
-            return credential_type::maximum;
-        case CRED_TYPE_MAXIMUM_EX:
-            return credential_type::maximum_ex;
-        default:
-            return credential_type::unknown;
-        }
-    }
-    [[nodiscard]] constexpr persistence_type to_persistence_type(DWORD const type)
-    {
-        switch (type) {
-        case CRED_PERSIST_ENTERPRISE:
-            return persistence_type::enterprise;
-        case CRED_PERSIST_LOCAL_MACHINE:
-            return persistence_type::local_machine;
-        case CRED_PERSIST_SESSION:
-            return persistence_type::session;
-        default:
-            return persistence_type::unknown;
-        }
-    }
-
-    [[nodiscard]] std::wstring get_secret(CREDENTIALW const*const credential_ptr);
-    [[nodiscard]] inline wchar_t const* value_or_empty(wchar_t const* const value);
 
     template<typename TCHAR>
     [[nodiscard]] static credential_or_error<TCHAR> build_credential(
@@ -189,6 +220,39 @@ namespace win32::credential_store
         }
     }
 
-    [[nodiscard]] static either<credential<wchar_t>, result_t> from_win32_credential(CREDENTIALW const * const credential_ptr);
+
+
+}
+
+namespace std  // NOLINT(cert-dcl58-cpp) -- haven't found an alternate way to add template specialization
+{
+    using namespace win32::credential_store;
+
+    template <typename TCHAR>
+    struct hash<credential<TCHAR>>
+    {
+        [[nodiscard]] size_t operator()(credential<TCHAR> const& key_value) const noexcept
+        {
+            using string_type = basic_string<TCHAR>;
+            size_t hash_code = 0;
+            hash_code ^= 397 * hash<string_type>()(key_value.get_id());
+            hash_code ^= 397 * hash<string_type>()(key_value.get_username());
+            hash_code ^= 397 * hash<DWORD>()(to_dword(key_value.get_credential_type()));
+            hash_code ^= 397 * hash<DWORD>()(to_dword(key_value.get_persistence_type()));
+
+            return hash_code;
+        }
+    private:
+        [[nodiscard]] static DWORD to_dword(credential_type const value) 
+        {
+            using underlying_type = std::underlying_type<credential_type>::type;
+            return static_cast<DWORD>(static_cast<underlying_type>(value));
+        }
+        [[nodiscard]] static DWORD to_dword(persistence_type const value) 
+        {
+            using underlying_type = std::underlying_type<persistence_type>::type;
+            return static_cast<DWORD>(static_cast<underlying_type>(value));
+        }
+    };
 
 }

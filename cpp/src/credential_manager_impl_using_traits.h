@@ -16,7 +16,6 @@
 #define WIN32_LEAN_AND_MEAN 
 
 #include <system_error>
-#include <stdexcept>
 #include <optional>
 #include <credential.h>
 #include "credential_manager_impl.h"

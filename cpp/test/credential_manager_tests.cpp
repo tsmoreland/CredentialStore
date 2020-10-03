@@ -16,8 +16,12 @@
 #include <gtest/gtest.h>
 #pragma warning(pop)
 
+namespace win32::credential_store::tests
+{
+    
 TEST(credential_manager, sample_test)
 {
     ASSERT_TRUE(true);
 }
 
+}
