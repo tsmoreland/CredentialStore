@@ -5,10 +5,12 @@ on:
     branches: [ main, develop ]
     paths-ignore:
       - CSharp/**
+      - .github/**
   pull_request:
     branches: [ main, develop ]
     paths-ignore:
       - CSharp/**
+      - .github/**
 
 jobs:
   build:
