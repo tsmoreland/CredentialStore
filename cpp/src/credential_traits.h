@@ -13,6 +13,8 @@
 
 #pragma once
 
+#define WIN32_LEAN_AND_MEAN
+
 #include <credential_type.h>
 #include <memory>
 #include <Windows.h>
@@ -20,8 +22,6 @@
 
 namespace win32::credential_store
 {
-    using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
-    using unique_credentials_w = std::unique_ptr<CREDENTIALW*, void (*)(CREDENTIALW*)>;  
 
     struct credential_traits final
     {
@@ -29,6 +29,9 @@ namespace win32::credential_store
         static const DWORD SUCCESS = 0;
 
     public:
+        using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
+        using unique_credentials_w = std::unique_ptr<CREDENTIALW*, void (*)(CREDENTIALW*)>;  
+
         [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type const type, unique_credential_w& out_credential);
         [[nodiscard]] static DWORD cred_write(PCREDENTIALW credential, DWORD const flags);
         [[nodiscard]] static DWORD cred_enumerate(wchar_t const* filter, DWORD const flags, DWORD& count, CREDENTIALW**& credentials);

@@ -16,19 +16,19 @@
 
 namespace win32::credential_store::tests
 {
-    mock_credential_factory_traits::credential_t* mock_credential_factory_traits::m_mock_result_ptr = nullptr;
+    mock_credential_factory_traits::credential_t* mock_credential_factory_traits::s_mock_result_ptr = nullptr;
 
     mock_credential_factory_traits::credential_t mock_credential_factory_traits::from_win32_credential(CREDENTIALW const* const credential_ptr)
     {
-        if (m_mock_result_ptr == nullptr)
+        if (s_mock_result_ptr == nullptr)
             throw invalid_test_setup_exception("mock result not initialized");
 
         static_cast<void>(credential_ptr);
-        return *m_mock_result_ptr;
+        return *s_mock_result_ptr;
 
     }
-    void mock_credential_factory_traits::set_credential(credential_t* value)
+    void mock_credential_factory_traits::set_credential(credential_t* value) noexcept
     {
-        m_mock_result_ptr = value;
+        s_mock_result_ptr = value;
     }
 }

@@ -26,9 +26,9 @@ namespace win32::credential_store::tests
         using credential_t = credential<wchar_t>;
 
         [[nodiscard]] static credential_t from_win32_credential(CREDENTIALW const * const credential_ptr);
-        [[nodiscard]] static void set_credential(credential_t* value);
+        static void set_credential(credential_t* value) noexcept;
 
     private:
-        static credential_t* m_mock_result_ptr;
+        static credential_t* s_mock_result_ptr;
     };
 }
