@@ -13,36 +13,44 @@
 
 #pragma once
 
-#define WIN32_LEAN_AND_MEAN
-
-#include <credential_type.h>
 #include <memory>
 #include <Windows.h>
 #include <wincred.h>
+#include <credential.h>
 
-namespace win32::credential_store
+namespace win32::credential_store::tests
 {
 
-    struct credential_traits final
+    struct mock_credential_traits final
     {
-    private:
-        static const DWORD SUCCESS = 0;
-
-    public:
         using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
         using unique_credentials_w = std::unique_ptr<CREDENTIALW*, void (*)(CREDENTIALW*)>;  
+        using credential_t = credential<wchar_t>;
 
-        [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type const type, unique_credential_w& out_credential);
-        [[nodiscard]] static DWORD cred_write(PCREDENTIALW credential, DWORD const flags);
-        [[nodiscard]] static DWORD cred_enumerate(wchar_t const* filter, DWORD const flags, DWORD& count, CREDENTIALW**& credentials);
-        [[nodiscard]] static DWORD cred_delete(wchar_t const* id, credential_type const type);
+        static const DWORD SUCCESS = 0;
+        static credential_t* s_mock_result_ptr;
+        static DWORD s_cred_read_result;
+        static DWORD s_cred_write_result;
+        static DWORD s_cred_enumerate_result;
+        static DWORD s_cred_delete_result;
 
-        static void credential_deleter(CREDENTIALW* credential_ptr);
-        static void credential_deleter(CREDENTIALW** credential_ptr);
+        [[nodiscard]] static DWORD cred_read(wchar_t const*, credential_type const, unique_credential_w& out_credential);
+        [[nodiscard]] static DWORD cred_write(PCREDENTIALW, DWORD const);
+        [[nodiscard]] static DWORD cred_enumerate(wchar_t const*, DWORD const, DWORD& count, CREDENTIALW**& credentials);
+        [[nodiscard]] static DWORD cred_delete(wchar_t const*, credential_type const);
+
+        static void credential_deleter(CREDENTIALW*);
+        static void credential_deleter(CREDENTIALW**);
 
         [[nodiscard]] static DWORD to_dword(credential_type const type);
         [[nodiscard]] static DWORD to_dword(persistence_type const type);
 
+        static void set_credential(credential_t* value) noexcept;
+        static void set_cred_read_result(DWORD const value) noexcept;
+        static void set_cred_write_result(DWORD const value) noexcept;
+        static void set_cred_enumerate_result(DWORD const value) noexcept;
+        static void set_cred_delete_result(DWORD const value) noexcept;
     };
-    
+
+
 }

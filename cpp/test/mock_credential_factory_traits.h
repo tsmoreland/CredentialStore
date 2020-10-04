@@ -15,34 +15,20 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-#include <credential_type.h>
-#include <memory>
 #include <Windows.h>
 #include <wincred.h>
+#include <credential.h>
 
-namespace win32::credential_store
+namespace win32::credential_store::tests
 {
-
-    struct credential_traits final
+    struct mock_credential_factory_traits final
     {
+        using credential_t = credential<wchar_t>;
+
+        [[nodiscard]] static credential_t from_win32_credential(CREDENTIALW const * const credential_ptr);
+        static void set_credential(credential_t* value) noexcept;
+
     private:
-        static const DWORD SUCCESS = 0;
-
-    public:
-        using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
-        using unique_credentials_w = std::unique_ptr<CREDENTIALW*, void (*)(CREDENTIALW*)>;  
-
-        [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type const type, unique_credential_w& out_credential);
-        [[nodiscard]] static DWORD cred_write(PCREDENTIALW credential, DWORD const flags);
-        [[nodiscard]] static DWORD cred_enumerate(wchar_t const* filter, DWORD const flags, DWORD& count, CREDENTIALW**& credentials);
-        [[nodiscard]] static DWORD cred_delete(wchar_t const* id, credential_type const type);
-
-        static void credential_deleter(CREDENTIALW* credential_ptr);
-        static void credential_deleter(CREDENTIALW** credential_ptr);
-
-        [[nodiscard]] static DWORD to_dword(credential_type const type);
-        [[nodiscard]] static DWORD to_dword(persistence_type const type);
-
+        static credential_t* s_mock_result_ptr;
     };
-    
 }
