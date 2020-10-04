@@ -11,7 +11,7 @@ set (SOURCE
 "${CMAKE_SOURCE_DIR}/include/result_t.h"
 
  "credential_tests.cpp"
- "credential_manager_tests.cpp" "credential_builder.h")
+ "credential_manager_tests.cpp" "credential_builder.h" "credential_builder.cpp")
 
 add_executable(${TEST_PROJECT_NAME} WIN32 ${SOURCE})
 add_test(NAME ${TEST_PROJECT_NAME} COMMAND ${TEST_PROJECT_NAME})

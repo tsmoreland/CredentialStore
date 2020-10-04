@@ -25,42 +25,6 @@ using std::nullopt;
 namespace win32::credential_store::tests
 {
 
-using credential_t = credential<wchar_t>;
-using string_type = std::wstring;
-using optional_string = std::optional<string_type>;
-using optional_credential_type = std::optional<credential_type>;
-using optional_persistence_type = std::optional<persistence_type>;
-using optional_time_point = credential_t::optional_time_point;
-
-[[nodiscard]] string_type to_upper(string_type const& source)
-{
-    string_type destintiation{source};
-    for (auto& ch : destintiation) {
-        ch = static_cast<wchar_t>(towupper(ch));
-    }
-    return destintiation;
-}
-
-string_type get_id() { return L"id"; }
-string_type get_username() { return L"username"; }
-string_type get_secret() { return L"secret"; }
-constexpr auto get_credential_type() { return credential_type::generic; }
-constexpr auto get_persistence_type() { return persistence_type::local_machine; }
-constexpr auto get_last_updated() { return std::nullopt; }
-
-[[nodiscard]] credential_builder initialize_builder(std::optional<credential_t> credential = nullopt)
-{
-    return credential.has_value() 
-        ? credential_builder::from(credential.value())
-        : credential_builder()
-            .with_id(get_id())
-            .with_username(get_username())
-            .with_secret(get_secret())
-            .with_credential_type(get_credential_type())
-            .with_persistence_type(get_persistence_type())
-            .with_last_updated(get_last_updated());
-}
-
 credential_t make_credential()
 {
     return build_credential<wchar_t>(get_id(), get_username(), get_secret(), get_credential_type(), get_persistence_type(), get_last_updated())
