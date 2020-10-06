@@ -25,11 +25,6 @@ using std::nullopt;
 namespace win32::credential_store::tests
 {
 
-credential_t make_credential()
-{
-    return build_credential<wchar_t>(get_id(), get_username(), get_secret(), get_credential_type(), get_persistence_type(), get_last_updated())
-        .value<credential_t>();
-}
 TEST(credential, build_credential__returns_error__when_id_is_empty)
 {
     auto const result = build_credential<wchar_t>(L"", L"username", L"secret", credential_type::generic, persistence_type::local_machine, std::nullopt);

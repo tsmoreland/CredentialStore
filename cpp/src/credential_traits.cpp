@@ -32,7 +32,7 @@ DWORD credential_traits::cred_read(wchar_t const* id, credential_type const type
     return GetLastError();
 }
 
-DWORD credential_traits::cred_write(PCREDENTIALW credential, DWORD const flags)
+DWORD credential_traits::cred_write(CREDENTIALW * const credential, DWORD const flags)
 {
     auto const result = CredWriteW(credential, flags);
     return result == TRUE 

@@ -16,12 +16,51 @@
 #include <gtest/gtest.h>
 #pragma warning(pop)
 
+#include "../src/credential_manager_impl_using_traits.h"
+#include "mock_credential_factory_traits.h"
+#include "mock_credential_traits.h"
+#include "credential_builder.h"
+
 namespace win32::credential_store::tests
 {
+
+using credential_manager_test = credential_manager_impl_using_traits<mock_credential_traits, mock_credential_factory_traits>;
     
-TEST(credential_manager, sample_test)
+TEST(credential_manager, add_or_update__returns_invalid_argument__id_is_empty)
 {
-    ASSERT_TRUE(true);
+    auto const credential = make_credential();
+    auto& id = const_cast<std::wstring&>(credential.get_id());
+    id = L"";
+
+    credential_manager_test manager;
+
+    auto const result = manager.add_or_update(credential);
+
+    ASSERT_TRUE(result.error_equals(std::errc::invalid_argument));
+}
+
+TEST(credential_manager, add_or_update__returns_invalid_argument__username_is_empty)
+{
+    auto const credential = make_credential();
+    auto& username = const_cast<std::wstring&>(credential.get_username());
+    username = L"";
+
+    credential_manager_test manager;
+
+    auto const result = manager.add_or_update(credential);
+
+    ASSERT_TRUE(result.error_equals(std::errc::invalid_argument));
+}
+
+TEST(credential_manager, add_or_update__returns_error__api_returns_error)
+{
+    mock_credential_traits::set_cred_write_result(42UL);
+    credential_manager_test manager;
+    auto const credential{make_credential()};
+
+    auto const result = manager.add_or_update(credential);
+
+    ASSERT_TRUE(result.error_equals(42UL));
 }
 
 }

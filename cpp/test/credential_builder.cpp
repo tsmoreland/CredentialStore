@@ -78,32 +78,44 @@ credential_builder::optional_credential credential_builder::build_if_valid() con
 
 credential_builder& credential_builder::with_id(string_type const& value)
 {
-    m_id = value; return *this;
+    m_id = value;
+    return *this;
 }
 
 credential_builder& credential_builder::with_username(string_type const& value)
 {
-    m_username = value; return *this;
+    m_username = value;
+    return *this;
 }
 
 credential_builder& credential_builder::with_secret(string_type const& value)
 {
-    m_secret = value; return *this;
+    m_secret = value;
+    return *this;
 }
 
 credential_builder& credential_builder::with_credential_type(credential_type const value)
 {
-    m_credential_type = value; return *this;
+    m_credential_type = value;
+    return *this;
 }
 
 credential_builder& credential_builder::with_persistence_type(persistence_type const value)
 {
-    m_persistence_type = value; return *this;
+    m_persistence_type = value;
+    return *this;
 }
 
 credential_builder& credential_builder::with_last_updated(optional_time_point const& value)
 {
-    m_last_updated = value; return *this;
+    m_last_updated = value;
+    return *this;
+}
+
+credential_t make_credential()
+{
+    return build_credential<wchar_t>(get_id(), get_username(), get_secret(), get_credential_type(), get_persistence_type(), get_last_updated())
+        .value<credential_t>();
 }
 
 }

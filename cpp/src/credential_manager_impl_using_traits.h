@@ -40,14 +40,20 @@ namespace win32::credential_store
         }
         [[nodiscard]] result_t add_or_update(credential_t const& credential) override
         {
+            if (credential.get_id().empty())
+                return result_t::from_error_code(std::errc::invalid_argument);
+            if (credential.get_username().empty())
+                return result_t::from_error_code(std::errc::invalid_argument);
+
             credential_w_facade win32_credential;
-            win32_credential
+            auto native_credential = win32_credential
                 .set_target_name(credential.get_id())
                 .set_username(credential.get_username())
                 .set_credential_blob(credential.get_secret())
                 .set_credential_type(CREDENTIAL_TRAITS::to_dword(credential.get_credential_type()))
-                .set_persistence_type(CREDENTIAL_TRAITS::to_dword(credential.get_persistence_type()));
-            return result_t::from_win32_error(CREDENTIAL_TRAITS::cred_write(&win32_credential.get_credential(), CRED_PRESERVE_CREDENTIAL_BLOB));
+                .set_persistence_type(CREDENTIAL_TRAITS::to_dword(credential.get_persistence_type()))
+                .get_credential();
+            return result_t::from_win32_error(CREDENTIAL_TRAITS::cred_write(&native_credential, CRED_PRESERVE_CREDENTIAL_BLOB));
         }
         [[nodiscard]] credential_or_error_detail find(wchar_t const* id, credential_type type) const override
         {
