@@ -19,11 +19,12 @@
 #include <memory>
 #include <Windows.h>
 #include <wincred.h>
+#include <credential_store_export.h>
 
 namespace win32::credential_store
 {
 
-    struct credential_traits final
+    struct WIN32_CREDENTIAL_STORE_EXPORT credential_traits final
     {
     private:
         static const DWORD SUCCESS = 0;
@@ -33,7 +34,7 @@ namespace win32::credential_store
         using unique_credentials_w = std::unique_ptr<CREDENTIALW*, void (*)(CREDENTIALW*)>;  
 
         [[nodiscard]] static DWORD cred_read(wchar_t const* id, credential_type const type, unique_credential_w& out_credential);
-        [[nodiscard]] static DWORD cred_write(PCREDENTIALW credential, DWORD const flags);
+        [[nodiscard]] static DWORD cred_write(CREDENTIALW * const  credential, DWORD const flags);
         [[nodiscard]] static DWORD cred_enumerate(wchar_t const* filter, DWORD const flags, DWORD& count, CREDENTIALW**& credentials);
         [[nodiscard]] static DWORD cred_delete(wchar_t const* id, credential_type const type);
 

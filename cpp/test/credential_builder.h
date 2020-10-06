@@ -65,16 +65,15 @@ namespace win32::credential_store::tests
         }
         [[nodiscard]] optional_credential build_if_valid() const;
 
-        [[nodiscard]] credential_builder& with_id(string_type const& value);
-        [[nodiscard]] credential_builder& with_username(string_type const& value);
-        [[nodiscard]] credential_builder& with_secret(string_type const& value);
-        [[nodiscard]] credential_builder& with_credential_type(credential_type const value);
-        [[nodiscard]] credential_builder& with_persistence_type(persistence_type const value);
-        [[nodiscard]] credential_builder& with_last_updated(optional_time_point const& value);
-
+        credential_builder& with_id(string_type const& value);
+        credential_builder& with_username(string_type const& value);
+        credential_builder& with_secret(string_type const& value);
+        credential_builder& with_credential_type(credential_type const value);
+        credential_builder& with_persistence_type(persistence_type const value);
+        credential_builder& with_last_updated(optional_time_point const& value);
     };
 
     [[nodiscard]] credential_builder initialize_builder(std::optional<credential_t> credential = nullopt);
-
+    [[nodiscard]] credential_t make_credential();
 
 }

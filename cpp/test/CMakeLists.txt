@@ -32,7 +32,7 @@ set_target_properties(${TEST_PROJECT_NAME} PROPERTIES
 	OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/target/${CMAKE_VS_PLATFORM_NAME}/$<CONFIG>/"
 )
 
-target_link_libraries(${TEST_PROJECT_NAME} PUBLIC ${CMAKE_PROJECT_NAME}_static GTest::GTest GTest::Main)
+target_link_libraries(${TEST_PROJECT_NAME} PUBLIC ${CMAKE_PROJECT_NAME} GTest::GTest GTest::Main)
 
 target_compile_definitions(${TEST_PROJECT_NAME} PRIVATE
 	"$<$<CONFIG:DEBUG>:" 

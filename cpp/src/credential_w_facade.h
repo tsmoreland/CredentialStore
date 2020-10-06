@@ -14,29 +14,35 @@
 #pragma once
 #include <string>
 #include <wincred.h>
+#include <result_t.h>
 
 namespace win32::credential_store
 {
 
     class credential_w_facade
     {
+        CREDENTIALW m_credential{};
+
     public:
-        CREDENTIALW& get_credential() 
+        [[nodiscard]] CREDENTIALW& get_credential() 
         {
             return m_credential;
         }
-        credential_w_facade& set_username(std::wstring const& username)
+        [[nodiscard]] credential_w_facade& set_username(std::wstring const& username)
         {
             wstring_copy(&m_credential.UserName, username.c_str(), username.size());
             return *this;
         }
-        credential_w_facade& set_target_name(std::wstring const& target_name)
+        [[nodiscard]] credential_w_facade& set_target_name(std::wstring const& target_name)
         {
             wstring_copy(&m_credential.TargetName, target_name.c_str(), target_name.size());
             return *this;
         }
-        credential_w_facade& set_credential_blob(std::wstring const& credential_blob)
+        [[nodiscard]] credential_w_facade& set_credential_blob(std::wstring const& credential_blob)
         {
+            if (credential_blob.empty())
+                return *this;
+
             auto const size = credential_blob.size() * sizeof(wchar_t);
             m_credential.CredentialBlob = new (std::nothrow) unsigned char[size]; 
             if (m_credential.CredentialBlob == nullptr)
@@ -45,12 +51,12 @@ namespace win32::credential_store
             m_credential.CredentialBlobSize = static_cast<DWORD>(size);
             return *this;
         }
-        credential_w_facade& set_credential_type(DWORD const type)
+        [[nodiscard]] credential_w_facade& set_credential_type(DWORD const type)
         {
             m_credential.Type = type;
             return *this;
         }
-        credential_w_facade& set_persistence_type(DWORD const type)
+        [[nodiscard]] credential_w_facade& set_persistence_type(DWORD const type)
         {
             m_credential.Persist = type;
             return *this;
@@ -68,7 +74,6 @@ namespace win32::credential_store
             delete[] m_credential.CredentialBlob;
         }
     private:
-        CREDENTIALW m_credential{};
 
         static void wstring_copy(wchar_t** destination, wchar_t const * const source, size_t size)
         {

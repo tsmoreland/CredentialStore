@@ -20,6 +20,7 @@
 #include <credential_type.h>
 #include <result_t.h>
 #include <credential_manager_interface.h>
+#include <credential_store_export.h>
 
 namespace win32::credential_store
 {
@@ -29,8 +30,13 @@ namespace win32::credential_store
     /// Win32 Credential Manager (Credential Repository) providing CRUD 
     /// operations for Windows Credential Manager 
     /// </summary>
-    class credential_manager final : public credential_manager_interface
+    class WIN32_CREDENTIAL_STORE_EXPORT credential_manager final : public credential_manager_interface
     {
+#       pragma warning(push)
+#       pragma warning(disable : 4251)
+        std::unique_ptr<credential_manager_impl> m_p_impl;
+#       pragma warning(pop)
+
     public:
         /// <summary>
         /// Returns all credentials from the Users credential set
@@ -85,9 +91,6 @@ namespace win32::credential_store
         /// <param name="first">error to be swapped</param>
         /// <param name="second">error to be swapped</param>
         friend void swap(credential_manager& first, credential_manager& second) noexcept;
-
-    private:
-        std::unique_ptr<credential_manager_impl> m_p_impl;
     };
 
 

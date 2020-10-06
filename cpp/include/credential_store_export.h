@@ -13,26 +13,22 @@
 
 #pragma once
 
-#define WIN32_LEAN_AND_MEAN
-
-#include <Windows.h>
-#include <wincred.h>
-#include <credential.h>
-#include <credential_store_export.h>
-
-namespace win32::credential_store
-{
-    struct WIN32_CREDENTIAL_STORE_EXPORT credential_factory_traits final
-    {
-        using credential_t = credential<wchar_t>;
-
-        [[nodiscard]] static credential_t from_win32_credential(CREDENTIALW const * const credential_ptr);
-
-    private:
-        static credential_type to_credential_type(DWORD const type);
-        static persistence_type to_persistence_type(DWORD const type);
-        static std::wstring get_secret(CREDENTIALW const*const credential_ptr);
-        static wchar_t const* value_or_empty(wchar_t const* const value);
-    };
-    
-}
+#ifndef WIN32_CREDENTIAL_STORE_SHARED_LIBRARY
+    /// <summary>
+    /// Empty definition, used when building shared library to switch between
+    /// declspec dllexport/dllimport
+    /// </summary>
+#   define WIN32_CREDENTIAL_STORE_EXPORT
+#else
+#   ifdef WIN32_CREDENTIAL_STORE_EXPORTS
+        /// <summary>
+        /// dllexport definition
+        /// </summary>
+#       define WIN32_CREDENTIAL_STORE_EXPORT __declspec(dllexport)  
+#   else
+        /// <summary>
+        /// dll import defintion
+        /// </summary>
+#       define WIN32_CREDENTIAL_STORE_EXPORT __declspec(dllimport)
+#  endif
+#endif

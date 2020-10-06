@@ -81,7 +81,7 @@ namespace win32::credential_store
         }
 
         template <typename TErrorCode>
-        [[nodiscard]] bool error_equals(TErrorCode value)
+        [[nodiscard]] bool error_equals(TErrorCode value) const noexcept
         {
             auto const error_code = error_value_or_zero();
             if (error_code == SUCCESS) {
