@@ -19,11 +19,12 @@
 #include <memory>
 #include <Windows.h>
 #include <wincred.h>
+#include <credential_store_export.h>
 
 namespace win32::credential_store
 {
 
-    struct credential_traits final
+    struct WIN32_CREDENTIAL_STORE_EXPORT credential_traits final
     {
     private:
         static const DWORD SUCCESS = 0;

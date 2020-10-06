@@ -20,14 +20,12 @@
     /// </summary>
 #   define WIN32_CREDENTIAL_STORE_EXPORT
 #else
-#    ifdef WIN32_CREDENTIAL_STORE_EXPORTS
-
+#   ifdef WIN32_CREDENTIAL_STORE_EXPORTS
         /// <summary>
         /// dllexport definition
         /// </summary>
 #       define WIN32_CREDENTIAL_STORE_EXPORT __declspec(dllexport)  
-#    else
-
+#   else
         /// <summary>
         /// dll import defintion
         /// </summary>

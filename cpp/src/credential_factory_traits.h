@@ -18,10 +18,11 @@
 #include <Windows.h>
 #include <wincred.h>
 #include <credential.h>
+#include <credential_store_export.h>
 
 namespace win32::credential_store
 {
-    struct credential_factory_traits final
+    struct WIN32_CREDENTIAL_STORE_EXPORT credential_factory_traits final
     {
         using credential_t = credential<wchar_t>;
 
