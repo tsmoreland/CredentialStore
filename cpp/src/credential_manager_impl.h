@@ -14,6 +14,7 @@
 #pragma once
 
 #include <optional>
+#include <vector>
 #include <credential.h>
 
 namespace win32::credential_store
@@ -24,6 +25,7 @@ namespace win32::credential_store
         using credential_t = credential<wchar_t>;
         using optional_credential_t = std::optional<credential_t>;
         using credential_or_error_detail = either<credential_t, result_t>;
+        using credentials_or_error_detail = either<std::vector<credential_t>, result_t>;
 
         credential_manager_impl(const credential_manager_impl& other) = delete;
         credential_manager_impl(credential_manager_impl&& other) noexcept = delete;

@@ -36,7 +36,7 @@ namespace win32::credential_store::tests
     {
         return s_cred_write_result;
     }
-    DWORD mock_credential_traits::cred_enumerate(wchar_t const*, DWORD const, DWORD& count, CREDENTIALW**& credentials)
+    DWORD mock_credential_traits::cred_enumerate(wchar_t const*, DWORD const flags, DWORD& count, CREDENTIALW**& credentials)
     {
         // not implemented yet, count and credentials will be used eventually
         static_cast<void>(count);

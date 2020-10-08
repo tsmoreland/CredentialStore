@@ -131,6 +131,7 @@ namespace win32::credential_store
             credentials_container container;
 
             auto const result = CREDENTIAL_TRAITS::cred_enumerate(filter, flags, container.count, container.credentials); 
+            // TODO: change method to return either vector, or result_t
             if (result != SUCCESS) {
                 throw std::system_error(std::error_code(result, std::system_category()));
             }

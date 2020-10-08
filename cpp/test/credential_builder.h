@@ -15,6 +15,7 @@
 
 #include <optional>
 #include <string>
+#include <vector>
 #include <credential.h>
 
 namespace win32::credential_store::tests
@@ -75,5 +76,5 @@ namespace win32::credential_store::tests
 
     [[nodiscard]] credential_builder initialize_builder(std::optional<credential_t> credential = nullopt);
     [[nodiscard]] credential_t make_credential();
-
+    [[nodiscard]] std::vector<credential_t> make_credentials(size_t const size);
 }
