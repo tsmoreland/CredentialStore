@@ -14,27 +14,27 @@
 #pragma once
 
 #include <optional>
-#include <vector>
 #include <credential.h>
+#include <credential_manager_interface.h>
 
 namespace win32::credential_store
 {
     class credential_manager_impl 
     {
     public:
-        using credential_t = credential<wchar_t>;
-        using optional_credential_t = std::optional<credential_t>;
-        using credential_or_error_detail = either<credential_t, result_t>;
-        using credentials_or_error_detail = either<std::vector<credential_t>, result_t>;
+        using credential_t = credential_manager_interface::credential_t; //credential<wchar_t>;
+        using optional_credential_t = credential_manager_interface::optional_credential_t; // std::optional<credential_t>;
+        using credential_or_error_detail = credential_manager_interface::credential_or_error_detail; // either<credential_t, result_t>;
+        using credentials_or_error_detail = credential_manager_interface::credentials_or_error_detail; // either<std::vector<credential_t>, result_t>;
 
         credential_manager_impl(const credential_manager_impl& other) = delete;
         credential_manager_impl(credential_manager_impl&& other) noexcept = delete;
         virtual ~credential_manager_impl() = default;
 
-        [[nodiscard]] virtual std::vector<credential_t> get_credentials() const = 0;
+        [[nodiscard]] virtual credentials_or_error_detail get_credentials() const = 0;
         [[nodiscard]] virtual result_t add_or_update(credential_t const& credential) = 0;
         [[nodiscard]] virtual credential_or_error_detail find(wchar_t const* id, credential_type type) const = 0;
-        [[nodiscard]] virtual std::vector<credential_t> find(wchar_t const* filter, bool search_all) const = 0;
+        [[nodiscard]] virtual credentials_or_error_detail find(wchar_t const* filter, bool search_all) const = 0;
         [[nodiscard]] virtual result_t remove(credential_t const& credential) const = 0;
         [[nodiscard]] virtual result_t remove(wchar_t const* id, credential_type type) const = 0;
 

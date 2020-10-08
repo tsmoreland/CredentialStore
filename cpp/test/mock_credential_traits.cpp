@@ -40,6 +40,7 @@ namespace win32::credential_store::tests
     {
         // not implemented yet, count and credentials will be used eventually
         static_cast<void>(count);
+        static_cast<void>(flags);
         credentials = nullptr;
         return s_cred_enumerate_result;
     }

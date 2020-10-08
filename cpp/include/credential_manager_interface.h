@@ -26,6 +26,7 @@ namespace win32::credential_store
         using credential_t = credential<wchar_t>;
         using optional_credential_t = std::optional<credential_t>;
         using credential_or_error_detail = either<credential<wchar_t>, result_t>;
+        using credentials_or_error_detail = either<std::vector<credential_t>, result_t>;
 
         credential_manager_interface(credential_manager_interface const&) = delete;
         virtual ~credential_manager_interface() = default;
@@ -33,7 +34,7 @@ namespace win32::credential_store
         /// <summary>
         /// Returns all credentials from the Users credential set
         /// </summary>
-        [[nodiscard]] virtual std::vector<credential_t> get_credentials() const = 0;
+        [[nodiscard]] virtual credentials_or_error_detail get_credentials() const = 0;
 
         /// <summary>
         /// Adds or updates <paramref name="credential"/> to Win32
@@ -60,7 +61,7 @@ namespace win32::credential_store
         /// <param name="filter">filter using wildcards</param>
         /// <param name="search_all">if true all credentials are searched</param>
         /// <returns>vector containing all credentials returned </returns>
-        [[nodiscard]] virtual std::vector<credential_t> find(wchar_t const* filter, bool const search_all) const = 0;
+        [[nodiscard]] virtual credentials_or_error_detail find(wchar_t const* filter, bool const search_all) const = 0;
 
         /// <summary>
         /// removes a credential from the user's credential set

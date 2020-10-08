@@ -13,9 +13,7 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
-#include <optional>
 #include <credential.h>
 #include <credential_type.h>
 #include <result_t.h>
@@ -37,11 +35,12 @@ namespace win32::credential_store
         std::unique_ptr<credential_manager_impl> m_p_impl;
 #       pragma warning(pop)
 
+
     public:
         /// <summary>
         /// Returns all credentials from the Users credential set
         /// </summary>
-        [[nodiscard]] std::vector<credential_t> get_credentials() const override;
+        [[nodiscard]] credentials_or_error_detail get_credentials() const override;
 
         /// <summary>
         /// Adds or updates <paramref name="credential"/> to Win32
@@ -60,7 +59,7 @@ namespace win32::credential_store
         /// <exception cref="std::system_error">
         /// if native api returns error
         /// </exception>
-        [[nodiscard]] credential_or_error_detail find(wchar_t const* id, credential_type type) const override;
+        [[nodiscard]]  credential_or_error_detail find(wchar_t const* id, credential_type type) const override;
 
         /// <summary>
         /// Returns all credentials matching wildcard based <paramref name="filter"/>
@@ -68,7 +67,7 @@ namespace win32::credential_store
         /// <param name="filter">filter using wildcards</param>
         /// <param name="search_all">if true all credentials are searched</param>
         /// <returns>vector containing all credentials returned </returns>
-        [[nodiscard]] std::vector<credential_t> find(wchar_t const* filter, bool const search_all) const override;
+        [[nodiscard]] credentials_or_error_detail find(wchar_t const* filter, bool const search_all) const override;
 
         /// <summary>
         /// removes a credential from the user's credential set
