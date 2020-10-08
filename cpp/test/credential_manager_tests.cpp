@@ -64,21 +64,6 @@ TEST(credential_manager, add_or_update__returns_error__api_returns_error)
     ASSERT_TRUE(result.error_equals(42UL));
 }
 
-TEST(credential_manager, find__returns_credential__when_match_found)
-{
-    auto credential{make_credential()};
-    credential_manager_test const manager;
-    mock_credential_traits::set_cred_read_result(ERROR_SUCCESS);
-    mock_credential_factory_traits::set_credential(&credential);
-    auto const* id = L"ARBITRARY";
-    auto const type = credential_type::generic;
-
-    auto const result = manager.find(id, type);
-
-    EXPECT_TRUE(result.has_value<credential_t>());
-    ASSERT_EQ(result.value<credential_t>(), credential);
-}
-
 TEST(credential_manager, find__returns_not_found__when_api_returns_not_found)
 {
     mock_credential_traits::set_cred_read_result(ERROR_NOT_FOUND);
