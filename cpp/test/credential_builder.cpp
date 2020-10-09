@@ -12,6 +12,10 @@
 // 
 
 #include "credential_builder.h"
+#include <algorithm>
+#include <iterator>
+#include <string>
+#include <sstream>
 
 namespace win32::credential_store::tests
 {
@@ -116,6 +120,29 @@ credential_t make_credential()
 {
     return build_credential<wchar_t>(get_id(), get_username(), get_secret(), get_credential_type(), get_persistence_type(), get_last_updated())
         .value<credential_t>();
+}
+
+std::vector<credential_t> make_credentials(size_t const size)
+{
+    using std::vector;
+    using std::generate_n;
+    using std::back_inserter;
+    using std::wstringstream;
+
+    vector<credential_t> credentials;
+    int i = 0;
+    generate_n(back_inserter(credentials), size, 
+        [&i]() -> credential_t
+        {
+            wstringstream builder{};
+            builder << get_id() << ++i;
+            return initialize_builder()
+                .with_id(builder.str())
+                .build_if_valid()
+                .value();
+        });
+
+    return credentials;
 }
 
 }

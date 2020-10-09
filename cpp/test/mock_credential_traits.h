@@ -34,9 +34,12 @@ namespace win32::credential_store::tests
         static DWORD s_cred_enumerate_result;
         static DWORD s_cred_delete_result;
 
+        static DWORD s_enumerate_count;
+        static DWORD s_enumerate_flags;
+
         [[nodiscard]] static DWORD cred_read(wchar_t const*, credential_type const, unique_credential_w& out_credential);
         [[nodiscard]] static DWORD cred_write(PCREDENTIALW, DWORD const);
-        [[nodiscard]] static DWORD cred_enumerate(wchar_t const*, DWORD const, DWORD& count, CREDENTIALW**& credentials);
+        [[nodiscard]] static DWORD cred_enumerate(wchar_t const*, DWORD const flags, DWORD& count, CREDENTIALW**& credentials);
         [[nodiscard]] static DWORD cred_delete(wchar_t const*, credential_type const);
 
         static void credential_deleter(CREDENTIALW*);

@@ -115,7 +115,11 @@ void credential_executor::list(std::vector<std::string_view> const& arguments) c
 {
     static_cast<void>(arguments);
 
-    auto credentials =  m_manager.get_credentials();
+    using credentials_t = std::vector<credential<wchar_t>>;
+
+    auto credentials =  m_manager
+        .get_credentials()
+        .value_or(credentials_t());
 
     for (auto const& credential : credentials) {
         print_credential(credential);

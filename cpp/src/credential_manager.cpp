@@ -30,9 +30,10 @@ credential_manager::~credential_manager()
     m_p_impl.reset();
 }
 
-std::vector<credential_manager::credential_t> credential_manager::get_credentials() const
+credential_manager::credentials_or_error_detail credential_manager::get_credentials() const
 {
     if (!static_cast<bool>(m_p_impl)) {
+        return credentials_or_error_detail(result_t::from_error_code(std::errc::owner_dead));
     }
 
     return m_p_impl->get_credentials();
@@ -49,15 +50,15 @@ result_t credential_manager::add_or_update(credential_t const& credential) const
 credential_manager::credential_or_error_detail credential_manager::find(wchar_t const* id, credential_type type) const
 {
     if (!static_cast<bool>(m_p_impl)) {
-        return make_right<credential_t, result_t>(result_t::from_error_code(std::errc::owner_dead));
+        return credential_or_error_detail(result_t::from_error_code(std::errc::owner_dead));
     }
     return m_p_impl->find(id, type);
 }
 
-std::vector<credential_manager::credential_t> credential_manager::find(wchar_t const* filter, bool const search_all) const
+credential_manager::credentials_or_error_detail credential_manager::find(wchar_t const* filter, bool const search_all) const
 {
     if (!static_cast<bool>(m_p_impl)) {
-        return std::vector<credential_t>();
+        return credentials_or_error_detail(result_t::from_error_code(std::errc::owner_dead));
     }
     return m_p_impl->find(filter, search_all);
 }

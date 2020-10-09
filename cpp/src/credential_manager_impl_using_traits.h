@@ -16,7 +16,6 @@
 #define WIN32_LEAN_AND_MEAN 
 
 #include <system_error>
-#include <optional>
 #include <credential.h>
 #include "credential_manager_impl.h"
 #include "credential_traits.h"
@@ -31,10 +30,7 @@ namespace win32::credential_store
     class credential_manager_impl_using_traits final : public credential_manager_impl
     {
     public:
-        using credential_t = credential<wchar_t>;
-        using optional_credential_t = std::optional<credential<wchar_t>>;
-
-        [[nodiscard]] std::vector<credential_t> get_credentials() const override
+        [[nodiscard]] credentials_or_error_detail get_credentials() const override
         {
             return get_credentials(nullptr, true);
         }
@@ -66,14 +62,11 @@ namespace win32::credential_store
                 result == SUCCESS) {
                 return make_left<credential_t, result_t>(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(credential.get()));
 
-            } else if (result == ERROR_NOT_FOUND) {
-                return make_right<credential_t, result_t>(result_t::from_win32_error(result));
-
             } else {
                 return make_right<credential_t, result_t>(result_t::from_win32_error(result));
             }
         }
-        [[nodiscard]] std::vector<credential_t> find(wchar_t const* filter, const bool search_all) const override
+        [[nodiscard]] credentials_or_error_detail find(wchar_t const* filter, const bool search_all) const override
         {
             return get_credentials(filter, search_all);
         }
@@ -106,13 +99,14 @@ namespace win32::credential_store
             return string == nullptr || wcslen(string) == 0;
         }
 
-        [[nodiscard]] std::vector<credential_t> get_credentials(wchar_t const* filter, const bool search_all) const 
+        [[nodiscard]] credentials_or_error_detail get_credentials(wchar_t const* filter, const bool search_all) const 
         {
-            std::vector<credential_t> matches;
+            using credentials_t = std::vector<credential_t>;
+            credentials_t matches;
 
             auto flags = search_all ? CRED_ENUMERATE_ALL_CREDENTIALS : 0;
 
-            struct credentials_container
+            struct credentials_container final
             {
                 credentials_container() = default;
                 credentials_container(credentials_container const&) = delete;
@@ -131,15 +125,17 @@ namespace win32::credential_store
             credentials_container container;
 
             auto const result = CREDENTIAL_TRAITS::cred_enumerate(filter, flags, container.count, container.credentials); 
+            // TODO: change method to return either vector, or result_t
             if (result != SUCCESS) {
-                throw std::system_error(std::error_code(result, std::system_category()));
+                return credentials_or_error_detail(result_t::from_win32_error(result));
             }
 
             for (DWORD i = 0; i< container.count; i++) {
                 matches.push_back(CREDENTIAL_FACTORY_TRAITS::from_win32_credential(container.credentials[i]));
             }
 
-            return matches;
+            return make_left<credentials_t, result_t>(std::move(matches));
+            //return credentials_or_error_detail(std::move(matches));
         }
 
     };

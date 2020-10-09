@@ -20,6 +20,7 @@
 #include "mock_credential_factory_traits.h"
 #include "mock_credential_traits.h"
 #include "credential_builder.h"
+#include <winerror.h>
 
 namespace win32::credential_store::tests
 {
@@ -59,6 +60,30 @@ TEST(credential_manager, add_or_update__returns_error__api_returns_error)
     auto const credential{make_credential()};
 
     auto const result = manager.add_or_update(credential);
+
+    ASSERT_TRUE(result.error_equals(42UL));
+}
+
+TEST(credential_manager, find__returns_not_found__when_api_returns_not_found)
+{
+    mock_credential_traits::set_cred_read_result(ERROR_NOT_FOUND);
+    credential_manager_test const manager;
+    auto const* id = L"ARBITRARY";
+    auto const type = credential_type::generic;
+
+    auto const result = manager.find(id, type).value<result_t>();
+
+    ASSERT_TRUE(result.error_equals(ERROR_NOT_FOUND));
+}
+
+TEST(credential_manager, find__returns_error__when_api_returns_error)
+{
+    mock_credential_traits::set_cred_read_result(42UL);
+    credential_manager_test const manager;
+    auto const* id = L"ARBITRARY";
+    auto const type = credential_type::generic;
+
+    auto const result = manager.find(id, type).value<result_t>();
 
     ASSERT_TRUE(result.error_equals(42UL));
 }

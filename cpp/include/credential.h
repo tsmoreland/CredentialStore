@@ -17,10 +17,10 @@
 #include <chrono>
 #include <tuple>
 #include <optional>
-#include <utility>
 #include <stdexcept>
+#include <utility>
+#include <vector>
 #include <Windows.h>
-#include <wincred.h>
 
 #include <either.h>
 #include <result_t.h>
