@@ -81,7 +81,7 @@ namespace win32::credential_store
         }
 
         template <typename TErrorCode>
-        [[nodiscard]] bool error_equals(TErrorCode value) const noexcept
+        [[nodiscard]] bool equals(TErrorCode value) const noexcept
         {
             auto const error_code = error_value_or_zero();
             if (error_code == SUCCESS) {
@@ -102,14 +102,12 @@ namespace win32::credential_store
             }
         }
 
-
-
         [[nodiscard]] constexpr std::string const& message() const noexcept
         {
             return m_error_message;
         }
 
-        [[nodiscard]] explicit operator bool() const
+        [[nodiscard]] constexpr explicit operator bool() const
         {
             return !m_error_code.has_value();
         }
@@ -131,7 +129,27 @@ namespace win32::credential_store
             , m_error_code(result_code)
         {
         }
-
     };
     
+    template <typename TErrorCode>
+    [[nodiscard]] bool operator==(result_t const& left, TErrorCode const& error_value)
+    {
+        return left.equals(error_value);
+    }
+    template <typename TErrorCode>
+    [[nodiscard]] bool operator!=(result_t const& left, TErrorCode const& error_value)
+    {
+        return !(left == error_value);
+    }
+
+    [[nodiscard]] constexpr bool operator==(result_t const& left, bool const success)
+    {
+        return static_cast<bool>(left) == success;
+    }
+    [[nodiscard]] constexpr bool operator!=(result_t const& left, bool const success)
+    {
+        return !(left == success);
+    }
+
+
 }
