@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include <functional>
 #include <optional>
 
 namespace win32::credential_store 
@@ -108,6 +109,16 @@ namespace win32::credential_store
         }
 
         template <typename TValueType>
+        [[nodiscard]] constexpr TValueType value_or(std::function<TValueType(*)()> const& supplier) &&
+        {
+            static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
+            if constexpr (std::is_same_v<TValueType, TLeft>) {
+                return m_left_value.value_or(supplier());
+            } else {
+                return m_right_value.value_or(supplier());
+            }
+        }
+        template <typename TValueType>
         [[nodiscard]] constexpr TValueType value_or(TValueType&& else_value) &&
         {
             static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
@@ -115,6 +126,16 @@ namespace win32::credential_store
                 return m_left_value.value_or(else_value);
             } else {
                 return m_right_value.value_or(else_value);
+            }
+        }
+        template <typename TValueType>
+        [[nodiscard]] constexpr TValueType value_or(std::function<TValueType(*)()> const& supplier) const&
+        {
+            static_assert(std::is_same_v<TValueType, TLeft> || std::is_same_v<TValueType, TRight>, "invalid type");
+            if constexpr (std::is_same_v<TValueType, TLeft>) {
+                return m_left_value.value_or(supplier());
+            } else {
+                return m_right_value.value_or(supplier());
             }
         }
         template <typename TValueType>

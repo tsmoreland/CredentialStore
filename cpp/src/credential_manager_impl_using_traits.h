@@ -76,7 +76,6 @@ namespace win32::credential_store
         }
         [[nodiscard]] result_t remove(wchar_t const* id, credential_type type) const override
         {
-            // static_cast<std::underlying_type<credential_type>::type>(type) -- move into CREDENTIAL_TRAITS
             if (auto const result = CREDENTIAL_TRAITS::cred_delete(id, type);
                 result != SUCCESS && result != ERROR_NOT_FOUND) {
                 return result_t::from_win32_error(result);
@@ -125,7 +124,6 @@ namespace win32::credential_store
             credentials_container container;
 
             auto const result = CREDENTIAL_TRAITS::cred_enumerate(filter, flags, container.count, container.credentials); 
-            // TODO: change method to return either vector, or result_t
             if (result != SUCCESS) {
                 return credentials_or_error_detail(result_t::from_win32_error(result));
             }
@@ -135,7 +133,6 @@ namespace win32::credential_store
             }
 
             return make_left<credentials_t, result_t>(std::move(matches));
-            //return credentials_or_error_detail(std::move(matches));
         }
 
     };
