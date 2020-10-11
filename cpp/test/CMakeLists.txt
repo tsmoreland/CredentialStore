@@ -18,7 +18,7 @@ set (SOURCE
  "mock_credential_factory_traits.cpp" 
  "mock_credential_traits.h" 
  "mock_credential_traits.cpp" 
- "invalid_test_setup_exception.h")
+ "invalid_test_setup_exception.h" "credential_manager_test_fixture.h" "credential_manager_test_fixture.cpp")
 
 add_executable(${TEST_PROJECT_NAME} WIN32 ${SOURCE})
 add_test(NAME ${TEST_PROJECT_NAME} COMMAND ${TEST_PROJECT_NAME})

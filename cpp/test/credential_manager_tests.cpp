@@ -11,27 +11,11 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-#pragma warning(push)
-#pragma warning(disable : 26495 26812)
-#include <gtest/gtest.h>
-#pragma warning(pop)
-
-#include "../src/credential_manager_impl_using_traits.h"
-#include "mock_credential_factory_traits.h"
-#include "mock_credential_traits.h"
-#include "credential_builder.h"
-#include <winerror.h>
-
-// it is defined but IDE sometimes complains its not
-#ifndef ERROR_NOT_FOUND
-#define ERROR_NOT_FOUND 1168L
-#endif
+#include "credential_manager_test_fixture.h"
 
 namespace win32::credential_store::tests
 {
 
-using credential_manager_test = credential_manager_impl_using_traits<mock_credential_traits, mock_credential_factory_traits>;
-    
 TEST(credential_manager, add_or_update__returns_invalid_argument__id_is_empty)
 {
     auto const credential = make_credential();
