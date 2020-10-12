@@ -13,32 +13,14 @@
 
 #pragma once
 
-#include <credential_manager_interface.h>
-#include <string_view>
-#include <functional>
-#include <vector>
-#include "cli_result_code.h"
-
 namespace win32::credential_store::cli
 {
-    using verb_processor = std::function<cli_result_code (std::vector<std::string_view> const&)>;
-    
-    class credential_executor final
+    enum class cli_result_code
     {
-    public:
-        explicit credential_executor(credential_manager_interface const& manager, std::wostream& output_stream);
-
-        [[nodiscard]] verb_processor get_operation(std::string_view const& verb) const;
-
-        [[nodiscard]] cli_result_code none(std::vector<std::string_view> const& arguments) const;
-        [[nodiscard]] cli_result_code add(std::vector<std::string_view> const& arguments) const;
-        [[nodiscard]] cli_result_code find(std::vector<std::string_view> const& arguments) const;
-        [[nodiscard]] cli_result_code list(std::vector<std::string_view> const& arguments) const;
-        [[nodiscard]] cli_result_code remove(std::vector<std::string_view> const& arguments) const;
-
-    private:
-        credential_manager_interface const& m_manager;
-        std::wostream& m_output_stream;
+        success = 0,
+        insufficient_arguments,
+        unrecognized_argument,
+        not_found,
     };
-
+    
 }

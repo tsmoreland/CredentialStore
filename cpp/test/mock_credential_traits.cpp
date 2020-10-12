@@ -16,7 +16,6 @@
 
 namespace win32::credential_store::tests
 {
-    //using unique_credential_w = std::unique_ptr<CREDENTIALW, void (*)(CREDENTIALW*)>;  
     CREDENTIALW* MOCK_CREDENTIAL_ADDRESS = reinterpret_cast<CREDENTIALW*>(0x1234);
 
     mock_credential_traits::credential_t* mock_credential_traits::s_mock_result_ptr = nullptr;
@@ -50,11 +49,11 @@ namespace win32::credential_store::tests
     }
     void mock_credential_traits::credential_deleter(CREDENTIALW*)
     {
-        // ... ignore ...
+        // ... ignore, mock never allocates so nothing to delete ...
     }
     void mock_credential_traits::credential_deleter(CREDENTIALW**)
     {
-        // ... ignore ...
+        // ... ignore, mock never allocates so nothing to delete ...
     }
     DWORD mock_credential_traits::to_dword(credential_type const type)
     {
