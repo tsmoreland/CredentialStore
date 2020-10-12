@@ -16,136 +16,103 @@
 namespace win32::credential_store::tests
 {
 
-TEST(credential_manager, add_or_update__returns_invalid_argument__id_is_empty)
+TEST_F(credential_manager_test_fixture, add_or_update__returns_invalid_argument__id_is_empty)
 {
-    auto const credential = make_credential();
-    auto& id = const_cast<std::wstring&>(credential.get_id());
+    auto& id = const_cast<std::wstring&>(credential().get_id());
     id = L"";
 
-    credential_manager_test manager;
-
-    auto const result = manager.add_or_update(credential);
+    auto const result = manager().add_or_update(credential());
 
     ASSERT_EQ(result, std::errc::invalid_argument);
 }
-
-TEST(credential_manager, add_or_update__returns_invalid_argument__username_is_empty)
+TEST_F(credential_manager_test_fixture, add_or_update__returns_invalid_argument__username_is_empty)
 {
-    auto const credential = make_credential();
-    auto& username = const_cast<std::wstring&>(credential.get_username());
+    auto& username = const_cast<std::wstring&>(credential().get_username());
     username = L"";
 
-    credential_manager_test manager;
-
-    auto const result = manager.add_or_update(credential);
+    auto const result = manager().add_or_update(credential());
 
     ASSERT_EQ(result, std::errc::invalid_argument);
 }
-
-TEST(credential_manager, add_or_update__returns_error__api_returns_error)
+TEST_F(credential_manager_test_fixture, add_or_update__returns_error__api_returns_error)
 {
-    mock_credential_traits::set_cred_write_result(42UL);
-    credential_manager_test manager;
-    auto const credential{make_credential()};
+    set_cred_write_result(42UL);
 
-    auto const result = manager.add_or_update(credential);
+    auto const result = manager().add_or_update(credential());
 
     ASSERT_EQ(result, 42UL);
 }
 
-TEST(credential_manager, find__returns_matching_credential__when_api_returns_success)
+TEST_F(credential_manager_test_fixture, find__returns_matching_credential__when_api_returns_success)
 {
-    auto credential{make_credential()};
-    mock_credential_factory_traits::set_credential(&credential);
-    mock_credential_traits::set_cred_read_result(0UL);
-    credential_manager_test const manager;
-    auto const* id = L"ARBITRARY";
-    auto const type = credential_type::generic;
+    mock_credential_factory_traits::set_credential(&credential());
+    set_cred_read_result(0UL);
 
-    auto const match = manager.find(id, type).value<credential_t>();
+    auto const match = manager().find(id(), type()).value<credential_t>();
 
-    ASSERT_EQ(credential, match);
+    ASSERT_EQ(credential(), match);
 }
-TEST(credential_manager, find__returns_not_found__when_api_returns_not_found)
+TEST_F(credential_manager_test_fixture, find__returns_not_found__when_api_returns_not_found)
 {
-    mock_credential_traits::set_cred_read_result(ERROR_NOT_FOUND);
-    credential_manager_test const manager;
-    auto const* id = L"ARBITRARY";
-    auto const type = credential_type::generic;
+    set_cred_read_result(ERROR_NOT_FOUND);
 
-    auto const result = manager.find(id, type).value<result_t>();
+    auto const result = manager().find(id(), type()).value<result_t>();
 
     ASSERT_EQ(result, ERROR_NOT_FOUND);
 }
-
-TEST(credential_manager, find__returns_error__when_api_returns_error)
+TEST_F(credential_manager_test_fixture, find__returns_error__when_api_returns_error)
 {
-    mock_credential_traits::set_cred_read_result(42UL);
-    credential_manager_test const manager;
-    auto const* id = L"ARBITRARY";
-    auto const type = credential_type::generic;
+    set_cred_read_result(42UL);
 
-    auto const result = manager.find(id, type).value<result_t>();
+    auto const result = manager().find(id(), type()).value<result_t>();
 
     ASSERT_EQ(result, 42UL);
 }
 
-TEST(credential_manager, remove__by_id__returns_success__when_api_returns_success)
+TEST_F(credential_manager_test_fixture, remove__by_id__returns_success__when_api_returns_success)
 {
-    mock_credential_traits::set_cred_delete_result(0UL);
-    credential_manager_test const manager;
-    auto const* id = L"ARBITRARY";
-    auto const type = credential_type::generic;
+    set_cred_delete_result(0UL);
 
-    auto const result = manager.remove(id, type);
+    auto const result = manager().remove(id(), type());
 
     ASSERT_TRUE(result.is_success());
 }
-TEST(credential_manager, remove__by_id__returns_success__when_not_found)
+TEST_F(credential_manager_test_fixture, remove__by_id__returns_success__when_not_found)
 {
-    mock_credential_traits::set_cred_delete_result(ERROR_NOT_FOUND);
-    credential_manager_test const manager;
-    auto const* id = L"ARBITRARY";
-    auto const type = credential_type::generic;
+    set_cred_delete_result(ERROR_NOT_FOUND);
 
-    auto const result = manager.remove(id, type);
+    auto const result = manager().remove(id(), type());
 
     ASSERT_TRUE(result.is_success());
 }
-TEST(credential_manager, remove__by_id__returns_error__when_api_returns_error)
+TEST_F(credential_manager_test_fixture, remove__by_id__returns_error__when_api_returns_error)
 {
-    mock_credential_traits::set_cred_delete_result(42UL);
-    credential_manager_test const manager;
-    auto const* id = L"ARBITRARY";
-    auto const type = credential_type::generic;
+    set_cred_delete_result(42UL);
 
-    auto const result = manager.remove(id, type);
+    auto const result = manager().remove(id(), type());
 
     ASSERT_EQ(result, 42UL);
 }
-TEST(credential_manager, remove__by_object__returns_success__when_api_returns_success)
-{
-    mock_credential_traits::set_cred_delete_result(0UL);
-    credential_manager_test const manager;
-    auto const credential{make_credential()};
 
-    auto const result = manager.remove(credential);
+TEST_F(credential_manager_test_fixture, remove__by_object__returns_success__when_api_returns_success)
+{
+    set_cred_delete_result(0UL);
+
+    auto const result = manager().remove(credential());
 
     ASSERT_TRUE(result.is_success());
 }
-TEST(credential_manager, remove__by_object__returns_success__when_not_found)
+TEST_F(credential_manager_test_fixture, remove__by_object__returns_success__when_not_found)
 {
-    mock_credential_traits::set_cred_delete_result(ERROR_NOT_FOUND);
-    credential_manager_test const manager;
-    auto const credential{make_credential()};
+    set_cred_delete_result(ERROR_NOT_FOUND);
 
-    auto const result = manager.remove(credential);
+    auto const result = manager().remove(credential());
 
     ASSERT_TRUE(result.is_success());
 }
 TEST_F(credential_manager_test_fixture, remove__by_object__returns_error__when_api_returns_error)
 {
-    mock_credential_traits::set_cred_delete_result(42UL);
+    set_cred_delete_result(42UL);
 
     auto const result = manager().remove(credential());
 
