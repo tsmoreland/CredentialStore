@@ -29,6 +29,8 @@ namespace win32::credential_store
     template <typename CREDENTIAL_TRAITS, typename CREDENTIAL_FACTORY_TRAITS>
     class credential_manager_impl_using_traits final : public credential_manager_impl
     {
+        static const DWORD SUCCESS = 0UL;
+
     public:
         [[nodiscard]] credentials_or_error_detail get_credentials() const override
         {
@@ -85,19 +87,40 @@ namespace win32::credential_store
         }
 
         explicit credential_manager_impl_using_traits() = default;
-        credential_manager_impl_using_traits(const credential_manager_impl_using_traits& other) = delete;
-        credential_manager_impl_using_traits(credential_manager_impl_using_traits&& other) noexcept = default;
-        credential_manager_impl_using_traits& operator=(const credential_manager_impl_using_traits& other) = delete;
-        credential_manager_impl_using_traits& operator=(credential_manager_impl_using_traits&& other) noexcept = default;
+        credential_manager_impl_using_traits(credential_manager_impl_using_traits const& other) = delete;
+        credential_manager_impl_using_traits& operator=(credential_manager_impl_using_traits const& other) = delete;
+        /// <summary>
+        /// Move constructor
+        /// </summary>
+        /// <param name="other">other object to move into this one</param>
+        /// <remarks>
+        /// see move operator=, following its behaviour in both cases for this class it's simple as there are no members
+        /// to be moved
+        /// </remarks>
+        credential_manager_impl_using_traits(credential_manager_impl_using_traits&& other) noexcept
+        {
+            static_cast<void>(other); // nothing to move
+        }
+        /// <summary>
+        /// Move operator
+        /// </summary>
+        /// <param name="other">other object to move into this one</param>
+        /// <returns>reference to this object</returns>
+        /// <remarks>
+        /// explicit implementation rather than = default because it was implicitly deleted otherwise despite existing,
+        /// likely something to do with the templates in use.  Further research required for now just making note of it
+        /// </remarks>
+        credential_manager_impl_using_traits& operator=(credential_manager_impl_using_traits&& other) noexcept
+        {
+            static_cast<void>(other); // nothing to move
+            return *this;
+        }
         ~credential_manager_impl_using_traits() override = default;
     private:
-        static const DWORD SUCCESS = 0UL;
-
         [[nodiscard]] static bool is_null_or_empty(wchar_t const *string)
         {
             return string == nullptr || wcslen(string) == 0;
         }
-
         [[nodiscard]] credentials_or_error_detail get_credentials(wchar_t const* filter, const bool search_all) const 
         {
             using credentials_t = std::vector<credential_t>;

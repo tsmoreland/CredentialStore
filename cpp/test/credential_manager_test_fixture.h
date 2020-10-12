@@ -40,9 +40,8 @@ namespace win32::credential_store::tests
     public:
         using credential_t = credential<wchar_t>;
     private:
-        std::optional<credential_manager_impl_using_traits<mock_credential_traits, mock_credential_factory_traits>> m_manager{};
-        //std::optional<credential_manager_test> m_manager{};
-        std::optional<credential_t> m_credential{};
+        std::optional<credential_manager_test> m_manager{std::nullopt};
+        std::optional<credential_t> m_credential{std::nullopt};
         wchar_t const* const m_id;
         credential_type const m_type;
 
@@ -56,6 +55,11 @@ namespace win32::credential_store::tests
         [[nodiscard]] credential_type type() const noexcept;
         [[nodiscard]] credential_manager_test& manager();
         [[nodiscard]] credential_t& credential();
+
+        void set_cred_read_result(DWORD const value) const noexcept;
+        void set_cred_write_result(DWORD const value) const noexcept;
+        void set_cred_enumerate_result(DWORD const value) const noexcept;
+        void set_cred_delete_result(DWORD const value) const noexcept;
     };
 
     

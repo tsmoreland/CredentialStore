@@ -143,13 +143,11 @@ TEST(credential_manager, remove__by_object__returns_success__when_not_found)
 
     ASSERT_TRUE(result.is_success());
 }
-TEST(credential_manager, remove__by_object__returns_error__when_api_returns_error)
+TEST_F(credential_manager_test_fixture, remove__by_object__returns_error__when_api_returns_error)
 {
     mock_credential_traits::set_cred_delete_result(42UL);
-    credential_manager_test const manager;
-    auto const credential{make_credential()};
 
-    auto const result = manager.remove(credential);
+    auto const result = manager().remove(credential());
 
     ASSERT_EQ(result, 42UL);
 }

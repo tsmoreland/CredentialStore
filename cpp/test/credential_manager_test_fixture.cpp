@@ -11,6 +11,9 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
+// ignore methods that may be static to keep up appearances of them being part of the fixture
+// ReSharper disable CppMemberFunctionMayBeStatic 
+
 #include "credential_manager_test_fixture.h"
 
 namespace win32::credential_store::tests
@@ -24,22 +27,18 @@ credential_manager_test_fixture::credential_manager_test_fixture()
 
 void credential_manager_test_fixture::SetUp()
 {
-    std::optional<credential_manager_impl_using_traits<mock_credential_traits, mock_credential_factory_traits>> obj{std::nullopt};
-    //credential_manager_impl_using_traits<mock_credential_traits, mock_credential_factory_traits> obj2;
-    std::optional<credential_manager_impl_using_traits<mock_credential_traits, mock_credential_factory_traits>> obj2 = std::make_optional<credential_manager_impl_using_traits<mock_credential_traits, mock_credential_factory_traits>>();
-    obj = std::move(obj2);
-    //obj = obj2;
-
-        //std::make_optional( credential_manager_impl_using_traits<mock_credential_traits, mock_credential_factory_traits>());
-    //m_manager = std::make_optional(credential_manager_impl_using_traits<mock_credential_traits, mock_credential_factory_traits>());
-    //m_manager = std::make_optional<credential_manager_test>();
-    //m_manager = std::make_optional<credential_manager_impl_using_traits<mock_credential_traits, mock_credential_factory_traits>>();
-    m_manager = 
+    m_manager = credential_manager_test();
     m_credential = make_credential();
+
+    set_cred_delete_result(0UL);
+    set_cred_enumerate_result(0UL);
+    set_cred_read_result(0UL);
+    set_cred_write_result(0UL);
 }
 
 void credential_manager_test_fixture::TearDown()
 {
+    // nothing to tear down at this time...
 }
 
 wchar_t const* credential_manager_test_fixture::id() const noexcept
@@ -60,6 +59,23 @@ credential_manager_test& credential_manager_test_fixture::manager()
 credential_t& credential_manager_test_fixture::credential()
 {
     return m_credential.value();
+}
+
+void credential_manager_test_fixture::set_cred_read_result(DWORD const value) const noexcept
+{
+    mock_credential_traits::s_cred_read_result = value;
+}
+void credential_manager_test_fixture::set_cred_write_result(DWORD const value) const noexcept
+{
+    mock_credential_traits::s_cred_write_result = value;
+}
+void credential_manager_test_fixture::set_cred_enumerate_result(DWORD const value) const noexcept
+{
+    mock_credential_traits::s_cred_enumerate_result = value;
+}
+void credential_manager_test_fixture::set_cred_delete_result(DWORD const value) const noexcept
+{
+    mock_credential_traits::s_cred_delete_result = value;
 }
 
 }
