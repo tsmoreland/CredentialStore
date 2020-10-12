@@ -13,6 +13,7 @@
 
 #include <credential_manager.h>
 #include <iostream>
+#include <algorithm>
 #include <string_view>
 #include "credential_executor.h"
 
@@ -21,13 +22,16 @@ using std::endl;
 using win32::credential_store::credential_manager;
 using win32::credential_store::cli::credential_executor;
 
-int main(int const argc, char* argv[])
+int main(int const argc, char const* argv[])
 {
+
     try {
+        using win32::credential_store::cli::cli_result_code;
+
         if (argc < 2)
         {
             wcout << L"Usage: credential_store.cli <verb>" << endl;
-            //return 1;
+            return static_cast<int>(cli_result_code::insufficient_arguments);
         }
 
          auto const* raw_verb = argc >= 2
@@ -35,18 +39,31 @@ int main(int const argc, char* argv[])
              : "list";
 
         std::vector<std::string_view> arguments;
-        for (int i=2; i < argc; i++)
-            arguments.emplace_back(argv[i]);
+        int i = 2;
+        std::generate_n(std::back_inserter(arguments), argc - 2,
+            [argv, &i]() -> std::string_view
+            {
+                return argv[i++];
+            });
 
         credential_manager const manager;
-        credential_executor const executor(manager);
+        credential_executor const executor(manager, std::wcout);
 
-        executor.get_operation(raw_verb)(arguments);
+        auto const result = executor.get_operation(raw_verb)(arguments);
+
+        switch (result) {
+        case cli_result_code::not_found:
+        case cli_result_code::insufficient_arguments:
+        case cli_result_code::unrecognized_argument:
+            return static_cast<int>(result);
+        case cli_result_code::success:
+            return 0;
+        }
 
     } catch (std::exception const& ex) {
         std::cout << "Error: " << ex.what() << endl;
+        return -1;
     }
 
-    return 0;
 }
 

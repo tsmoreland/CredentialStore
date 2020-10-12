@@ -24,49 +24,52 @@ using std::endl;
 
 namespace win32::credential_store::cli
 {
-    [[nodiscard]] verb_type get_verb_type(std::string_view const& verb);
-    [[nodiscard]] credential_type get_credential_type(std::string_view const& type);
-    void print_unreognized_type();
 
-    void print_credential(credential<wchar_t> const& credential) {
-        wcout << credential.get_id() << L" " << credential.get_username() << endl;
-    }
+[[nodiscard]] verb_type get_verb_type(std::string_view const& verb);
+[[nodiscard]] credential_type get_credential_type(std::string_view const& type);
+void print_unreognized_type();
 
-    credential_executor::credential_executor(credential_manager_interface const& manager)
-        : m_manager{manager}
-    {
-    }
+void print_credential(credential<wchar_t> const& credential, std::wostream& output_stream) {
+    output_stream << credential.get_id() << L" " << credential.get_username() << endl;
+}
 
-    verb_processor credential_executor::get_operation(std::string_view const& verb) const
+credential_executor::credential_executor(credential_manager_interface const& manager, std::wostream& output_stream)
+    : m_manager{manager}
+    , m_output_stream(output_stream)
+{
+}
+
+verb_processor credential_executor::get_operation(std::string_view const& verb) const
 {
     auto const verb_type = get_verb_type(verb);
 
     switch (verb_type) {
     case verb_type::add:
-        return [this](std::vector<std::string_view> const& arguments) { add(arguments); };
+        return [this](std::vector<std::string_view> const& arguments) { return add(arguments); };
     case verb_type::find:
-        return [this](std::vector<std::string_view> const& arguments) { find(arguments); };
+        return [this](std::vector<std::string_view> const& arguments) { return find(arguments); };
     case verb_type::list:
-        return [this](std::vector<std::string_view> const& arguments) { list(arguments); };
+        return [this](std::vector<std::string_view> const& arguments) { return list(arguments); };
     case verb_type::remove:
-        return [this](std::vector<std::string_view> const& arguments) { remove(arguments); };
+        return [this](std::vector<std::string_view> const& arguments) { return remove(arguments); };
     case verb_type::none:
     default:  // NOLINT(clang-diagnostic-covered-switch-default) -- without default it complains that not all paths return
-        return [this](std::vector<std::string_view> const& arguments) { none(arguments); };
+        return [this](std::vector<std::string_view> const& arguments) { return none(arguments); };
     }
 }
 
-void credential_executor::none(std::vector<std::string_view> const& arguments) const
+cli_result_code credential_executor::none(std::vector<std::string_view> const& arguments) const
 {
     static_cast<void>(arguments);
     static_cast<void>(m_manager);
+    return cli_result_code::unrecognized_argument;
 }
 
-void credential_executor::add(std::vector<std::string_view> const& arguments) const
+cli_result_code credential_executor::add(std::vector<std::string_view> const& arguments) const
 {
     if (arguments.size() < 3) {
-        wcout << L"Usage: credential_store.cli add <type> <target> <username>" << endl;
-        return;
+        m_output_stream << L"Usage: credential_store.cli add <type> <target> <username>" << endl;
+        return cli_result_code::insufficient_arguments;
     }
     if (auto const type = get_credential_type(arguments[0]);
         type != credential_type::unknown) {
@@ -78,15 +81,17 @@ void credential_executor::add(std::vector<std::string_view> const& arguments) co
 
     } else {
         print_unreognized_type();
+        return cli_result_code::unrecognized_argument;
     }
 
     static_cast<void>(m_manager);
+    return cli_result_code::success;
 }
-void credential_executor::find(std::vector<std::string_view> const& arguments) const
+cli_result_code credential_executor::find(std::vector<std::string_view> const& arguments) const
 {
     if (arguments.size() < 2) {
-        wcout << L"Usage: credential_store.cli find <type> <target>" << endl;
-        return;
+        m_output_stream << L"Usage: credential_store.cli find <type> <target>" << endl;
+        return cli_result_code::insufficient_arguments;
     }
     if (auto const type = get_credential_type(arguments[0]);
         type != credential_type::unknown) {
@@ -95,23 +100,26 @@ void credential_executor::find(std::vector<std::string_view> const& arguments) c
 
         if (auto credential = m_manager.find(id.c_str(), type);
             credential.has_value<win32::credential_store::credential<wchar_t>>()) {
-            print_credential(credential.value<win32::credential_store::credential<wchar_t>>());
+            print_credential(credential.value<win32::credential_store::credential<wchar_t>>(), m_output_stream);
 
         } else if (credential.value<result_t>().equals(ERROR_NOT_FOUND)) {
-            wcout << id << L" not found." << endl;
+            m_output_stream << id << L" not found." << endl;
 
         } else {
             auto const& result = credential.value<result_t>();
-            std::cout << "Error occured: " << result.error().value() << " " << result.message() << endl;
+            std::wstring const message(std::begin(result.message()), std::end(result.message()));
+            m_output_stream << L"Error occured: " << result.error().value() << L" " << message << endl;
         }
 
     } else {
         print_unreognized_type();
+        return cli_result_code::unrecognized_argument;
     }
 
     static_cast<void>(m_manager);
+    return cli_result_code::success;
 }
-void credential_executor::list(std::vector<std::string_view> const& arguments) const
+cli_result_code credential_executor::list(std::vector<std::string_view> const& arguments) const
 {
     static_cast<void>(arguments);
 
@@ -122,14 +130,16 @@ void credential_executor::list(std::vector<std::string_view> const& arguments) c
         .value_or(credentials_t());
 
     for (auto const& credential : credentials) {
-        print_credential(credential);
+        print_credential(credential, m_output_stream);
     }
+
+    return cli_result_code::success;
 }
-void credential_executor::remove(std::vector<std::string_view> const& arguments) const
+cli_result_code credential_executor::remove(std::vector<std::string_view> const& arguments) const
 {
     if (arguments.size() < 2) {
-        wcout << L"Usage: credential_store.cli remove <type> <target>" << endl;
-        return;
+        m_output_stream << L"Usage: credential_store.cli remove <type> <target>" << endl;
+        return cli_result_code::insufficient_arguments;
     }
     if (auto const type = get_credential_type(arguments[0]);
         type != credential_type::unknown) {
@@ -137,16 +147,16 @@ void credential_executor::remove(std::vector<std::string_view> const& arguments)
 
         auto credential = m_manager.find(id.c_str(), type);
 
-        if (credential.has_value<win32::credential_store::credential<wchar_t>>())
+        if (credential.has_value<win32::credential_store::credential<wchar_t>>()) {
             static_cast<void>(m_manager.remove(credential.value<win32::credential_store::credential<wchar_t>>()));
-        else
-            wcout << id << L" not found." << endl;
-
+            return cli_result_code::success;
+        } else
+            return cli_result_code::not_found;
 
     } else {
         print_unreognized_type();
+        return cli_result_code::unrecognized_argument;
     }
-    static_cast<void>(m_manager);
 }
 
 char to_upper(char const ch)
