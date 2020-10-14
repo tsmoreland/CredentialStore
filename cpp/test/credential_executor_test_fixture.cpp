@@ -18,7 +18,7 @@ namespace win32::credential_store::tests
 
 void credential_executor_test_fixture::SetUp()
 {
-    // ... nothing to setup at this time ...
+    m_buffer.pubseekpos(0);
 }
 void credential_executor_test_fixture::TearDown()
 {
