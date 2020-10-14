@@ -15,12 +15,11 @@
 
 #include <vector>
 #include <credential.h>
-#include <credential_store_export.h>
 
 namespace win32::credential_store
 {
 
-    class WIN32_CREDENTIAL_STORE_EXPORT credential_manager_interface
+    class credential_manager_interface
     {
     public:
         using credential_t = credential<wchar_t>;
