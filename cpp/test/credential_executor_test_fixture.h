@@ -20,7 +20,6 @@
 
 #include "mock_credential_factory_traits.h"
 #include "mock_credential_traits.h"
-#include "credential_builder.h"
 #include <winerror.h>
 #include "../src/credential_store_cli/credential_executor.h"
 #include "../src/credential_manager_impl_using_traits.h"
@@ -55,10 +54,16 @@ namespace win32::credential_store::tests
         std::wostream m_stream;
         mock_credential_manager m_manager;
         cli::credential_executor m_executor;
+
+        static void set_cred_read_result(DWORD const value) noexcept;
+        static void set_cred_write_result(DWORD const value) noexcept;
+        static void set_cred_enumerate_result(DWORD const value) noexcept;
+        static void set_cred_delete_result(DWORD const value) noexcept;
     public:
         void SetUp() override;
         void TearDown() override;
 
+        [[nodiscard]] mock_credential_manager const& manager() const;
         [[nodiscard]] cli::credential_executor const& executor() const;
         [[nodiscard]] std::wostream& stream();
 

@@ -25,8 +25,6 @@ using std::endl;
 namespace win32::credential_store::cli
 {
 
-[[nodiscard]] verb_type get_verb_type(std::string_view const& verb);
-[[nodiscard]] credential_type get_credential_type(std::string_view const& type);
 void print_unreognized_type();
 
 void print_credential(credential<wchar_t> const& credential, std::wostream& output_stream) {
@@ -187,21 +185,21 @@ credential_type get_credential_type(std::string_view const& type)
     std::string upper_type(type.size(), '\0');
     std::transform(begin(type), end(type), begin(upper_type), to_upper);
 
-    if (upper_type.find("GENERIC", 0) != std::string::npos)
+    if (upper_type == "GENERIC")
         return credential_type::generic;
-    if (upper_type.find("DOMAIN_CERTIFICATE", 0) != std::string::npos)
+    if (upper_type == "DOMAIN_CERTIFICATE")
         return credential_type::domain_certificate;
-    if (upper_type.find("DOMAIN_EXTENDED", 0) != std::string::npos)
+    if (upper_type == "DOMAIN_EXTENDED")
         return credential_type::domain_extended;
-    if (upper_type.find("DOMAIN_PASSWORD", 0) != std::string::npos)
+    if (upper_type == "DOMAIN_PASSWORD")
         return credential_type::domain_password;
-    if (upper_type.find("DOMAIN_VISIBLE_PASSWORD", 0) != std::string::npos)
+    if (upper_type == "DOMAIN_VISIBLE_PASSWORD")
         return credential_type::domain_visible_password;
-    if (upper_type.find("GENERIC_CERTIFICATE", 0) != std::string::npos)
+    if (upper_type == "GENERIC_CERTIFICATE")
         return credential_type::generic_certificate;
-    if (upper_type.find("MAXIMUM", 0) != std::string::npos)
+    if (upper_type == "MAXIMUM")
         return credential_type::maximum;
-    if (upper_type.find("MAXIMUM_EX", 0) != std::string::npos)
+    if (upper_type == "MAXIMUM_EX")
         return credential_type::maximum_ex;
 
     return credential_type::unknown;
