@@ -6,11 +6,15 @@ on:
     paths-ignore:
       - CSharp/**
       - .github/**
+      - java/**
+      - .gitignore
   pull_request:
     branches: [ main, develop ]
     paths-ignore:
       - CSharp/**
+      - java/**
       - .github/**
+      - .gitignore
 
 jobs:
   build:
