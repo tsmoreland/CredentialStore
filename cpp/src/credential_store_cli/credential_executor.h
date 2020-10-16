@@ -18,6 +18,7 @@
 #include <functional>
 #include <vector>
 #include "cli_result_code.h"
+#include "verb_type.h"
 
 namespace win32::credential_store::cli
 {
@@ -42,5 +43,8 @@ namespace win32::credential_store::cli
         credential_manager_interface const& m_manager;
         std::wostream& m_output_stream;
     };
+
+    [[nodiscard]] verb_type get_verb_type(std::string_view const& verb);
+    [[nodiscard]] credential_type get_credential_type(std::string_view const& type);
 
 }

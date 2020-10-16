@@ -52,6 +52,23 @@ TEST_F(credential_executor_test_fixture, add__returns_insuffient_arguments__when
     ASSERT_EQ(cli::cli_result_code::insufficient_arguments, result);
 }
 
+TEST_F(credential_executor_test_fixture, add__returns_unrecognized_argument__when_credential_type_invalid)
+{
+    auto [args, args_view] = make_arguments({"invalid_type", "target", "username"});
+
+    auto const result = executor().add(args_view);
+
+    ASSERT_EQ(cli::cli_result_code::unrecognized_argument, result);
+}
+TEST_F(credential_executor_test_fixture, add__returns_success__when_arguments_valid_and_manager_succeeds)
+{
+    auto [args, args_view] = make_arguments({"generic", "target", "username"});
+
+    auto const result = executor().add(args_view);
+
+    ASSERT_EQ(cli::cli_result_code::success, result);
+}
+
 TEST_F(credential_executor_test_fixture, find__returns_insuffient_arguments__when_arguments_less_than_two)
 {
     auto [args, args_view] = make_arguments({"bad_arg"});
@@ -79,13 +96,50 @@ TEST_F(credential_executor_test_fixture, remove__returns_insuffient_arguments__w
     ASSERT_EQ(cli::cli_result_code::insufficient_arguments, result);
 }
 
+class credential_type_parse_test_fixture
+    : public ::testing::TestWithParam<std::tuple<char const *, credential_type>>
+{
+};
+TEST_P(credential_type_parse_test_fixture, get_credential_type__returns_non_unknown_value__when_string_matches_type)
+{
+    auto [credential_type_as_string, expected_type]  = GetParam();
+
+    auto const actual_type = cli::get_credential_type(credential_type_as_string);
+
+    ASSERT_EQ(expected_type, actual_type);
+}
+char const *valid_credential_type_strings[] = { "generic", "domain_certificate", "DOMAIN_extended", "DOMAIN_PASSWORD"};
+std::tuple<char const *, credential_type> string_to_credential_type_pairs[] = 
+{
+    std::make_tuple("generic", credential_type::generic),
+    std::make_tuple("domain_CERTIFICATE", credential_type::domain_certificate),
+    std::make_tuple("DOMAIN_EXTENDED", credential_type::domain_extended),
+    std::make_tuple("DOMAIN_password", credential_type::domain_password),
+    std::make_tuple("domain_VISIBLE_password", credential_type::domain_visible_password),
+    std::make_tuple("generic_certificate", credential_type::generic_certificate),
+    std::make_tuple("maximum", credential_type::maximum),
+    std::make_tuple("MAXIMUM_EX", credential_type::maximum_ex),
+    std::make_tuple("invalid or unkonwn", credential_type::unknown),
+};
+INSTANTIATE_TEST_SUITE_P(valid_types, credential_type_parse_test_fixture, ::testing::ValuesIn(string_to_credential_type_pairs));
+
 void credential_executor_test_fixture::SetUp()
 {
     m_buffer.pubseekpos(0);
+
+    set_cred_delete_result(0UL);
+    set_cred_enumerate_result(0UL);
+    set_cred_read_result(0UL);
+    set_cred_write_result(0UL);
 }
 void credential_executor_test_fixture::TearDown()
 {
     /// ... nothing to tear down at this time ...
+}
+
+credential_executor_test_fixture::mock_credential_manager const& credential_executor_test_fixture::manager() const
+{
+    return m_manager;
 }
 
 cli::credential_executor const& credential_executor_test_fixture::executor() const
@@ -131,6 +185,23 @@ credential_executor_test_fixture::mock_credential_manager::credentials_or_error_
 result_t credential_executor_test_fixture::mock_credential_manager::remove(credential_t const& credential) const
 {
     return m_manager.remove(credential);
+}
+
+void credential_executor_test_fixture::set_cred_read_result(DWORD const value) noexcept
+{
+    mock_credential_traits::s_cred_read_result = value;
+}
+void credential_executor_test_fixture::set_cred_write_result(DWORD const value) noexcept
+{
+    mock_credential_traits::s_cred_write_result = value;
+}
+void credential_executor_test_fixture::set_cred_enumerate_result(DWORD const value) noexcept
+{
+    mock_credential_traits::s_cred_enumerate_result = value;
+}
+void credential_executor_test_fixture::set_cred_delete_result(DWORD const value) noexcept
+{
+    mock_credential_traits::s_cred_delete_result = value;
 }
 
 }

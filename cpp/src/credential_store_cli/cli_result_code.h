@@ -21,6 +21,7 @@ namespace win32::credential_store::cli
         insufficient_arguments,
         unrecognized_argument,
         not_found,
+        error_occurred,
     };
     
 }
