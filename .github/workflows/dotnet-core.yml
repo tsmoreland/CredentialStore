@@ -3,13 +3,13 @@ name: C# Continuous Integration
 on:   
   push:
     branches: [ main, develop ]
-    # if/when C++ implementation is added
     paths-ignore:
       - cpp/**
       - .github/**
+      - java/**
+      - .gitignore
   pull_request:
     branches: [ main, develop ]
-    # if/when C++ implementation is added
     paths-ignore:
       - cpp/**
       - .github/**
