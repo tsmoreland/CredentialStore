@@ -26,15 +26,17 @@ namespace win32::credential_store::cli
     class credential_executor final
     {
     public:
+        using argument_container_view = std::vector<std::string_view>;
+
         explicit credential_executor(credential_manager_interface const& manager, std::wostream& output_stream);
 
         [[nodiscard]] verb_processor get_operation(std::string_view const& verb) const;
 
-        [[nodiscard]] cli_result_code none(std::vector<std::string_view> const& arguments) const;
-        [[nodiscard]] cli_result_code add(std::vector<std::string_view> const& arguments) const;
-        [[nodiscard]] cli_result_code find(std::vector<std::string_view> const& arguments) const;
-        [[nodiscard]] cli_result_code list(std::vector<std::string_view> const& arguments) const;
-        [[nodiscard]] cli_result_code remove(std::vector<std::string_view> const& arguments) const;
+        [[nodiscard]] cli_result_code none(argument_container_view const& arguments) const;
+        [[nodiscard]] cli_result_code add(argument_container_view const& arguments) const;
+        [[nodiscard]] cli_result_code find(argument_container_view const& arguments) const;
+        [[nodiscard]] cli_result_code list(argument_container_view const& arguments) const;
+        [[nodiscard]] cli_result_code remove(argument_container_view const& arguments) const;
 
     private:
         credential_manager_interface const& m_manager;

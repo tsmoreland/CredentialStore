@@ -5,20 +5,29 @@ find_package(GTest REQUIRED)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set (SOURCE 
-"${CMAKE_SOURCE_DIR}/include/credential.h"
-"${CMAKE_SOURCE_DIR}/include/credential_manager.h"
-"${CMAKE_SOURCE_DIR}/include/either.h"
-"${CMAKE_SOURCE_DIR}/include/result_t.h"
+	"${CMAKE_SOURCE_DIR}/include/credential.h"
+	"${CMAKE_SOURCE_DIR}/include/credential_manager.h"
+	"${CMAKE_SOURCE_DIR}/include/either.h"
+	"${CMAKE_SOURCE_DIR}/include/result_t.h"
 
- "credential_tests.cpp"
- "credential_manager_tests.cpp" 
- "credential_builder.h" 
- "credential_builder.cpp" 
- "mock_credential_factory_traits.h" 
- "mock_credential_factory_traits.cpp" 
- "mock_credential_traits.h" 
- "mock_credential_traits.cpp" 
- "invalid_test_setup_exception.h" "credential_manager_test_fixture.h" "credential_manager_test_fixture.cpp")
+	 "${CMAKE_SOURCE_DIR}/src/credential_store_cli/credential_executor.h"
+	 "${CMAKE_SOURCE_DIR}/src/credential_store_cli/credential_executor.cpp"
+
+	 "credential_tests.cpp"
+	 "credential_manager_tests.cpp" 
+	 "credential_builder.h" 
+	 "credential_builder.cpp" 
+	 "mock_credential_factory_traits.h" 
+	 "mock_credential_factory_traits.cpp" 
+	 "mock_credential_traits.h" 
+	 "mock_credential_traits.cpp" 
+	 "invalid_test_setup_exception.h" 
+	 "credential_manager_test_fixture.h" 
+	 "credential_manager_test_fixture.cpp" 
+	 "credential_executor_test_fixture.h" 
+	 "credential_executor_test_fixture.cpp"
+
+ )
 
 add_executable(${TEST_PROJECT_NAME} WIN32 ${SOURCE})
 add_test(NAME ${TEST_PROJECT_NAME} COMMAND ${TEST_PROJECT_NAME})

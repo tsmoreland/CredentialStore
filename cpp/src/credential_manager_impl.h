@@ -32,7 +32,7 @@ namespace win32::credential_store
         virtual ~credential_manager_impl() = default;
 
         [[nodiscard]] virtual credentials_or_error_detail get_credentials() const = 0;
-        [[nodiscard]] virtual result_t add_or_update(credential_t const& credential) = 0;
+        [[nodiscard]] virtual result_t add_or_update(credential_t const& credential) const = 0;
         [[nodiscard]] virtual credential_or_error_detail find(wchar_t const* id, credential_type type) const = 0;
         [[nodiscard]] virtual credentials_or_error_detail find(wchar_t const* filter, bool search_all) const = 0;
         [[nodiscard]] virtual result_t remove(credential_t const& credential) const = 0;

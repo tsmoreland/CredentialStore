@@ -36,7 +36,7 @@ namespace win32::credential_store
         {
             return get_credentials(nullptr, true);
         }
-        [[nodiscard]] result_t add_or_update(credential_t const& credential) override
+        [[nodiscard]] result_t add_or_update(credential_t const& credential) const override
         {
             if (credential.get_id().empty())
                 return result_t::from_error_code(std::errc::invalid_argument);

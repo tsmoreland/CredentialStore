@@ -58,14 +58,14 @@ verb_processor credential_executor::get_operation(std::string_view const& verb) 
     }
 }
 
-cli_result_code credential_executor::none(std::vector<std::string_view> const& arguments) const
+cli_result_code credential_executor::none(argument_container_view const& arguments) const
 {
     static_cast<void>(arguments);
     static_cast<void>(m_manager);
     return cli_result_code::unrecognized_argument;
 }
 
-cli_result_code credential_executor::add(std::vector<std::string_view> const& arguments) const
+cli_result_code credential_executor::add(argument_container_view const& arguments) const
 {
     if (arguments.size() < 3) {
         m_output_stream << L"Usage: credential_store.cli add <type> <target> <username>" << endl;
@@ -87,7 +87,7 @@ cli_result_code credential_executor::add(std::vector<std::string_view> const& ar
     static_cast<void>(m_manager);
     return cli_result_code::success;
 }
-cli_result_code credential_executor::find(std::vector<std::string_view> const& arguments) const
+cli_result_code credential_executor::find(argument_container_view const& arguments) const
 {
     if (arguments.size() < 2) {
         m_output_stream << L"Usage: credential_store.cli find <type> <target>" << endl;
@@ -119,9 +119,11 @@ cli_result_code credential_executor::find(std::vector<std::string_view> const& a
     static_cast<void>(m_manager);
     return cli_result_code::success;
 }
-cli_result_code credential_executor::list(std::vector<std::string_view> const& arguments) const
+cli_result_code credential_executor::list(argument_container_view const& arguments) const
 {
     static_cast<void>(arguments);
+
+    m_output_stream << L"list of all credentials" << endl;
 
     using credentials_t = std::vector<credential<wchar_t>>;
 
@@ -135,7 +137,7 @@ cli_result_code credential_executor::list(std::vector<std::string_view> const& a
 
     return cli_result_code::success;
 }
-cli_result_code credential_executor::remove(std::vector<std::string_view> const& arguments) const
+cli_result_code credential_executor::remove(argument_container_view const& arguments) const
 {
     if (arguments.size() < 2) {
         m_output_stream << L"Usage: credential_store.cli remove <type> <target>" << endl;
