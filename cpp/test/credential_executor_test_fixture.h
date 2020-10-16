@@ -59,6 +59,9 @@ namespace win32::credential_store::tests
         void SetUp() override;
         void TearDown() override;
 
+        [[nodiscard]] cli::credential_executor const& executor() const;
+        [[nodiscard]] std::wostream& stream();
+
         explicit credential_executor_test_fixture();
     };
 

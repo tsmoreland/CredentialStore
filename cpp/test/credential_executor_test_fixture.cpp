@@ -12,9 +12,72 @@
 // 
 
 #include "credential_executor_test_fixture.h"
+#include <tuple>
 
 namespace win32::credential_store::tests
 {
+
+using std::string_view;
+using arg_container = std::vector<std::string>;
+using arg_container_view = std::vector<std::string_view>;
+using std::transform;
+
+std::tuple<arg_container, arg_container_view> make_arguments(std::initializer_list<char const *> const arguments)
+{
+    arg_container container;
+    container.insert(end(container), begin(arguments), end(arguments));
+    arg_container_view container_view;
+    transform(begin(container), end(container), std::back_inserter(container_view), 
+        [](auto const& arg) -> string_view {
+            return arg;
+        });
+
+    return std::make_tuple<arg_container, arg_container_view>(std::move(container), std::move(container_view));
+}
+
+TEST_F(credential_executor_test_fixture, none__returns_unrecognized_argument__always)
+{
+    auto [args, args_view] = make_arguments({"bad", "args"});
+    auto const result = executor().none(args_view);
+
+    ASSERT_EQ(cli::cli_result_code::unrecognized_argument, result);
+}
+
+TEST_F(credential_executor_test_fixture, add__returns_insuffient_arguments__when_arguments_less_than_three)
+{
+    auto [args, args_view] = make_arguments({"bad", "args"});
+
+    auto const result = executor().add(args_view);
+
+    ASSERT_EQ(cli::cli_result_code::insufficient_arguments, result);
+}
+
+TEST_F(credential_executor_test_fixture, find__returns_insuffient_arguments__when_arguments_less_than_two)
+{
+    auto [args, args_view] = make_arguments({"bad_arg"});
+
+    auto const result = executor().find(args_view);
+
+    ASSERT_EQ(cli::cli_result_code::insufficient_arguments, result);
+}
+
+TEST_F(credential_executor_test_fixture, list__returns_success__for_any_arguments)
+{
+    auto [args, args_view] = make_arguments({"arguments", "are", "not", "used"});
+
+    auto const result = executor().list(args_view);
+
+    ASSERT_EQ(cli::cli_result_code::success, result);
+}
+
+TEST_F(credential_executor_test_fixture, remove__returns_insuffient_arguments__when_arguments_less_than_two)
+{
+    auto [args, args_view] = make_arguments({"bad_arg"});
+
+    auto const result = executor().remove(args_view);
+
+    ASSERT_EQ(cli::cli_result_code::insufficient_arguments, result);
+}
 
 void credential_executor_test_fixture::SetUp()
 {
@@ -23,6 +86,16 @@ void credential_executor_test_fixture::SetUp()
 void credential_executor_test_fixture::TearDown()
 {
     /// ... nothing to tear down at this time ...
+}
+
+cli::credential_executor const& credential_executor_test_fixture::executor() const
+{
+    return m_executor;
+}
+
+std::wostream& credential_executor_test_fixture::stream()
+{
+    return m_stream;
 }
 
 credential_executor_test_fixture::credential_executor_test_fixture()
