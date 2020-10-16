@@ -10,7 +10,9 @@ on:
     branches: [ main, develop ]
     paths-ignore:
       - CSharp/**
+      - java/**
       - .github/**
+      - .gitignore
 
 jobs:
   build:
