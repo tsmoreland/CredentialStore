@@ -13,6 +13,8 @@ on:
     paths-ignore:
       - cpp/**
       - .github/**
+      - java/**
+      - .gitignore
 
 jobs:
   build:
