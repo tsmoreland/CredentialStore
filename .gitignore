@@ -357,3 +357,20 @@ cpp/CMakeFiles
 cpp/target
 /CSharp/CredentialStore.DependencyInjection/Moreland.Security.Win32.CredentialStore.DependencyInjection.xmlMoreland.Security.Win32.CredentialStore.DependencyInjection.xml
 /CSharp/CredentialStore/Moreland.Security.Win32.CredentialStore.xml
+
+# Eclipse
+.classpath
+.project
+.settings/
+ 
+# Intellij
+**/.idea/
+*.iml
+*.iws
+ 
+# Mac
+.DS_Store
+ 
+# Maven
+**/log/
+**/target/
