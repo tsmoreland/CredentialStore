@@ -13,17 +13,63 @@
 
 package moreland.win32.credentialstore;
 
-//import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class CredentialTests {
 
-    public void beforeEach() {
+    String id;
+    String username;
+    String secret;
+    CredentialFlag flag;
+    CredentialType type;
+    CredentialPersistence persistence;
+    LocalDateTime lastUpdated;
+
+    /**
+     * Execute before each test, no particular need for this mostly here for the sake of being here
+     */
+    @BeforeEach
+    void beforeEach() {
+        id = "target-identifier";
+        username = "test-user";
+        secret = "super-secret-text";
+        type = CredentialType.GENERIC;
+        flag = CredentialFlag.NONE;
+        persistence = CredentialPersistence.LOCAL_MACHINE;
+        lastUpdated = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
     }
 
-    public void afterEach() {
+    /**
+     * As with BeforeEach this doesn't serve any purpose just here for the sake of being here
+     */
+    @AfterEach
+    void afterEach() {
     }
 
-    //@Test
-    public void test() {
+    @Test
+    void constructor_throwsIllegalArgumentException_whenIdIsNull() {
+        assertThrows(IllegalArgumentException.class, () -> new Credential(null, username, secret, flag, type, persistence, lastUpdated));
+    }
+    @Test
+    void constructor_doesNotThrowIllegalArgumentException_whenUserNameIsNull() {
+        assertDoesNotThrow(() -> new Credential(id, null, secret, flag, type, persistence, lastUpdated));
+    }
+    @Test
+    void constructor_doesNotThrowException_whenCharacteristicsAreNone() {
+        assertDoesNotThrow(() -> new Credential(id, username, secret, CredentialFlag.NONE, type, persistence, lastUpdated));
+    }
+    @Test
+    void constructor_throwsIllegalArgumentException_whenTypeIsUnknown() {
+        assertThrows(IllegalArgumentException.class, () -> new Credential(id, username, secret, flag, CredentialType.UNKNOWN, persistence, lastUpdated));
+    }
+    @Test
+    void constructor_throwIllegalArgumentException_whenPersistentTypeIsUnknown() {
+        assertThrows(IllegalArgumentException.class, () -> new Credential(id, username, secret, flag, type, CredentialPersistence.UNKNOWN, lastUpdated));
     }
 }
