@@ -14,8 +14,12 @@
 package moreland.win32.credentialstore;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-public class Credential {
+/**
+ * Credential Entity as populated by Win32 api
+ */
+public final class Credential {
 
     private String id;
     private String username;
@@ -115,5 +119,31 @@ public class Credential {
         return persistenceType == CredentialPersistence.UNKNOWN
                 ? "PersistenceType"
                 : "";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        Credential that = (Credential) o;
+
+        return id.equals(that.id) &&
+                username.equals(that.username) &&
+                type == that.type &&
+                persistenceType == that.persistenceType;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, username, type, persistenceType);
     }
 }
