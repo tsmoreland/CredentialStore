@@ -33,16 +33,16 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
             Secret = $"secret-${Guid.NewGuid():N}-secret";
             var credentials = new List<NativeApi.Credential>
             {
-                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPeristence.LocalMachine),
-                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPeristence.Enterprise),
-                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPeristence.Session),
-                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPeristence.LocalMachine),
-                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPeristence.Enterprise),
+                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPersistence.LocalMachine),
+                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPersistence.Enterprise),
+                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPersistence.Session),
+                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPersistence.LocalMachine),
+                BuildRandomNativeCredential(CredentialFlag.None, type, CredentialPersistence.Enterprise),
             };
             if (includesTarget)
                 credentials.Add(BuildRandomNativeCredential(Target, Secret, CredentialFlag.None,
                     CredentialType,
-                    CredentialPeristence.LocalMachine));
+                    CredentialPersistence.LocalMachine));
             Credentials = credentials;
             IncludesTarget = includesTarget;
         }
@@ -93,7 +93,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                 Comment = GetRandomString(),
                 CredentialBlob = IntPtr.Zero,
                 CredentialBlobSize = 0,
-                Persist = (int)GetRandomEnum(CredentialPeristence.Unknown),
+                Persist = (int)GetRandomEnum(CredentialPersistence.Unknown),
                 AttributeCount = 0,
                 Attributes = IntPtr.Zero,
                 TargetAlias = null,
@@ -105,9 +105,9 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
 
         public static Credential BuildRandomCredential() =>
             BuildRandomCredential(GetRandomEnum<CredentialFlag>(), GetRandomEnum(CredentialType.Unknown),
-                GetRandomEnum(CredentialPeristence.Unknown));
+                GetRandomEnum(CredentialPersistence.Unknown));
         public static Credential BuildRandomCredential(CredentialFlag flags, CredentialType type,
-            CredentialPeristence persistanceType) =>
+            CredentialPersistence persistanceType) =>
             new Credential($"{Guid.NewGuid():N}@{Guid.NewGuid():N}", $"user-{Guid.NewGuid():N}",
                 $"secret-{Guid.NewGuid():N}", flags, type, persistanceType, DateTime.Now);
 
@@ -116,15 +116,15 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                 .Select(i => BuildRandomCredential());
 
         private static NativeApi.Credential BuildRandomNativeCredential(CredentialFlag flags, CredentialType type,
-            CredentialPeristence persistanceType) =>
+            CredentialPersistence persistanceType) =>
             BuildRandomNativeCredential($"{Guid.NewGuid():N}@{Guid.NewGuid():N}", flags, type, persistanceType);
 
         private static NativeApi.Credential BuildRandomNativeCredential(string target, CredentialFlag flags,
-            CredentialType type, CredentialPeristence persistanceType) =>
+            CredentialType type, CredentialPersistence persistanceType) =>
             BuildRandomNativeCredential(target, $"{Guid.NewGuid():N}", flags, type, persistanceType);
 
         private static NativeApi.Credential BuildRandomNativeCredential(string target, string secret,  CredentialFlag flags,
-            CredentialType type, CredentialPeristence persistanceType)
+            CredentialType type, CredentialPersistence persistanceType)
         {
             var credentialBlob = Marshal.StringToCoTaskMemUni(secret);
             int credentialSize = Encoding.Unicode.GetBytes(secret).Length;

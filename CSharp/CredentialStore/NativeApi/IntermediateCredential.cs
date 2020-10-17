@@ -68,7 +68,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
                 CredentialBlob = _credentialBlob,
                 CredentialBlobSize = credentialSize,
                 Type = (int)credential.Type,
-                Persist = (int)credential.PeristenceType,
+                Persist = (int)credential.PersistenceType,
             };
         }
 

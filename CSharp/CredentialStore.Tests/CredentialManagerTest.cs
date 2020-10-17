@@ -51,7 +51,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
                 Comment = TestData.GetRandomString(),
                 CredentialBlob = IntPtr.Zero,
                 CredentialBlobSize = 0,
-                Persist = (int)TestData.GetRandomEnum(CredentialPeristence.Unknown),
+                Persist = (int)TestData.GetRandomEnum(CredentialPersistence.Unknown),
                 AttributeCount = 0,
                 Attributes = IntPtr.Zero,
                 TargetAlias = null,
