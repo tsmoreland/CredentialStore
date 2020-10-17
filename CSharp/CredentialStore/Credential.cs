@@ -117,7 +117,7 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         public CredentialType Type { get; } 
         /// <summary>
-        /// <see cref="CredentialType"/>
+        /// <see cref="CredentialPersistence"/>
         /// </summary>
         public CredentialPersistence PersistenceType { get; }
         /// <summary>
