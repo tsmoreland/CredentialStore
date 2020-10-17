@@ -34,33 +34,33 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [Test]
         public void ConstructorShould_ThrowArgumentException_WhenIdIsNull()
         {
-            Assert.Throws<ArgumentException>(() => _ = new Credential(null!, _username, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
+            Assert.Throws<ArgumentException>(() => _ = new Credential(null!, _username, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistence.LocalMachine, DateTime.Now));
         }
         [Test]
         public void ConstructorShouldNot_ThrowArgumentException_WhenUserNameIsNull()
         {
-            Assert.DoesNotThrow(() => _ = new Credential(_id, null!, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
+            Assert.DoesNotThrow(() => _ = new Credential(_id, null!, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistence.LocalMachine, DateTime.Now));
         }
         [Test]
         public void ConstructorShouldNot_ThrowArgumentException_WhenCharacteristicsAreNone()
         {
-            Assert.DoesNotThrow(() => _ = new Credential(_id, _username, _secret, CredentialFlag.None, CredentialType.DomainPassword, CredentialPeristence.LocalMachine, DateTime.Now));
+            Assert.DoesNotThrow(() => _ = new Credential(_id, _username, _secret, CredentialFlag.None, CredentialType.DomainPassword, CredentialPersistence.LocalMachine, DateTime.Now));
         }
         [Test]
         public void ConstructorShould_ThrowArgumentException_WhenTypeIsUnknown()
         {
-            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, _username, _secret, CredentialFlag.PromptNow, CredentialType.Unknown, CredentialPeristence.LocalMachine, DateTime.Now));
+            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, _username, _secret, CredentialFlag.PromptNow, CredentialType.Unknown, CredentialPersistence.LocalMachine, DateTime.Now));
         }
         [Test]
         public void ConstructorShould_ThrowArgumentException_WhenPersistentTypeIsUnknown()
         {
-            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, _username, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Unknown, DateTime.Now));
+            Assert.Throws<ArgumentException>(() => _ = new Credential(_id, _username, _secret, CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistence.Unknown, DateTime.Now));
         }
 
         [Test]
-        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
-        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
-        public void DeconstructShould_ReturnProvidedValues(CredentialFlag flags, CredentialType type, CredentialPeristence persistanceType)
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPersistence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistence.Enterprise)]
+        public void DeconstructShould_ReturnProvidedValues(CredentialFlag flags, CredentialType type, CredentialPersistence persistanceType)
         {
             var credential = TestData.BuildRandomCredential(flags, type, persistanceType);
 
@@ -72,9 +72,9 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
-        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
-        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
-        public void WithShould_UpdateWithProvidedValues(CredentialFlag flags, CredentialType type, CredentialPeristence persistanceType)
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPersistence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistence.Enterprise)]
+        public void WithShould_UpdateWithProvidedValues(CredentialFlag flags, CredentialType type, CredentialPersistence persistanceType)
         {
             var first = TestData.BuildRandomCredential(flags, type, persistanceType);
             var (id, _, _) = TestData.BuildRandomCredential(flags, type, persistanceType);
@@ -86,10 +86,10 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
-        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
-        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPersistence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistence.Enterprise)]
         public void EqualsShould_ReturnTrueForEqualIdUserTypeAndPersistenceType(CredentialFlag flags,
-            CredentialType type, CredentialPeristence persistanceType)
+            CredentialType type, CredentialPersistence persistanceType)
         {
             var first = TestData.BuildRandomCredential(flags, type, persistanceType);
             var second = TestData.BuildRandomCredential(flags, type, persistanceType);
@@ -108,10 +108,10 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
-        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
-        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPersistence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistence.Enterprise)]
         public void EqualsShould_ReturnFalsForNull(CredentialFlag flags,
-            CredentialType type, CredentialPeristence persistanceType)
+            CredentialType type, CredentialPersistence persistanceType)
         {
             var first = TestData.BuildRandomCredential(flags, type, persistanceType);
 
@@ -120,10 +120,10 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
-        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
-        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPersistence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistence.Enterprise)]
         public void GetHashCodeShould_ReturnSameValueForEqualObjects(CredentialFlag flags,
-            CredentialType type, CredentialPeristence persistanceType)
+            CredentialType type, CredentialPersistence persistanceType)
         {
             var first = TestData.BuildRandomCredential(flags, type, persistanceType);
             var second = TestData.BuildRandomCredential(flags, type, persistanceType);
@@ -137,10 +137,10 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         }
 
         [Test]
-        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPeristence.LocalMachine)]
-        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPeristence.Enterprise)]
+        [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPersistence.LocalMachine)]
+        [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistence.Enterprise)]
         public void GetHashCodeShould_ReturnDifferentValueForNonEqualObjects(CredentialFlag flags,
-            CredentialType type, CredentialPeristence persistanceType)
+            CredentialType type, CredentialPersistence persistanceType)
         {
             var first = TestData.BuildRandomCredential(flags, type, persistanceType);
             var second = TestData.BuildRandomCredential(flags, type, persistanceType);

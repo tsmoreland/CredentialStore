@@ -101,7 +101,7 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
                         secret, 
                         CredentialFlag.None,
                         CredentialType.Generic, 
-                        CredentialPeristence.LocalMachine, 
+                        CredentialPersistence.LocalMachine, 
                         DateTime.Now));
                     break;
                 case CredentialType.DomainPassword:
@@ -111,7 +111,7 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
                         secret, 
                         CredentialFlag.None,
                         CredentialType.DomainPassword, 
-                        CredentialPeristence.LocalMachine, 
+                        CredentialPersistence.LocalMachine, 
                         DateTime.Now));
                     break;
                 default:

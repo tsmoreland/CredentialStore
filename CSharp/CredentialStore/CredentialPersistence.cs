@@ -16,7 +16,7 @@ namespace Moreland.Security.Win32.CredentialStore
     /// <summary>
     /// https://docs.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala
     /// </summary>
-    public enum CredentialPeristence 
+    public enum CredentialPersistence 
     {
         /// <summary>
         /// provided to represent no selected value, should never be used in a new instance nor returned

@@ -48,9 +48,9 @@ namespace Moreland.Security.Win32.CredentialStore
             Type = Enum.IsDefined(typeof(CredentialType), credential.Type)
                 ? (CredentialType)credential.Type
                 : CredentialType.Unknown;
-            PeristenceType = Enum.IsDefined(typeof(CredentialPeristence), credential.Persist)
-                ? (CredentialPeristence)credential.Persist
-                : CredentialPeristence.Unknown;
+            PersistenceType = Enum.IsDefined(typeof(CredentialPersistence), credential.Persist)
+                ? (CredentialPersistence)credential.Persist
+                : CredentialPersistence.Unknown;
 
             long highBits = credential.LastWritten.dwHighDateTime;
             highBits <<= 32;
@@ -68,21 +68,21 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <param name="secret">secret to be stored securely by Native API</param>
         /// <param name="characteristics">typically <see cref="CredentialFlag.None"/>, see Win32 CREDENTIAL type for more detail</param>
         /// <param name="type"><see cref="CredentialType"/></param>
-        /// <param name="persistanceType"><see cref="CredentialPeristence"/></param>
+        /// <param name="persistenceType"><see cref="CredentialPersistence"/></param>
         /// <param name="lastUpdated">last updated value, not used for newly saved values</param>
         /// <exception cref="ArgumentException">
         /// if <paramref name="id"/> is empty; or
         /// if <paramref name="type"/> is <see cref="CredentialType.Unknown"/>; or
-        /// if <paramref name="persistanceType"/> is <see cref="CredentialPeristence.Unknown"/>
+        /// if <paramref name="persistenceType"/> is <see cref="CredentialPersistence.Unknown"/>
         /// </exception>
-        public Credential(string id, string username, string secret, CredentialFlag characteristics, CredentialType type, CredentialPeristence persistanceType, DateTime lastUpdated)
+        public Credential(string id, string username, string secret, CredentialFlag characteristics, CredentialType type, CredentialPersistence persistenceType, DateTime lastUpdated)
         {
             Id = id;
             UserName = username ?? string.Empty;
             Secret = secret ?? string.Empty;
             Characteristics = characteristics;
             Type = type;
-            PeristenceType = persistanceType;
+            PersistenceType = persistenceType;
             LastUpdated = lastUpdated;
 
             var invalidPropertyName = GetInvalidArgumentNameOrEmpty();
@@ -117,9 +117,9 @@ namespace Moreland.Security.Win32.CredentialStore
         /// </summary>
         public CredentialType Type { get; } 
         /// <summary>
-        /// <see cref="CredentialType"/>
+        /// <see cref="CredentialPersistence"/>
         /// </summary>
-        public CredentialPeristence PeristenceType { get; }
+        public CredentialPersistence PersistenceType { get; }
         /// <summary>
         /// Last Updated time, only valid for reads
         /// </summary>
@@ -145,11 +145,11 @@ namespace Moreland.Security.Win32.CredentialStore
         public Credential With(string? id = null, string? username = null, 
             string? secret = null, CredentialFlag? characteristics = null, 
             CredentialType? type = null, 
-            CredentialPeristence? persistanceType = null, 
+            CredentialPersistence? persistenceType = null, 
             DateTime? lastUpdated = null) =>
             new Credential(id ?? Id, username ?? UserName, secret ?? Secret,
                 characteristics ?? Characteristics, type ?? Type,
-                persistanceType ?? PeristenceType, lastUpdated ?? LastUpdated);
+                persistenceType ?? PersistenceType, lastUpdated ?? LastUpdated);
 
         /// <summary>
         /// <inheritdoc cref="Object.ToString"/>
@@ -165,7 +165,7 @@ namespace Moreland.Security.Win32.CredentialStore
             Id == other.Id && 
             UserName == other.UserName && 
             Type == other.Type && 
-            PeristenceType == other.PeristenceType;
+            PersistenceType == other.PersistenceType;
 
         /// <summary>
         /// <inheritdoc cref="object.Equals(object?)"/>
@@ -179,7 +179,7 @@ namespace Moreland.Security.Win32.CredentialStore
         public override int GetHashCode()
         {
             #if !NETSTANDARD2_0
-            return HashCode.Combine(Id, UserName, (int)Type, (int)PeristenceType);
+            return HashCode.Combine(Id, UserName, (int)Type, (int)PersistenceType);
             #else
             unchecked
             {
@@ -187,7 +187,7 @@ namespace Moreland.Security.Win32.CredentialStore
                 hashCode ^= (Id?.GetHashCode() ?? 0) * 397;
                 hashCode ^= (UserName?.GetHashCode() ?? 0) * 397;
                 hashCode ^= Type.GetHashCode() * 397;
-                hashCode ^= PeristenceType.GetHashCode() * 397;
+                hashCode ^= PersistenceType.GetHashCode() * 397;
                 return hashCode;
             }
             #endif
@@ -199,8 +199,8 @@ namespace Moreland.Security.Win32.CredentialStore
                 return nameof(Id);
             if (Type == CredentialType.Unknown)
                 return nameof(Type);
-            return PeristenceType == CredentialPeristence.Unknown
-                ? nameof(PeristenceType)
+            return PersistenceType == CredentialPersistence.Unknown
+                ? nameof(PersistenceType)
                 : string.Empty;
         }
     }
