@@ -68,21 +68,21 @@ namespace Moreland.Security.Win32.CredentialStore
         /// <param name="secret">secret to be stored securely by Native API</param>
         /// <param name="characteristics">typically <see cref="CredentialFlag.None"/>, see Win32 CREDENTIAL type for more detail</param>
         /// <param name="type"><see cref="CredentialType"/></param>
-        /// <param name="persistanceType"><see cref="CredentialPersistence"/></param>
+        /// <param name="persistenceType"><see cref="CredentialPersistence"/></param>
         /// <param name="lastUpdated">last updated value, not used for newly saved values</param>
         /// <exception cref="ArgumentException">
         /// if <paramref name="id"/> is empty; or
         /// if <paramref name="type"/> is <see cref="CredentialType.Unknown"/>; or
-        /// if <paramref name="persistanceType"/> is <see cref="CredentialPersistence.Unknown"/>
+        /// if <paramref name="persistenceType"/> is <see cref="CredentialPersistence.Unknown"/>
         /// </exception>
-        public Credential(string id, string username, string secret, CredentialFlag characteristics, CredentialType type, CredentialPersistence persistanceType, DateTime lastUpdated)
+        public Credential(string id, string username, string secret, CredentialFlag characteristics, CredentialType type, CredentialPersistence persistenceType, DateTime lastUpdated)
         {
             Id = id;
             UserName = username ?? string.Empty;
             Secret = secret ?? string.Empty;
             Characteristics = characteristics;
             Type = type;
-            PersistenceType = persistanceType;
+            PersistenceType = persistenceType;
             LastUpdated = lastUpdated;
 
             var invalidPropertyName = GetInvalidArgumentNameOrEmpty();
@@ -145,11 +145,11 @@ namespace Moreland.Security.Win32.CredentialStore
         public Credential With(string? id = null, string? username = null, 
             string? secret = null, CredentialFlag? characteristics = null, 
             CredentialType? type = null, 
-            CredentialPersistence? persistanceType = null, 
+            CredentialPersistence? persistenceType = null, 
             DateTime? lastUpdated = null) =>
             new Credential(id ?? Id, username ?? UserName, secret ?? Secret,
                 characteristics ?? Characteristics, type ?? Type,
-                persistanceType ?? PersistenceType, lastUpdated ?? LastUpdated);
+                persistenceType ?? PersistenceType, lastUpdated ?? LastUpdated);
 
         /// <summary>
         /// <inheritdoc cref="Object.ToString"/>
