@@ -110,7 +110,7 @@ namespace Moreland.Security.Win32.CredentialStore.Tests
         [Test]
         [TestCase(CredentialFlag.None, CredentialType.Generic, CredentialPersistence.LocalMachine)]
         [TestCase(CredentialFlag.PromptNow, CredentialType.DomainPassword, CredentialPersistence.Enterprise)]
-        public void EqualsShould_ReturnFalsForNull(CredentialFlag flags,
+        public void EqualsShould_ReturnFalseForNull(CredentialFlag flags,
             CredentialType type, CredentialPersistence persistanceType)
         {
             var first = TestData.BuildRandomCredential(flags, type, persistanceType);
