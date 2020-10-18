@@ -32,7 +32,9 @@ jobs:
     - name: list files
       run: dir
     - name: Build with Maven
+      working-directory: ./java/CredentialStore
       run: mvn -B package
       # This step may duplicate efforts of package but is done to make the results of the test more clear
     - name: Test
+      working-directory: ./java/CredentialStore
       run: mvn -B test
