@@ -4,9 +4,9 @@ Win32 Credential Manager API wrapping Win32 funcitons
 
 ## Build Status
 
-![C# Continuous Integration](https://github.com/tsmoreland/CredentialStore/workflows/C%23%20Continuous%20Integration/badge.svg)
-
 ![C++ Continuous Integration](https://github.com/tsmoreland/CredentialStore/workflows/C++%20Continuous%20Integration/badge.svg)
+
+![C# Continuous Integration](https://github.com/tsmoreland/CredentialStore/workflows/C%23%20Continuous%20Integration/badge.svg)
 
 ![Java Continuous Integration](https://github.com/tsmoreland/CredentialStore/workflows/Java%20Continuous%20Integration/badge.svg)
 
