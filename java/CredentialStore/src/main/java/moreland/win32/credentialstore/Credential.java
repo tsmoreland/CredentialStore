@@ -7,7 +7,7 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
@@ -21,13 +21,13 @@ import java.util.Objects;
  */
 public final class Credential {
 
-    private String id;
-    private String username;
-    private String secret;
-    private CredentialFlag characteristics;
-    private CredentialType type;
-    private CredentialPersistence persistenceType;
-    private LocalDateTime lastUpdated;
+    private final String id;
+    private final String username;
+    private final String secret;
+    private final CredentialFlag characteristics;
+    private final CredentialType type;
+    private final CredentialPersistence persistenceType;
+    private final LocalDateTime lastUpdated;
 
     /**
      * Instantiates a new instance of the @see Credential class populated with the provided values
@@ -53,13 +53,13 @@ public final class Credential {
         this.lastUpdated = lastUpdated;
 
         var invalidArgumentName = getInvalidArgumentNameOrEmpty();
-        if (!isNullorEmpty(invalidArgumentName)) {
+        if (!isNullOrEmpty(invalidArgumentName)) {
             throw new IllegalArgumentException(invalidArgumentName);
         }
     }
 
     /**
-     * Unqiue Identifier, this represents the target name of the credential
+     * Unique Identifier, this represents the target name of the credential
      */
     public String getId() {
         return id;
@@ -108,11 +108,11 @@ public final class Credential {
     }
 
 
-    private static boolean isNullorEmpty(String string) {
+    private static boolean isNullOrEmpty(String string) {
         return string == null || string.trim().isEmpty();
     }
     private String getInvalidArgumentNameOrEmpty() {
-        if (isNullorEmpty(id))
+        if (isNullOrEmpty(id))
             return "id";
         if (type == CredentialType.UNKNOWN)
             return "type";

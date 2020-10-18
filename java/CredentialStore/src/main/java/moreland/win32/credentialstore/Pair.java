@@ -13,24 +13,49 @@
 
 package moreland.win32.credentialstore;
 
-final class CredentialTestCaseParameter {
-    public final CredentialFlag Flag;
-    public final CredentialType Type;
-    public final CredentialPersistence Persistence;
+import java.util.Objects;
 
-    public CredentialTestCaseParameter(CredentialFlag flag, CredentialType type, CredentialPersistence persistence) {
-        this.Flag = flag;
-        this.Type = type;
-        this.Persistence = persistence;
+final class Pair<T1, T2> {
+
+    public final T1 item1;
+    public final T2 item2;
+
+    public Pair(T1 item1, T2 item2) {
+        this.item1 = item1;
+        this.item2 = item2;
     }
 
-    public static CredentialTestCaseParameter of(CredentialFlag flag, CredentialType type, CredentialPersistence persistence) {
-        return new CredentialTestCaseParameter(flag, type, persistence);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        var pair = (Pair<?, ?>) o;
+        return Objects.equals(item1, pair.item1) &&
+                Objects.equals(item2, pair.item2);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(item1, item2);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
-        return String.format("CredentialTestCaseParameter{Flag=%s, Type=%s, Persistence=%s",
-            Flag, Type, Persistence);
+        return "Pair{Item1=" +
+                item1 +
+                ", Item2=" +
+                item2 + "}";
     }
 }

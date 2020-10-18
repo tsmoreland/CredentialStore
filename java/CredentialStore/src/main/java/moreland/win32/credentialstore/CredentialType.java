@@ -7,7 +7,7 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
@@ -43,7 +43,7 @@ public enum CredentialType {
     /**
      * The credential is a certificate credential and is specific to
      * Microsoft's authentication packages. The Kerberos, Negotiate, and
-     * Schannel authentication packages automatically use this credential
+     * S-channel authentication packages automatically use this credential
      * when connecting to the named target.
      */
     DOMAIN_CERTIFICATE(3),
@@ -93,7 +93,7 @@ public enum CredentialType {
         return value;
     }
 
-    private int value;
+    private final int value;
     CredentialType(int value) {
         this.value = value;
     }
