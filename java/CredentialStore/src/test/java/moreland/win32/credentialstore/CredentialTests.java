@@ -16,8 +16,13 @@ package moreland.win32.credentialstore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -72,4 +77,25 @@ class CredentialTests {
     void constructor_throwIllegalArgumentException_whenPersistentTypeIsUnknown() {
         assertThrows(IllegalArgumentException.class, () -> new Credential(id, username, secret, flag, type, CredentialPersistence.UNKNOWN, lastUpdated));
     }
+
+
+    @ParameterizedTest(name = "{index} => flag={0} type={1} persistence={2}")
+    @MethodSource("parametersProvider")
+    void equals_returns_true_whenIdAndUsernameAndCredentialTypeAndPersistenceTypeEqual(CredentialTestCaseParameter parameter) {
+
+        var first = new Credential(id, username, "secret1", parameter.Flag, parameter.Type, parameter.Persistence, lastUpdated);
+        var second = new Credential(id, username, "secret2", CredentialFlag.NONE, parameter.Type, parameter.Persistence, lastUpdated.plus(1, ChronoUnit.DAYS));
+
+        assertEquals(first, second);
+    }
+
+    private static Stream<CredentialTestCaseParameter> parametersProvider() {
+        return Stream.of(
+                CredentialTestCaseParameter.of(CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE),
+                CredentialTestCaseParameter.of(CredentialFlag.PROMPT_NOW, CredentialType.DOMAIN_PASSWORD, CredentialPersistence.ENTERPRISE),
+                CredentialTestCaseParameter.of(CredentialFlag.NONE, CredentialType.GENERIC_CERTIFICATE, CredentialPersistence.SESSION));
+
+    }
+
 }
+
