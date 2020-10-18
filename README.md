@@ -8,6 +8,8 @@ Win32 Credential Manager API wrapping Win32 funcitons
 
 ![C++ Continuous Integration](https://github.com/tsmoreland/CredentialStore/workflows/C++%20Continuous%20Integration/badge.svg)
 
+![Java Continuous Integration](https://github.com/tsmoreland/CredentialStore/workflows/Java%20Continuous%20Integration/badge.svg)
+
 ## Credential Manager
 
 provides Credential Manager allowing CRUD operations to Win32 Credential Manager
