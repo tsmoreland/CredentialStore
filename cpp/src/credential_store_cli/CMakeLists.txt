@@ -3,7 +3,7 @@ set (CMAKE_CXX_STANDARD 17)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-set (SOURCE "main.cpp" "credential_executor.cpp" "cli_result_code.h" "obscurred_reader.h" "obscurred_reader.cpp")
+set (SOURCE "main.cpp" "credential_executor.cpp" "cli_result_code.h" "obscured_reader.h" "obscured_reader.cpp")
 
 add_executable(${CLI_PROJECT_NAME} WIN32 ${SOURCE})
 

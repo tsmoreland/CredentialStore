@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <string_view>
 #include "credential_executor.h"
-#include "obscurred_reader.h"
+#include "obscured_reader.h"
 
 using std::wcout;
 using std::endl;
