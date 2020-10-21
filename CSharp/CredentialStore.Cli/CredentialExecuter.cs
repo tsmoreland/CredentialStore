@@ -13,8 +13,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Moreland.Security.Win32.CredentialStore.Cli
@@ -35,6 +37,7 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
         private readonly ITextOutputWriter _writer;
         private readonly IObscruredReader _obscruredReader;
         private readonly ILoggerAdapter _logger;
+        private static readonly Lazy<IReadOnlyDictionary<string, string>> _lazyUsage = new Lazy<IReadOnlyDictionary<string,string>>(GetUsageDictionary);
 
         /// <summary>
         /// Instantiates a new instance of the
@@ -54,16 +57,16 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// <summary>
-        /// <see cref="ICredentialExecuter.GetOperation(string)"/>
-        /// </summary>
+        /// <inheritdoc/>
         public CredentialStoreOperation? GetOperation(string name)
         {
-            CredentialStoreOperation? operation = name?.ToLowerInvariant() switch
+            name ??= string.Empty;
+
+            CredentialStoreOperation? operation = name.ToLowerInvariant() switch
             {
                 "add" => Add,
                 "list" => List,
-                "delete" => Delete,
+                "remove" => Remove,
                 _ =>  null,
             };
             if (operation == null)
@@ -71,9 +74,7 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
             return operation;
         }
 
-        /// <summary>
-        /// <see cref="ICredentialExecuter.Add(Span{string})"/>
-        /// </summary>
+        /// <inheritdoc/>
         public bool Add(Span<string> args)
         {
             if (args.Length < 3)
@@ -121,28 +122,54 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
 
             return true;
         }
-        /// <summary>
-        /// <see cref="ICredentialExecuter.Delete(Span{string})"/>
-        /// </summary>
-        public bool Delete(Span<string> args)
+
+        /// <inheritdoc/>
+        public bool Find(Span<string> args)
         {
             if (args.Length < 1)
             {
-                // TODO: log usage, preferable from dictionary
+                _writer.WriteLine(GetUsage());
                 return false;
             }
 
             if (args[0].ToLowerInvariant() == "help")
             {
-                // TODO: output usage
+                _writer.WriteLine(GetUsage());
                 return true;
             }
 
-            string target = args[1].ToLowerInvariant();
+            bool searchAll = args.Length == 1 || args.Length > 1 && args[2]?.ToLowerInvariant() == "all";
+
+            var builder = new StringBuilder();
+            _credentialManager.Find(args[0], searchAll)
+                .Select(credential => $"{credential.Id} - {credential.UserName}:{credential.Secret}")
+                .ToList()
+                .ForEach(msg => builder.AppendLine(msg));
+            _writer.WriteLine(builder.ToString());
+
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public bool Remove(Span<string> args)
+        {
+            if (args.Length < 2)
+            {
+                _writer.WriteLine(GetUsage());
+                return false;
+            }
+
+            if (args[0].ToLowerInvariant() == "help")
+            {
+                _writer.WriteLine(GetUsage());
+                return true;
+            }
+
+            string target = args[0].ToLowerInvariant();
             IEnumerable<Credential> credentials;
             if (args.Length > 1)
             {
-                if (!Enum.TryParse(args[2], true, out CredentialType type))
+                if (!Enum.TryParse(args[1], true, out CredentialType type))
                 {
                     _logger.Error($"Unrecognized or unsupported type '{args[2]}'");
                     return false;
@@ -176,9 +203,7 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
             });
         }
 
-        /// <summary>
-        /// <see cref="ICredentialExecuter.List(Span{string})"/>
-        /// </summary>
+        /// <inheritdoc/>
         public bool List(Span<string> args)
         {
             var builder = new StringBuilder();
@@ -191,5 +216,25 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
             _writer.WriteLine(builder.ToString());
             return true;
         }
+
+        private static string GetUsage([CallerMemberName] string callerMemberName = "")
+        {
+            if (_lazyUsage.Value.ContainsKey(callerMemberName))
+                return _lazyUsage.Value[callerMemberName];
+
+            return new StringBuilder()
+                .AppendLine("Usage: CredentialStore.Cli <verb>")
+                .AppendLine("\tsupported verbs: list, add, remove")
+                .ToString();
+        }
+        private static IReadOnlyDictionary<string, string> GetUsageDictionary() =>
+            new ReadOnlyDictionary<string, string>(new Dictionary<string, string>
+            {
+                { nameof(Add), "Usage: CredentialStore.Cli add <type> <target> <username>" },
+                { nameof(Remove), "Usage: CredentialStore.Cli remove <target> (<type>)" },
+                { nameof(Find), "Usage: CredentialStore.Cli find <filter> (<search all, defaults true>)" },
+                { nameof(List), "Usage: CredentialStore.Cli list" },
+            });
+
     }
 }
