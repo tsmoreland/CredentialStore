@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <string_view>
 #include "credential_executor.h"
+#include "obscurred_reader.h"
 
 using std::wcout;
 using std::endl;
@@ -27,6 +28,7 @@ int main(int const argc, char const* argv[])
 
     try {
         using win32::credential_store::cli::cli_result_code;
+        using win32::credential_store::cli::read_secret;
 
         if (argc < 2)
         {
@@ -36,7 +38,7 @@ int main(int const argc, char const* argv[])
 
          auto const* raw_verb = argc >= 2
              ? argv[1]
-             : "list";
+             : "add";
 
         std::vector<std::string_view> arguments;
         int i = 2;
@@ -46,6 +48,16 @@ int main(int const argc, char const* argv[])
                 return argv[i++];
             });
 
+        auto const* arg0 = "generic";
+        auto const* arg1 = "sample-target";
+        auto const* arg2 = "sample-username";
+
+        arguments.clear();
+        arguments.emplace_back(arg0);
+        arguments.emplace_back(arg1);
+        arguments.emplace_back(arg2);
+
+        std::function<std::wstring(wchar_t const*)> const read_user_secret(read_secret); // intent is to pass this to executor to read the password
         credential_manager const manager;
         credential_executor const executor(manager, std::wcout);
 
@@ -58,6 +70,9 @@ int main(int const argc, char const* argv[])
             return static_cast<int>(result);
         case cli_result_code::success:
             return 0;
+        case cli_result_code::error_occurred:
+            std::cout << "Error occurred processing request" << endl;
+            return -1;
         }
 
     } catch (std::exception const& ex) {
