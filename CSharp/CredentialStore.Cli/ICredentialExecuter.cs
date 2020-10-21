@@ -43,6 +43,7 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
         /// otherwise false
         /// </returns>
         bool Add(Span<string> args);
+
         /// <summary>
         /// Deletes a credential matching the supplied arguments
         /// </summary>
@@ -54,7 +55,21 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
         /// true if credential exists and is removed, or doesn't exist
         /// or using help; otherwise, false
         /// </returns>
-        bool Delete(Span<string> args);
+        bool Remove(Span<string> args);
+
+        /// <summary>
+        /// Searches for credentials match a given filter
+        /// </summary>
+        /// <param name="args">
+        /// args containing filter, and optional second argument,
+        /// if second argument is not 'all' then search all flag
+        /// is not set when calling native api
+        /// </param>
+        /// <returns>
+        /// if <paramref name="args"/> contains at least one value then true;
+        /// otherwise, false
+        /// </returns>
+        bool Find(Span<string> args);
         /// <summary>
         /// prints out all credentials for the current user
         /// </summary>
@@ -62,7 +77,9 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
         /// ...pending...
         /// or help which will detail the required arguments
         /// </param>
-        /// <returns>true</returns>
+        /// <returns>
+        /// true
+        /// </returns>
         bool List(Span<string> args);
     }
 }

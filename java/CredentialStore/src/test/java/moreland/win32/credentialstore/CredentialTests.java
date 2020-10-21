@@ -7,13 +7,12 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package moreland.win32.credentialstore;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,7 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,13 +49,6 @@ class CredentialTests {
         lastUpdated = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
     }
 
-    /**
-     * As with BeforeEach this doesn't serve any purpose just here for the sake of being here
-     */
-    @AfterEach
-    void afterEach() {
-    }
-
     @Test
     void constructor_throwsIllegalArgumentException_whenIdIsNull() {
         assertThrows(IllegalArgumentException.class, () -> new Credential(null, username, secret, flag, type, persistence, lastUpdated));
@@ -78,24 +70,55 @@ class CredentialTests {
         assertThrows(IllegalArgumentException.class, () -> new Credential(id, username, secret, flag, type, CredentialPersistence.UNKNOWN, lastUpdated));
     }
 
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("equalsTestProvider")
+    void equals_returnsTrue_whenIdAndUsernameAndCredentialTypeAndPersistenceTypeEqual(Pair<String, CredentialFlag> pair) {
 
-    @ParameterizedTest(name = "{index} => flag={0} type={1} persistence={2}")
-    @MethodSource("parametersProvider")
-    void equals_returns_true_whenIdAndUsernameAndCredentialTypeAndPersistenceTypeEqual(CredentialTestCaseParameter parameter) {
-
-        var first = new Credential(id, username, "secret1", parameter.Flag, parameter.Type, parameter.Persistence, lastUpdated);
-        var second = new Credential(id, username, "secret2", CredentialFlag.NONE, parameter.Type, parameter.Persistence, lastUpdated.plus(1, ChronoUnit.DAYS));
+        var first = new Credential(id, username, pair.item1, pair.item2, type, persistence, lastUpdated);
+        var second = new Credential(id, username, pair.item1, pair.item2, type, persistence, lastUpdated.plus(1, ChronoUnit.DAYS));
 
         assertEquals(first, second);
     }
 
-    private static Stream<CredentialTestCaseParameter> parametersProvider() {
-        return Stream.of(
-                CredentialTestCaseParameter.of(CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE),
-                CredentialTestCaseParameter.of(CredentialFlag.PROMPT_NOW, CredentialType.DOMAIN_PASSWORD, CredentialPersistence.ENTERPRISE),
-                CredentialTestCaseParameter.of(CredentialFlag.NONE, CredentialType.GENERIC_CERTIFICATE, CredentialPersistence.SESSION));
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("equalsTestProvider")
+    void equals_returnsFalse_whenIdsAreNotEqual(Pair<String, CredentialFlag> pair) {
+        var first = new Credential("id1", username, pair.item1, pair.item2, type, persistence, lastUpdated);
+        var second = new Credential("id2", username, pair.item1, pair.item2, type, persistence, lastUpdated.plus(1, ChronoUnit.DAYS));
 
+        assertNotEquals(first, second);
     }
 
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("equalsTestProvider")
+    void equals_returnsFalse_whenUsernamesAreNotEqual(Pair<String, CredentialFlag> pair) {
+        var first = new Credential(id, "user1", pair.item1, pair.item2, type, persistence, lastUpdated);
+        var second = new Credential(id, "user2", pair.item1, pair.item2, type, persistence, lastUpdated.plus(1, ChronoUnit.DAYS));
+
+        assertNotEquals(first, second);
+    }
+
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("equalsTestProvider")
+    void equals_returnsFalse_whenCredentialTypesAreNotEqual(Pair<String, CredentialFlag> pair) {
+        var first = new Credential(id, username, pair.item1, pair.item2, CredentialType.GENERIC, persistence, lastUpdated);
+        var second = new Credential(id, username, pair.item1, pair.item2, CredentialType.GENERIC_CERTIFICATE, persistence, lastUpdated.plus(1, ChronoUnit.DAYS));
+
+        assertNotEquals(first, second);
+    }
+
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("equalsTestProvider")
+    void equals_returnsFalse_whenCredentialPersistenceValuesAreNotEqual(Pair<String, CredentialFlag> pair) {
+        var first = new Credential(id, username, pair.item1, pair.item2, type, CredentialPersistence.ENTERPRISE, lastUpdated);
+        var second = new Credential(id, username, pair.item1, pair.item2, type, CredentialPersistence.LOCAL_MACHINE, lastUpdated.plus(1, ChronoUnit.DAYS));
+
+        assertNotEquals(first, second);
+    }
+
+    private static Stream<Pair<String, CredentialFlag>> equalsTestProvider() {
+        return Arrays.stream(CredentialFlag.class.getEnumConstants())
+                .map(flag -> new Pair<>("alt password" + flag.toString(), flag));
+    }
 }
 

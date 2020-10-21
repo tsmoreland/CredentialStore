@@ -75,15 +75,18 @@ cli_result_code credential_executor::add(argument_container_view const& argument
         std::wstring const& id{begin(arguments[1]), end(arguments[1])};
         std::wstring const& username{begin(arguments[2]), end(arguments[2])};
 
-        credential<wchar_t> credential{id, username, L"", type, persistence_type::local_machine, std::nullopt};
+        // TODO: get secret from obscurred reader
+
+        credential<wchar_t> const credential{id, username, L"", type, persistence_type::local_machine, std::nullopt};
+
+        return m_manager.add_or_update(credential).is_success()
+            ? cli_result_code::success
+            : cli_result_code::error_occurred;
 
     } else {
         print_unreognized_type();
         return cli_result_code::unrecognized_argument;
     }
-
-    static_cast<void>(m_manager);
-    return cli_result_code::success;
 }
 cli_result_code credential_executor::find(argument_container_view const& arguments) const
 {
@@ -138,25 +141,36 @@ cli_result_code credential_executor::list(argument_container_view const& argumen
 cli_result_code credential_executor::remove(argument_container_view const& arguments) const
 {
     if (arguments.size() < 2) {
-        m_output_stream << L"Usage: credential_store.cli remove <type> <target>" << endl;
+        m_output_stream << L"Usage: credential_store.cli remove <target> <type>" << endl;
         return cli_result_code::insufficient_arguments;
     }
-    if (auto const type = get_credential_type(arguments[0]);
-        type != credential_type::unknown) {
-            std::wstring const& id{begin(arguments[1]), end(arguments[1])};
 
+    std::wstring const& id{begin(arguments[0]), end(arguments[0])};
+
+    using std::vector;
+    using credential_t = win32::credential_store::credential<wchar_t>;
+    if (auto const type = get_credential_type(arguments[1]);
+        type != credential_type::unknown) {
         auto credential = m_manager.find(id.c_str(), type);
 
-        if (credential.has_value<win32::credential_store::credential<wchar_t>>()) {
-            static_cast<void>(m_manager.remove(credential.value<win32::credential_store::credential<wchar_t>>()));
-            return cli_result_code::success;
-        } else
+        if (!credential.has_value<win32::credential_store::credential<wchar_t>>()) {
             return cli_result_code::not_found;
+        }
 
-    } else {
-        print_unreognized_type();
-        return cli_result_code::unrecognized_argument;
+        static_cast<void>(m_manager.remove(credential.value<credential_t>()));
+        return cli_result_code::success;
     }
+
+    auto matches = m_manager.find(id.c_str(), true)
+        .value_or<>(vector<credential_t>());
+
+    if (matches.empty()) {
+        return cli_result_code::not_found;
+    }
+
+    static_cast<void>(m_manager.remove(*matches.begin()));
+    return cli_result_code::success;
+
 }
 
 char to_upper(char const ch)
