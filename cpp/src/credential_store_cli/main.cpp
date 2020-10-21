@@ -57,7 +57,11 @@ int main(int const argc, char const* argv[])
         arguments.emplace_back(arg1);
         arguments.emplace_back(arg2);
 
-        std::function<std::wstring(wchar_t const*)> const read_user_secret(read_secret); // intent is to pass this to executor to read the password
+        std::function<std::wstring()> const read_user_secret(
+            []() {
+                return read_secret(L"enter password:");
+            }); 
+
         credential_manager const manager;
         credential_executor const executor(manager, std::wcout);
 

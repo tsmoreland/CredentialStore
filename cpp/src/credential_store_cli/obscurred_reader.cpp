@@ -12,11 +12,76 @@
 // 
 
 #include "obscurred_reader.h"
+#include <iostream>
+#include <sstream>
+#include <Windows.h>
 
 namespace win32::credential_store::cli
 {
+    using std::wstring;
+    using std::wcout;
+    using std::endl;
+    using const_handle = void* const;
+
+    class console_mode_setting final
+    {
+        const_handle m_input_handle;
+        DWORD m_mode;
+    public:
+        explicit console_mode_setting(const_handle input_handle)
+            : m_input_handle(input_handle)
+            , m_mode{0UL}
+        {
+            GetConsoleMode(input_handle, &m_mode);
+        }
+        [[nodiscard]]
+        DWORD get_mode() const
+        {
+            return m_mode;
+        }
+        void set_mode(DWORD const mode) const
+        {
+            SetConsoleMode(m_input_handle, mode);
+        }
+        console_mode_setting(console_mode_setting const&) = delete;
+        console_mode_setting(console_mode_setting&&) noexcept = delete;
+        console_mode_setting& operator=(console_mode_setting const&) = delete;
+        console_mode_setting& operator=(console_mode_setting&&) noexcept = delete;
+        ~console_mode_setting()
+        {
+            SetConsoleMode(m_input_handle, m_mode);
+        }
+    };
+
     std::wstring read_secret(wchar_t const* prompt)
     {
-        return L"password";
+        wchar_t const BACKSPACE = 8;
+        wchar_t const RETURN=13;
+
+        if (prompt != nullptr && wcslen(prompt) != 0) {
+            std::wcout << prompt << L" ";
+        }
+
+        const_handle standard_input_handle = GetStdHandle(STD_INPUT_HANDLE);
+
+        console_mode_setting const console_mode(standard_input_handle);
+        console_mode.set_mode(console_mode.get_mode() & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT));
+
+        std::wstringstream stream;
+        size_t count{0};
+        DWORD character_read{0};
+        wchar_t input{0};
+        while(ReadConsoleW(standard_input_handle, &input, 1, &character_read, nullptr) && input != RETURN) {
+            if (input == BACKSPACE) {
+                if (count == 0) {
+                    wcout << L"\b \b";
+                }
+                continue;
+            }
+            count++;
+            stream << input;
+        }
+        wcout <<endl;
+        return stream.str();
     }
 }
