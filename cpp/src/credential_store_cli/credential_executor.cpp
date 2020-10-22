@@ -31,9 +31,10 @@ void print_credential(credential<wchar_t> const& credential, std::wostream& outp
     output_stream << credential.get_id() << L" " << credential.get_username() << endl;
 }
 
-credential_executor::credential_executor(credential_manager_interface const& manager, std::wostream& output_stream)
+credential_executor::credential_executor(credential_manager_interface const& manager, std::wostream& output_stream, secret_provider const& secret_provider)
     : m_manager{manager}
     , m_output_stream(output_stream)
+    , m_secret_provider(secret_provider)
 {
 }
 
@@ -72,12 +73,14 @@ cli_result_code credential_executor::add(argument_container_view const& argument
     if (auto const type = get_credential_type(arguments[0]);
         type != credential_type::unknown) {
 
-        std::wstring const& id{begin(arguments[1]), end(arguments[1])};
-        std::wstring const& username{begin(arguments[2]), end(arguments[2])};
+        std::wstring id{begin(arguments[1]), end(arguments[1])};
+        std::wstring username{begin(arguments[2]), end(arguments[2])};
 
         // TODO: get secret from obscurred reader
+        auto secret = m_secret_provider();
 
-        credential<wchar_t> const credential{id, username, L"", type, persistence_type::local_machine, std::nullopt};
+        using std::move;
+        credential<wchar_t> const credential{move(id), move(username), move(secret), type, persistence_type::local_machine, std::nullopt};
 
         return m_manager.add_or_update(credential).is_success()
             ? cli_result_code::success

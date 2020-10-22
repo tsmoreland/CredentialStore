@@ -23,13 +23,14 @@
 namespace win32::credential_store::cli
 {
     using verb_processor = std::function<cli_result_code (std::vector<std::string_view> const&)>;
+    using secret_provider = std::function<std::wstring ()>;
     
     class credential_executor final
     {
     public:
         using argument_container_view = std::vector<std::string_view>;
 
-        explicit credential_executor(credential_manager_interface const& manager, std::wostream& output_stream);
+        explicit credential_executor(credential_manager_interface const& manager, std::wostream& output_stream, secret_provider const& secret_provider);
 
         [[nodiscard]] verb_processor get_operation(std::string_view const& verb) const;
 
@@ -42,6 +43,7 @@ namespace win32::credential_store::cli
     private:
         credential_manager_interface const& m_manager;
         std::wostream& m_output_stream;
+        secret_provider const& m_secret_provider;
     };
 
     [[nodiscard]] verb_type get_verb_type(std::string_view const& verb);

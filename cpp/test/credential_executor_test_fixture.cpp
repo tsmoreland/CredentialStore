@@ -154,7 +154,8 @@ std::wostream& credential_executor_test_fixture::stream()
 
 credential_executor_test_fixture::credential_executor_test_fixture()
     : m_stream(&m_buffer)
-    , m_executor{m_manager, m_stream}
+    , m_secret_provider{[]() { return L"password"; }}
+    , m_executor{m_manager, m_stream, m_secret_provider}
 {
 
 }
