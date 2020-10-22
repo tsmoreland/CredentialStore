@@ -29,6 +29,7 @@ int main(int const argc, char const* argv[])
     try {
         using win32::credential_store::cli::cli_result_code;
         using win32::credential_store::cli::read_secret;
+        using win32::credential_store::cli::secret_provider;
 
         if (argc < 2)
         {
@@ -57,13 +58,13 @@ int main(int const argc, char const* argv[])
         arguments.emplace_back(arg1);
         arguments.emplace_back(arg2);
 
-        std::function<std::wstring()> const read_user_secret(
+        secret_provider const read_user_secret(
             []() {
                 return read_secret(L"enter password:");
             }); 
 
         credential_manager const manager;
-        credential_executor const executor(manager, std::wcout);
+        credential_executor const executor(manager, std::wcout, read_user_secret);
 
         auto const result = executor.get_operation(raw_verb)(arguments);
 

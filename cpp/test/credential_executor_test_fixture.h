@@ -50,9 +50,10 @@ namespace win32::credential_store::tests
             [[nodiscard]] result_t remove(credential_t const& credential) const override;
         };
 
+        mock_credential_manager m_manager;
         std::wstringbuf m_buffer{};
         std::wostream m_stream;
-        mock_credential_manager m_manager;
+        cli::secret_provider m_secret_provider;
         cli::credential_executor m_executor;
 
         static void set_cred_read_result(DWORD const value) noexcept;
