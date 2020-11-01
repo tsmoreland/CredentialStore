@@ -13,8 +13,24 @@
 
 package moreland.win32.credentialstore.cli;
 
+import java.time.LocalDateTime;
+
+import moreland.win32.credentialstore.Credential;
+import moreland.win32.credentialstore.CredentialFlag;
+import moreland.win32.credentialstore.CredentialPersistence;
+import moreland.win32.credentialstore.CredentialType;
+
 public class Application {
     public static void main(String[] args) {
+        var credential = new Credential("id", "username", "secret", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now());
+        
+        System.out.println(credential.getSecret());
 
+        /*
+    public Credential(String id, String username, String secret,
+                      CredentialFlag characteristics, CredentialType type,
+                      CredentialPersistence persistenceType,
+                      LocalDateTime lastUpdated) {
+                          */
     }    
 }
