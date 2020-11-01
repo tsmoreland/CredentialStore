@@ -22,7 +22,7 @@ jobs:
   build-CredentialStore:
     runs-on: windows-latest
     env:
-      working-directory: ./java/CredentialStore
+      working-directory: ./java
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.11
@@ -32,9 +32,9 @@ jobs:
     - name: list files
       run: dir
     - name: Build with Maven
-      working-directory: ./java/CredentialStore
+      working-directory: ./java
       run: mvn -B package
       # This step may duplicate efforts of package but is done to make the results of the test more clear
     - name: Test
-      working-directory: ./java/CredentialStore
+      working-directory: ./java
       run: mvn -B test
