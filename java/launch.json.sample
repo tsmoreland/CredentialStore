@@ -1,0 +1,21 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug (Launch) - Application<credentialstore-cli>",
+            "request": "launch",
+            "modulePaths": [
+                "${workspaceFolder}\\credentialstore-service\\target\\lib",
+                "${workspaceFolder}\\credentialstore-cli\\target\\lib",
+                "${workspaceFolder}\\credentialstore-service\\target\\credentialstore-service-1.0-SNAPSHOT.jar",
+                "${workspaceFolder}\\credentialstore-cli\\target\\lib\\credentialstore-cli-1.0-SNAPSHOT.jar",
+            ],
+            "mainClass": "moreland.win32.credentialstore.cli/moreland.win32.credentialstore.cli.Application",
+            "projectName": "credentialstore-cli"
+        }
+    ]
+}
