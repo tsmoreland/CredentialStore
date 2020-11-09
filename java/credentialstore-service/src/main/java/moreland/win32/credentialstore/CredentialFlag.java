@@ -52,13 +52,12 @@ public enum CredentialFlag {
      * This bit can only be specified if Type is CRED_TYPE_DOMAIN_PASSWORD
      * or CRED_TYPE_DOMAIN_CERTIFICATE.
      */
-    USERNAME_TARGET(0x4),;
+    USERNAME_TARGET(0x4);
 
     /**
      * returns the underlying integer value
      * @return underlying integer value
      */
-    @SuppressWarnings("unused")
     public int getValue() {
         return value;
     }

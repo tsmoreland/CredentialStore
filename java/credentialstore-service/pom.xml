@@ -22,6 +22,7 @@
                 <configuration>
                     <argLine>
                         --add-opens moreland.win32.credentialstore/moreland.win32.credentialstore=ALL-UNNAMED
+                        --add-opens moreland.win32.credentialstore/moreland.win32.credentialstore.internal=ALL-UNNAMED
                     </argLine>
                 </configuration>
             </plugin>
