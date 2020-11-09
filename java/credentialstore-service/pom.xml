@@ -39,5 +39,6 @@
         <artifactId>jna-platform</artifactId>
         <version>5.6.0</version>
       </dependency>
+    
     </dependencies>
 </project>

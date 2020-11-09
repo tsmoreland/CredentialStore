@@ -15,7 +15,8 @@ package moreland.win32.credentialstore.internal;
 import com.sun.jna.win32.StdCallLibrary;
 
 import com.sun.jna.Native;
-import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.Platform;
 
 public interface Advapi32Library extends StdCallLibrary {
@@ -33,7 +34,7 @@ public interface Advapi32Library extends StdCallLibrary {
      * @return 0 on success
      */
     @SuppressWarnings("java:S100")
-    int CredReadW(String target, int type, int reservedFlag, Pointer credentialPtr);
+    int CredReadW(String target, int type, int reservedFlag, PointerByReference credentialPtr);
 
     /**
      * CredWriteW
@@ -43,7 +44,7 @@ public interface Advapi32Library extends StdCallLibrary {
      * @return 0 on success
      */
     @SuppressWarnings("java:S100")
-    int CredWriteW(Pointer userCredential, int flags);
+    int CredWriteW(NativeCredential.ByReference userCredential, int flags);
 
     /**
      * CredFreeW
@@ -51,7 +52,7 @@ public interface Advapi32Library extends StdCallLibrary {
      * @return 0 on success
      */
     @SuppressWarnings("java:S100")
-    int CredFreeW(Pointer cred);
+    int CredFreeW(NativeCredential.ByReference cred);
 
     /**
      * CredDeleteW
@@ -72,7 +73,7 @@ public interface Advapi32Library extends StdCallLibrary {
      * @return
      */
     @SuppressWarnings("java:S100")
-    int CredEnumerateW(String filter, int flag, Pointer count, Pointer credentialsPtr);
+    int CredEnumerateW(String filter, int flag, IntByReference count, PointerByReference credentialsPtr);
 
     
 }
