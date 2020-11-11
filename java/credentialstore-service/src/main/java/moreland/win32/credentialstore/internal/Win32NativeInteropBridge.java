@@ -51,7 +51,7 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
         // TODO Auto-generated method stub
 
         try {
-            advapi.CredDeleteW(target, type, flags)
+            advapi.CredDeleteW(target, type, flags);
             return 0;
 
         } catch (LastErrorException e) {
