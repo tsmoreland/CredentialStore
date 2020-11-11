@@ -13,6 +13,7 @@
 package moreland.win32.credentialstore.internal;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import com.sun.jna.Pointer;
@@ -65,7 +66,7 @@ interface NativeInteropBridge {
      * @param reservedFlag currently reserved and must be 0
      * @return Pair containing optional {@code NativeCredential} and either 0 or Win32 error code
      */
-    Pair<Integer, NativeCredential> credRead(String target, CredentialType type, int reservedFlag);
+    Pair<Integer, Optional<NativeCredential>> credRead(String target, CredentialType type, int reservedFlag);
 
     /**
      * Creates or updates a credential

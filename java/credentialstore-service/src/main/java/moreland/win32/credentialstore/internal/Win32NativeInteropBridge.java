@@ -12,11 +12,14 @@
 //
 package moreland.win32.credentialstore.internal;
 
+import java.lang.annotation.Native;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.PointerByReference;
 
 import moreland.win32.credentialstore.CredentialType;
 import moreland.win32.credentialstore.Pair;
@@ -46,7 +49,14 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
     @Override
     public int credDelete(String target, int type, int flags) {
         // TODO Auto-generated method stub
-        return 0;
+
+        try {
+            advapi.CredDeleteW(target, type, flags)
+            return 0;
+
+        } catch (LastErrorException e) {
+            return e.getErrorCode();
+        }
     }
 
     /**
@@ -77,9 +87,27 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
      * {@inheritDoc}
      */
     @Override
-    public Pair<Integer, NativeCredential> credRead(String target, CredentialType type, int reservedFlag) {
-        // TODO Auto-generated method stub
-        return null;
+    public Pair<Integer, Optional<NativeCredential>> credRead(String target, CredentialType type, int reservedFlag) {
+
+        NativeCredential credential = null;
+        try {
+            var credentialPtr = new PointerByReference();
+
+            advapi.CredReadW(target, type.getValue(), reservedFlag, credentialPtr);
+
+            credential = new NativeCredential(credentialPtr.getPointer());
+
+            // this return type needs to change to a wrapper around credential which will handle the release of
+            // memory
+            return Pair.of(0, Optional.of(credential));
+        } catch (LastErrorException e) {
+            return Pair.of(e.getErrorCode(), Optional.empty());
+
+        } finally {
+            if (credential != null) {
+                credFree(credential.getPointer());
+            }
+        }
     }
 
     /**

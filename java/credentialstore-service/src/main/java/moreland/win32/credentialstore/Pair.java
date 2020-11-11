@@ -25,6 +25,10 @@ public final class Pair<T1, T2> {
         this.item2 = item2;
     }
 
+    public static <X, Y>  Pair<X, Y> of(X item1, Y item2) {
+        return new Pair<>(item1, item2);
+    }
+
     /**
      * {@inheritDoc}
      */
