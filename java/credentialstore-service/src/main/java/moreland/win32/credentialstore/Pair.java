@@ -15,7 +15,7 @@ package moreland.win32.credentialstore;
 
 import java.util.Objects;
 
-final class Pair<T1, T2> {
+public final class Pair<T1, T2> {
 
     public final T1 item1;
     public final T2 item2;
@@ -23,6 +23,10 @@ final class Pair<T1, T2> {
     public Pair(T1 item1, T2 item2) {
         this.item1 = item1;
         this.item2 = item2;
+    }
+
+    public static <X, Y>  Pair<X, Y> of(X item1, Y item2) {
+        return new Pair<>(item1, item2);
     }
 
     /**
