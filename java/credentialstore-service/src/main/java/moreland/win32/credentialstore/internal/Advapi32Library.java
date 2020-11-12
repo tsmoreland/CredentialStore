@@ -20,6 +20,9 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.Platform;
+import com.sun.jna.WString;
+
+import moreland.win32.credentialstore.structures.Credential;
 
 public interface Advapi32Library extends StdCallLibrary {
     Advapi32Library INSTANCE = Platform.isWindows()
@@ -31,12 +34,12 @@ public interface Advapi32Library extends StdCallLibrary {
      * @param target        unique target identifiy the credential to read
      * @param type          integer value from {@Code moreland.win32.credentialstore.CredentialType}
      * @param reservedFlag  should always be 0
-     * @param credentialPtr (output) on success stores the read credential,
+     * @param credential    (output) on success stores the read credential,
      *                      must be freed with CredFreeW
      * @return true on success
      */
     @SuppressWarnings("java:S100")
-    boolean CredReadW(String target, int type, int reservedFlag, PointerByReference credentialPtr) throws LastErrorException;
+    boolean CredReadW(WString target, int type, int reservedFlag, PointerByReference credential) throws LastErrorException;
 
     /**
      * CredWriteW
@@ -46,7 +49,7 @@ public interface Advapi32Library extends StdCallLibrary {
      * @return true on success
      */
     @SuppressWarnings("java:S100")
-    boolean CredWriteW(NativeCredential.ByReference userCredential, int flags) throws LastErrorException;
+    boolean CredWriteW(Credential.ByReference userCredential, int flags) throws LastErrorException;
 
     /**
      * CredFreeW
@@ -54,7 +57,7 @@ public interface Advapi32Library extends StdCallLibrary {
      * @return true on success
      */
     @SuppressWarnings("java:S100")
-    boolean CredFreeW(Pointer cred) throws LastErrorException;
+    boolean CredFree(Pointer cred) throws LastErrorException;
 
     /**
      * CredDeleteW
@@ -64,7 +67,7 @@ public interface Advapi32Library extends StdCallLibrary {
      * @return true on success
      */
     @SuppressWarnings("java:S100")
-    boolean CredDeleteW(String target, int type, int flags) throws LastErrorException;
+    boolean CredDeleteW(WString target, int type, int flags) throws LastErrorException;
 
     /**
      * CredEnumerateW
@@ -75,7 +78,7 @@ public interface Advapi32Library extends StdCallLibrary {
      * @return true on success
      */
     @SuppressWarnings("java:S100")
-    boolean CredEnumerateW(String filter, int flag, IntByReference count, PointerByReference credentialsPtr) throws LastErrorException;
+    boolean CredEnumerateW(WString filter, int flag, IntByReference count, PointerByReference credentialsPtr) throws LastErrorException;
 
     
 }

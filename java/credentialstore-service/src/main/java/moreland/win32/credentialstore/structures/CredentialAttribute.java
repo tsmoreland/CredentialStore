@@ -10,7 +10,7 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-package moreland.win32.credentialstore.internal;
+package moreland.win32.credentialstore.structures;
 
 import com.sun.jna.Structure;
 import com.sun.jna.Structure.FieldOrder;
@@ -20,7 +20,7 @@ import com.sun.jna.Structure.FieldOrder;
  * attribute of the credential. An attribute is a keyword-value pair. 
  * It is up to the application to define the meaning of the attribute.
  */
-@FieldOrder({"Keyword", "Flags", "ValueSize", "Value"})
+@FieldOrder({"keyword", "flags", "valueSize", "value"})
 public class CredentialAttribute extends Structure {
 
     /**
@@ -29,23 +29,23 @@ public class CredentialAttribute extends Structure {
      * This member cannot be longer than CRED_MAX_STRING_LENGTH 
      * (256) characters.
      */
-    @SuppressWarnings({"java:S1104", "java:S116"})
-    public String Keyword = "";
+    @SuppressWarnings({"java:S1104"})
+    public String keyword = "";
 
     /**
      * Identifies characteristics of the credential attribute. This member is 
      * reserved and should be originally initialized as zero and not otherwise 
      * altered to permit future enhancement.
      */
-    @SuppressWarnings({"java:S1104", "java:S116"})
-    public int Flags = 0;
+    @SuppressWarnings({"java:S1104"})
+    public int flags = 0;
 
     /**
      * Length of Value in bytes. This member cannot be larger 
      * than CRED_MAX_VALUE_SIZE (256).
      */
-    @SuppressWarnings({"java:S1104", "java:S116"})
-    public int ValueSize = 0;
+    @SuppressWarnings({"java:S1104"})
+    public int valueSize = 0;
 
     /**
      * Data associated with the attribute. By convention, if Value is a text 
@@ -56,8 +56,8 @@ public class CredentialAttribute extends Structure {
      * responsibility of the application to define the byte-endian and 
      * alignment of the data in Value.
      */
-    @SuppressWarnings({"java:S1104", "java:S116"})
-    public byte[] Value = new byte[128];
+    @SuppressWarnings({"java:S1104"})
+    public byte[] value = new byte[256];
 
     public static class ByReference extends CredentialAttribute implements Structure.ByReference {
     }

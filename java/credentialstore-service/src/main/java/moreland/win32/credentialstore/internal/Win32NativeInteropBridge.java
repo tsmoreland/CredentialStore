@@ -12,17 +12,17 @@
 //
 package moreland.win32.credentialstore.internal;
 
-import java.lang.annotation.Native;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
+import com.sun.jna.WString;
 
 import moreland.win32.credentialstore.CredentialType;
-import moreland.win32.credentialstore.Pair;
+
+import moreland.win32.credentialstore.structures.Credential;
 
 final class Win32NativeInteropBridge implements NativeInteropBridge {
 
@@ -47,24 +47,15 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
     }
 
     @Override
-    public int credDelete(String target, int type, int flags) {
-        // TODO Auto-generated method stub
-
-        try {
-            advapi.CredDeleteW(target, type, flags);
-            return 0;
-
-        } catch (LastErrorException e) {
-            return e.getErrorCode();
-        }
+    public void credDelete(String target, int type, int flags) throws LastErrorException {
+        advapi.CredDeleteW(new WString(target), type, flags);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<NativeCredential> credEnumerate(String filter, Set<EnumerateFlag> flag) {
-        // TODO Auto-generated method stub
+    public List<Credential> credEnumerate(String filter, Set<EnumerateFlag> flag) throws LastErrorException {
         return List.of();
     }
 
@@ -72,51 +63,29 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
      * {@inheritDoc}
      */
     @Override
-    public int credFree(Pointer handle) {
-
-        try {
-            advapi.CredFreeW(handle);
-            return 0;
-
-        } catch (LastErrorException e) {
-            return e.getErrorCode();
-        }
+    public void credFree(Pointer handle) throws LastErrorException {
+        advapi.CredFree(handle);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Pair<Integer, Optional<NativeCredential>> credRead(String target, CredentialType type, int reservedFlag) {
+    public Credential credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException {
 
-        NativeCredential credential = null;
-        try {
-            var credentialPtr = new PointerByReference();
-
-            advapi.CredReadW(target, type.getValue(), reservedFlag, credentialPtr);
-
-            credential = new NativeCredential(credentialPtr.getPointer());
-
-            // this return type needs to change to a wrapper around credential which will handle the release of
-            // memory
-            return Pair.of(0, Optional.of(credential));
-        } catch (LastErrorException e) {
-            return Pair.of(e.getErrorCode(), Optional.empty());
-
-        } finally {
-            if (credential != null) {
-                credFree(credential.getPointer());
-            }
-        }
+        var credentialPtr = new PointerByReference();
+        advapi.CredReadW(new WString(target), type.getValue(), reservedFlag, credentialPtr);
+        return new Credential(credentialPtr.getValue());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public int credWrite(NativeCredential credential, PreserveType flags) {
-        // TODO Auto-generated method stub
-        return 0;
+    public void credWrite(Credential.ByReference credential, PreserveType flags) throws LastErrorException {
+
+        advapi.CredWriteW(credential, flags.getValue());
+
     }
 
 }

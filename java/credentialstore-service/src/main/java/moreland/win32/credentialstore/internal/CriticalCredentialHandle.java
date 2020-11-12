@@ -14,6 +14,8 @@ package moreland.win32.credentialstore.internal;
 
 import java.util.Optional;
 
+import moreland.win32.credentialstore.structures.Credential;
+
 public interface CriticalCredentialHandle extends AutoCloseable {
 
     /**
@@ -23,6 +25,6 @@ public interface CriticalCredentialHandle extends AutoCloseable {
     /**
      * returns the Native credential handle if handle is valid.
      */
-    Optional<NativeCredential> getNativeCredential(); 
+    Optional<Credential> getNativeCredential(); 
 
 }

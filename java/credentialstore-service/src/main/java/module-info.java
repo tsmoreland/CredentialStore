@@ -16,4 +16,5 @@ module moreland.win32.credentialstore {
     requires transitive com.sun.jna.platform;
     
     exports moreland.win32.credentialstore;
+    exports moreland.win32.credentialstore.structures;
 }

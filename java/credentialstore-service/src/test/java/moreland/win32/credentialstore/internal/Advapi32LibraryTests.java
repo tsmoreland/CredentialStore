@@ -19,8 +19,10 @@ import org.junit.jupiter.api.Test;
 
 import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.PointerByReference;
+import com.sun.jna.WString;
 
 import moreland.win32.credentialstore.CredentialType;
+import moreland.win32.credentialstore.structures.Credential;
 
 class Advapi32LibraryTests {
     
@@ -31,13 +33,29 @@ class Advapi32LibraryTests {
 
         assertThrows(LastErrorException.class, 
             () -> {
-                var type = CredentialType.GENERIC.getValue();
-                var credByReference = new PointerByReference();
-                advapi32.CredReadW("", type, 0, credByReference);
+                try {
+                    var type = CredentialType.GENERIC.getValue();
+                    var credentialPtr = new PointerByReference();
 
-                if (credByReference != null) {
-                    var credential = new NativeCredential(credByReference.getPointer());
-                    advapi32.CredFreeW(credential.getPointer());
+                    /*
+                    if (advapi32.CredReadW(new WString("test"), 1, 0, credentialPtr)) {
+                        var credByReference = new Credential(credentialPtr.getValue());
+                        System.out.println(String.format("%s %s", credByReference.targetName, credByReference.userName));
+                    }
+
+                    if (credentialPtr.getPointer() != null) {
+                        advapi32.CredFree(credentialPtr.getPointer());
+                    }
+                    */
+
+                    advapi32.CredReadW(new WString(""), type, 0, credentialPtr);
+
+                    if (credentialPtr.getPointer() != null) {
+                        advapi32.CredFree(credentialPtr.getPointer());
+                    }
+                } catch (NullPointerException e) {
+                    System.out.println(e.getStackTrace().toString());
+                    System.out.println(e.getMessage());
                 }
             });
     }
