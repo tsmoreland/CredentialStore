@@ -12,21 +12,26 @@
 //
 package moreland.win32.credentialstore.internal;
 
-import java.util.Optional;
+import com.sun.jna.ptr.PointerByReference;
 
-import com.sun.jna.Pointer;
+public class Win32CriticalCredentialHandleFactory implements CriticalCredentialHandleFactory {
 
-import moreland.win32.credentialstore.structures.Credential;
+    private final Advapi32Library advapi32;
 
-public interface CriticalCredentialHandle extends AutoCloseable {
+    public Win32CriticalCredentialHandleFactory() {
+        this(Advapi32Library.INSTANCE);
+    }
 
+    public Win32CriticalCredentialHandleFactory(Advapi32Library advapi32) {
+        this.advapi32 = advapi32;
+    }
 
     /**
-     * @return true if the underlying handle is valid
+     * {@inheritDoc}
      */
-    boolean isPresent();
-    /**
-     * returns the credential
-     */
-    Optional<Credential> value(); 
+    @Override
+    public CriticalCredentialHandle build(PointerByReference handle) {
+        return new Win32CriticalCredentialHandle(advapi32, handle);
+    }
+    
 }

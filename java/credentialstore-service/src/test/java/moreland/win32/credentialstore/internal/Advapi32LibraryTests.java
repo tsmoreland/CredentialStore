@@ -22,7 +22,6 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.WString;
 
 import moreland.win32.credentialstore.CredentialType;
-import moreland.win32.credentialstore.structures.Credential;
 
 class Advapi32LibraryTests {
     

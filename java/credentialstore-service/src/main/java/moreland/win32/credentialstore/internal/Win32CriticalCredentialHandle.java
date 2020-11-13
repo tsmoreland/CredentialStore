@@ -15,18 +15,55 @@ package moreland.win32.credentialstore.internal;
 import java.util.Optional;
 
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.PointerByReference;
 
 import moreland.win32.credentialstore.structures.Credential;
 
-public interface CriticalCredentialHandle extends AutoCloseable {
+public final class Win32CriticalCredentialHandle implements CriticalCredentialHandle {
+
+    private final Advapi32Library advapi32;
+    private final Optional<Credential> credential;
+
+    public Win32CriticalCredentialHandle(PointerByReference credentialPtr) {
+        this(Advapi32Library.INSTANCE, credentialPtr);
+    }
+
+    public Win32CriticalCredentialHandle(Advapi32Library advapi32, PointerByReference credentialPtr) {
+        this.advapi32 = advapi32;
+
+        Pointer ptr = credentialPtr != null
+            ? credentialPtr.getValue()
+            : Pointer.NULL;
+
+        this.credential = !ptr.equals(Pointer.NULL)
+            ? Optional.of(new Credential(ptr))
+            : Optional.empty();
+    }
 
 
     /**
-     * @return true if the underlying handle is valid
+     * {@inheritDoc}
      */
-    boolean isPresent();
+    @Override
+    public void close() throws Exception {
+        if (credential.isPresent()) {
+            advapi32.CredFree(credential.get().getPointer());
+        }
+    }
+
     /**
-     * returns the credential
+     * {@inheritDoc}
      */
-    Optional<Credential> value(); 
+    @Override
+    public boolean isPresent() {
+        return credential.isPresent();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<Credential> value() {
+        return credential;
+    }
 }
