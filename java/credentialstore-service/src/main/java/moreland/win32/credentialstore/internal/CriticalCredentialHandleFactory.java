@@ -1,6 +1,6 @@
 package moreland.win32.credentialstore.internal;
 
-import com.sun.jna.Pointer;
+import com.sun.jna.ptr.PointerByReference;
 
 /**
  * Factory used to construct {@code CriticalCredentialHandle}
@@ -12,5 +12,5 @@ public interface CriticalCredentialHandleFactory {
      * @return {@code CriticalCredentialHandle} which may contain a handle 
      * if {@code handle} was valid 
      */
-    CriticalCredentialHandle build(Pointer handle);
+    CriticalCredentialHandle build(PointerByReference handle);
 }

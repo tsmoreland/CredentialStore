@@ -10,11 +10,28 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-module moreland.win32.credentialstore {
-    requires java.base;
-    requires transitive com.sun.jna;
-    requires transitive com.sun.jna.platform;
+package moreland.win32.credentialstore.internal;
+
+import com.sun.jna.ptr.PointerByReference;
+
+public class Win32CriticalCredentialHandleFactory implements CriticalCredentialHandleFactory {
+
+    private final Advapi32Library advapi32;
+
+    public Win32CriticalCredentialHandleFactory() {
+        this(Advapi32Library.INSTANCE);
+    }
+
+    public Win32CriticalCredentialHandleFactory(Advapi32Library advapi32) {
+        this.advapi32 = advapi32;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CriticalCredentialHandle build(PointerByReference handle) {
+        return new Win32CriticalCredentialHandle(advapi32, handle);
+    }
     
-    exports moreland.win32.credentialstore;
-    exports moreland.win32.credentialstore.structures;
 }

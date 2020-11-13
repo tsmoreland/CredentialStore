@@ -14,6 +14,7 @@
                 "${workspaceFolder}\\credentialstore-service\\target\\credentialstore-service-1.0-SNAPSHOT.jar",
                 "${workspaceFolder}\\credentialstore-cli\\target\\lib\\credentialstore-cli-1.0-SNAPSHOT.jar",
             ],
+            "console": "internalConsole",
             "mainClass": "moreland.win32.credentialstore.cli/moreland.win32.credentialstore.cli.Application",
             "projectName": "credentialstore-cli"
         }

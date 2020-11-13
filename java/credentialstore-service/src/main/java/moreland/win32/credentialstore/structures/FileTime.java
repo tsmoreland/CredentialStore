@@ -1,4 +1,4 @@
-package moreland.win32.credentialstore.internal;
+package moreland.win32.credentialstore.structures;
 
 import com.sun.jna.Structure;
 import com.sun.jna.Structure.FieldOrder;
@@ -8,7 +8,7 @@ import com.sun.jna.Structure.FieldOrder;
  *      "https://docs.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime"></a>
  */
 @FieldOrder({"lowDateTime", "highDateTime"})
-public class FileTime extends Structure {
+public final class FileTime extends Structure {
     
     /**
      * The Low-order part of the file time.
@@ -20,5 +20,4 @@ public class FileTime extends Structure {
      */
     @SuppressWarnings("java:S1104")
     public int highDateTime = 0;
-
 }

@@ -13,13 +13,14 @@
 package moreland.win32.credentialstore.internal;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
+import com.sun.jna.LastErrorException;
 import com.sun.jna.Pointer;
 
 import moreland.win32.credentialstore.CredentialType;
-import moreland.win32.credentialstore.Pair;
+
+import moreland.win32.credentialstore.structures.Credential;
 
 interface NativeInteropBridge {
     
@@ -28,12 +29,12 @@ interface NativeInteropBridge {
      * @param target
      * @param type Type of the credential to delete. Must be one of the
      *             {@code} CredentialType defined types. For a list of the
-     *             defined types, see the Type member of the <see cref="NativeCredential"/>
+     *             defined types, see the Type member of the {@code Credential} 
      *             structure.
      * @param flags Reserved and must be zero.
-     * @return 0 on success; otherwise Win32 error code 
+     * @exception LastErrorException if operation fails
      */
-    int credDelete(String target, int type, int flags);
+    void credDelete(String target, int type, int flags) throws LastErrorException;
 
     /**
      * Returns a list of credentials matching the provided filter
@@ -46,15 +47,16 @@ interface NativeInteropBridge {
      *               If null is specified, all credentials will be returned.
      * @param flag Set of {@code EnumerateFlag}
      * @return collection of matching credentials
+     * @exception LastErrorException if operation fails
      */
-    List<NativeCredential> credEnumerate(String filter, Set<EnumerateFlag> flag);
+    List<Credential> credEnumerate(String filter, Set<EnumerateFlag> flag) throws LastErrorException;
 
     /**
      * Frees the buffer allocated by any of the credentials api functions.
      * @param handle Pointer to the buffer to be freed.
-     * @return 0 on success; otherwise Win32 error code 
+     * @exception LastErrorException if operation fails
      */
-    int credFree(Pointer handle);
+    void credFree(Pointer handle) throws LastErrorException;
 
     /**
      * Returns {@code NativeCredential} containing the matching
@@ -64,16 +66,17 @@ interface NativeInteropBridge {
      * @param type Type of the credential to read. Type must be one of the
      *             of {@code CredentialType} type
      * @param reservedFlag currently reserved and must be 0
-     * @return Pair containing optional {@code NativeCredential} and either 0 or Win32 error code
+     * @return the matching {@code Credential}
+     * @exception LastErrorException on error, including not found
      */
-    Pair<Integer, Optional<NativeCredential>> credRead(String target, CredentialType type, int reservedFlag);
+    Credential credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException;
 
     /**
      * Creates or updates a credential
      * @param credential credential structure to be written.
      * @param flags Flags that control the function's operation.
-     * @return 0 on success; otherwise Win32 error code 
+     * @exception LastErrorException if operation fails
      */
-    int credWrite(NativeCredential credential, PreserveType flags);
+    void credWrite(Credential.ByReference credential, PreserveType flags) throws LastErrorException;
 
 }
