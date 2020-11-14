@@ -31,6 +31,15 @@ public class Win32CriticalCredentialHandleFactory implements CriticalCredentialH
      * {@inheritDoc}
      */
     @Override
+    public CriticalCredentialHandle empty()
+    {
+        return new Win32CriticalCredentialHandle(advapi32, (PointerByReference) null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public CriticalCredentialHandle fromPointerByReference(PointerByReference handle) {
         return new Win32CriticalCredentialHandle(advapi32, handle);
     }
