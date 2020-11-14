@@ -7,6 +7,12 @@ import com.sun.jna.ptr.PointerByReference;
  * Factory used to construct {@code CriticalCredentialHandle}
  */
 public interface CriticalCredentialHandleFactory {
+
+    /**
+     * Returns an empty CriticalCredentialHandler, used to represent failure
+     */
+    CriticalCredentialHandle empty();
+
     /**
      * {@code CriticalCredentialHandle} builder
      * @param handle critical handle to wrap in {@code CriticalCredentialHandle}
