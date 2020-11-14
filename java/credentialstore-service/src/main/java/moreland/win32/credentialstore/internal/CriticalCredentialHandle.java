@@ -14,17 +14,15 @@ package moreland.win32.credentialstore.internal;
 
 import java.util.Optional;
 
-import com.sun.jna.Pointer;
-
 import moreland.win32.credentialstore.structures.Credential;
 
 public interface CriticalCredentialHandle extends AutoCloseable {
-
 
     /**
      * @return true if the underlying handle is valid
      */
     boolean isPresent();
+
     /**
      * returns the credential
      */
