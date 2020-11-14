@@ -65,6 +65,7 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
             CredentialStoreOperation? operation = name.ToLowerInvariant() switch
             {
                 "add" => Add,
+                "find" => Find,
                 "list" => List,
                 "remove" => Remove,
                 _ =>  null,
@@ -138,13 +139,27 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
                 return true;
             }
 
-            bool searchAll = args.Length == 1 || args.Length > 1 && args[2]?.ToLowerInvariant() == "all";
-
             var builder = new StringBuilder();
-            _credentialManager.Find(args[0], searchAll)
-                .Select(credential => $"{credential.Id} - {credential.UserName}:{credential.Secret}")
-                .ToList()
-                .ForEach(msg => builder.AppendLine(msg));
+            if (args.Length > 1)
+            {
+                if (!Enum.TryParse(args[1], true, out CredentialType type))
+                {
+                    _logger.Error($"Unrecognized or unsupported type '{args[2]}'");
+                    return false;
+                }
+
+                var credential = _credentialManager.Find(args[0], type);
+                builder.AppendLine(credential != null
+                    ? $"{credential.Id} - {credential.UserName}:{credential.Secret}"
+                    : $"{args[0]} not found");
+            }
+            else
+            {
+                _credentialManager.Find(args[0], true)
+                    .Select(credential => $"{credential.Id} - {credential.UserName}:{credential.Secret}")
+                    .ToList()
+                    .ForEach(msg => builder.AppendLine(msg));
+            }
             _writer.WriteLine(builder.ToString());
 
             return true;

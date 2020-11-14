@@ -12,6 +12,7 @@
 //
 package moreland.win32.credentialstore.internal;
 
+import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
 
 public class Win32CriticalCredentialHandleFactory implements CriticalCredentialHandleFactory {
@@ -30,8 +31,15 @@ public class Win32CriticalCredentialHandleFactory implements CriticalCredentialH
      * {@inheritDoc}
      */
     @Override
-    public CriticalCredentialHandle build(PointerByReference handle) {
+    public CriticalCredentialHandle fromPointerByReference(PointerByReference handle) {
         return new Win32CriticalCredentialHandle(advapi32, handle);
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CriticalCredentialHandle fromPointer(Pointer pointer) {
+        return new Win32CriticalCredentialHandle(advapi32, pointer);
+    }
 }

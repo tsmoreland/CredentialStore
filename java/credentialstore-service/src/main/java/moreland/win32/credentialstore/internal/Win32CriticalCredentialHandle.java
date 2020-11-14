@@ -40,6 +40,18 @@ public final class Win32CriticalCredentialHandle implements CriticalCredentialHa
             : Optional.empty();
     }
 
+    public Win32CriticalCredentialHandle(Pointer credentialPtr) {
+        this(Advapi32Library.INSTANCE, credentialPtr);
+    }
+
+    public Win32CriticalCredentialHandle(Advapi32Library advapi32, Pointer credentialPtr) {
+        this.advapi32 = advapi32;
+
+        this.credential = credentialPtr != null
+            ? Optional.of(new Credential(credentialPtr))
+            : Optional.empty();
+    }
+
 
     /**
      * {@inheritDoc}

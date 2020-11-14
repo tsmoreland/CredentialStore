@@ -22,7 +22,7 @@ namespace Moreland.Security.Win32.CredentialStore.NativeApi
     /// <summary>
     /// <inheritdoc cref="INativeInterop"/>
     /// </summary>
-    internal sealed partial class NativeInterop : INativeInterop
+    internal sealed class NativeInterop : INativeInterop
     {
         private readonly ICriticalCredentialHandleFactory _criticalCredentialHandleFactory;
 

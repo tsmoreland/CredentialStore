@@ -12,11 +12,13 @@
 //
 package moreland.win32.credentialstore.internal;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.WString;
 
@@ -26,37 +28,55 @@ import moreland.win32.credentialstore.structures.Credential;
 
 final class Win32NativeInteropBridge implements NativeInteropBridge {
 
-    private Advapi32Library advapi;
+    private Advapi32Library advapi32;
+    private CriticalCredentialHandleFactory criticalCredentialHandleFactory;
 
     public Win32NativeInteropBridge() {
-        this(Advapi32Library.INSTANCE);
+        this(Advapi32Library.INSTANCE, new Win32CriticalCredentialHandleFactory(Advapi32Library.INSTANCE));
     }
 
     /**
      * creates a new instance of the Win32NativeInteropBridge class
+     * 
      * @param advapi Advapi32 library interface
      * @exception IllegalArgumentException when advapi parameter is null
      */
-    public Win32NativeInteropBridge(Advapi32Library advapi) {
+    public Win32NativeInteropBridge(Advapi32Library advapi32, CriticalCredentialHandleFactory criticalCredentialHandleFactory) {
         super();
-        this.advapi = advapi;
+        this.advapi32 = advapi32;
+        this.criticalCredentialHandleFactory = criticalCredentialHandleFactory;
 
-        if (this.advapi == null) {
-            throw new IllegalArgumentException("advapi32 library cannot be null");
+        if (this.advapi32 == null) {
+            throw new IllegalArgumentException("advapi cannot be null");
         }
-    }
-
-    @Override
-    public void credDelete(String target, int type, int flags) throws LastErrorException {
-        advapi.CredDeleteW(new WString(target), type, flags);
+        if (this.criticalCredentialHandleFactory == null) {
+            throw new IllegalArgumentException("critcicalCredentialFactory is null");
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<Credential> credEnumerate(String filter, Set<EnumerateFlag> flag) throws LastErrorException {
-        return List.of();
+    public void credDelete(String target, int type, int flags) throws LastErrorException {
+        advapi32.CredDeleteW(new WString(target), type, flags);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Credential> credEnumerate(String filter, EnumerateFlag flag) throws LastErrorException {
+
+        var count = new IntByReference();
+        var credentialsPtr = new PointerByReference();
+
+        if (!advapi32.CredEnumerateW(new WString(filter), flag.getValue(), count, credentialsPtr))
+            return List.of(); // in theory this should be unreachable
+        
+        return Arrays.stream(credentialsPtr.getValue().getPointerArray(0, count.getValue()))
+            .map(Credential::new)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -64,18 +84,20 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
      */
     @Override
     public void credFree(Pointer handle) throws LastErrorException {
-        advapi.CredFree(handle);
+        advapi32.CredFree(handle);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Credential credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException {
+    public CriticalCredentialHandle credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException {
 
         var credentialPtr = new PointerByReference();
-        advapi.CredReadW(new WString(target), type.getValue(), reservedFlag, credentialPtr);
-        return new Credential(credentialPtr.getValue());
+        // return value doesn't matter, if it's false we'll get an exception
+        advapi32.CredReadW(new WString(target), type.getValue(), reservedFlag, credentialPtr);
+
+        return criticalCredentialHandleFactory.fromPointerByReference(credentialPtr);
     }
 
     /**
@@ -83,9 +105,7 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
      */
     @Override
     public void credWrite(Credential.ByReference credential, PreserveType flags) throws LastErrorException {
-
-        advapi.CredWriteW(credential, flags.getValue());
-
+        advapi32.CredWriteW(credential, flags.getValue());
     }
 
 }

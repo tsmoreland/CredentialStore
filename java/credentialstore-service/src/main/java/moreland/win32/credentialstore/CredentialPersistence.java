@@ -13,6 +13,8 @@
 
 package moreland.win32.credentialstore;
 
+import java.util.Arrays;
+
 public enum CredentialPersistence {
     /**
      * provided to represent no selected value, should never be used in a new instance nor returned
@@ -54,6 +56,13 @@ public enum CredentialPersistence {
      * This value is not supported.
      */
     ENTERPRISE(3);
+
+    public static CredentialPersistence fromInteger(int value) {
+        return Arrays.stream(CredentialPersistence.class.getEnumConstants())
+            .filter(e -> e.value == value)
+            .findFirst()
+            .orElse(CredentialPersistence.UNKNOWN);
+    }
 
     /**
      * returns the underlying integer value
