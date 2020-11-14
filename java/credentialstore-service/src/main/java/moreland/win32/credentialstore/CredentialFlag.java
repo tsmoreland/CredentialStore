@@ -13,6 +13,8 @@
 
 package moreland.win32.credentialstore;
 
+import java.util.Arrays;
+
 /**
  * https://docs.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala
  * see Flags of Credential structure
@@ -54,6 +56,13 @@ public enum CredentialFlag {
      */
     USERNAME_TARGET(0x4);
 
+
+    public static CredentialFlag fromInteger(int value) {
+        return Arrays.stream(CredentialFlag.class.getEnumConstants())
+            .filter(e -> e.value == value)
+            .findFirst()
+            .orElse(CredentialFlag.NONE);
+    }
     /**
      * returns the underlying integer value
      * @return underlying integer value

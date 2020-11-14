@@ -13,6 +13,8 @@
 
 package moreland.win32.credentialstore;
 
+import java.util.Arrays;
+
 /**
  * https://docs.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala
  * see Type of Credential structure
@@ -92,6 +94,14 @@ public enum CredentialType {
     public int getValue() {
         return value;
     }
+
+    public static CredentialType fromInteger(int value) {
+        return Arrays.stream(CredentialType.class.getEnumConstants())
+            .filter(e -> e.value == value)
+            .findFirst()
+            .orElse(CredentialType.UNKNOWN);
+    }
+
 
     private final int value;
     CredentialType(int value) {
