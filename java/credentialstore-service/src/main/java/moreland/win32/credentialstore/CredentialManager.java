@@ -31,7 +31,7 @@ public interface CredentialManager {
      * @param credential credential to add
      * @exception IllegalArgumentException if {@code credential} is null
      */
-    void add(Credential credential);
+    boolean add(Credential credential);
 
     /// <summary>
     ///  <paramref name="credential"/>
@@ -46,21 +46,21 @@ public interface CredentialManager {
      * @param credential credential to update
      * @exception IllegalArgumentException if {@code credential} is null
      */
-    void update(Credential credential);
+    boolean update(Credential credential);
 
     /**
      * deletes a credential from the user's credential set
      * @param credential credential to be removed
      * @exception IllegalArgumentException if {@code credential} is null
      */
-    void delete(Credential credential);
+    boolean delete(Credential credential);
 
     /**
      * deletes a credential from the user's credential set
      * @param id id of item to be deleted
      * @param type type of the item to be deleted
      */
-    void delete(String id, CredentialType type);
+    boolean delete(String id, CredentialType type);
 
     /**
      * Finds a credential with the given id value and optionally {@code type}

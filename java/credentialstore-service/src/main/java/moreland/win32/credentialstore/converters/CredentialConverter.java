@@ -59,23 +59,45 @@ public final class CredentialConverter {
         try {
             var credential = new moreland.win32.credentialstore.structures.Credential(); 
 
-            credential.targetName = new WString(source.getId());
-            credential.userName = new WString(source.getUsername());
-            credential.type = source.getType().getValue();
-            credential.persist = source.getPersistenceType().getValue();
-
-            var credentialBlob = source.getSecret().getBytes("UTF-16LE");
-            var credentialBlobMemory = new Memory(credentialBlob.length);
-            credentialBlobMemory.write(0, credentialBlob, 0, credentialBlob.length);
-
-            credential.credentialBlob = credentialBlobMemory;
-            credential.credentialBlobSize = (int)credentialBlobMemory.size();
-
+            populateInternalCredential(credential, source);
             return Optional.of(credential);
 
         } catch (UnsupportedEncodingException e) {
             return Optional.empty();
         }
+    }
+
+    public static Optional<moreland.win32.credentialstore.structures.Credential.ByReference> toInternalCredentialReference(Credential source) {
+        if (source == null) {
+            return Optional.empty();
+        }
+
+        try {
+            var credential = new moreland.win32.credentialstore.structures.Credential.ByReference(); 
+
+            populateInternalCredential(credential, source);
+            return Optional.of(credential);
+
+        } catch (UnsupportedEncodingException e) {
+            return Optional.empty();
+        }
+    }
+
+    private static void populateInternalCredential(moreland.win32.credentialstore.structures.Credential destination, Credential source) 
+        throws UnsupportedEncodingException {
+
+        destination.targetName = new WString(source.getId());
+        destination.userName = new WString(source.getUsername());
+        destination.type = source.getType().getValue();
+        destination.persist = source.getPersistenceType().getValue();
+
+        var credentialBlob = source.getSecret().getBytes("UTF-16LE");
+        var credentialBlobMemory = new Memory(credentialBlob.length);
+        credentialBlobMemory.write(0, credentialBlob, 0, credentialBlob.length);
+
+        destination.credentialBlob = credentialBlobMemory;
+        destination.credentialBlobSize = (int)credentialBlobMemory.size();
+
     }
 
     private static String fromNullOrWString(WString source) {

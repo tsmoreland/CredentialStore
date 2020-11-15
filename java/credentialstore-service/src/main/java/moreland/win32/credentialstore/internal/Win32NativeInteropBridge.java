@@ -58,9 +58,9 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
      * {@inheritDoc}
      */
     @Override
-    public void credDelete(String target, int type, int flags) throws LastErrorException {
+    public boolean credDelete(String target, int type, int flags) throws LastErrorException {
         synchronized(advapi32) {
-            advapi32.CredDeleteW(new WString(target), type, flags);
+            return advapi32.CredDeleteW(new WString(target), type, flags);
         }
     }
 
@@ -91,9 +91,9 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
      * {@inheritDoc}
      */
     @Override
-    public void credFree(Pointer handle) throws LastErrorException {
+    public boolean credFree(Pointer handle) throws LastErrorException {
         synchronized(advapi32) {
-            advapi32.CredFree(handle);
+            return advapi32.CredFree(handle);
         }
     }
 
@@ -115,9 +115,9 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
      * {@inheritDoc}
      */
     @Override
-    public void credWrite(Credential.ByReference credential, PreserveType flags) throws LastErrorException {
+    public boolean credWrite(Credential.ByReference credential, PreserveType flags) throws LastErrorException {
         synchronized(advapi32) {
-            advapi32.CredWriteW(credential, flags.getValue());
+            return advapi32.CredWriteW(credential, flags.getValue());
         }
     }
 
