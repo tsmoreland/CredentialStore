@@ -38,42 +38,62 @@ public final class Win32CredentialManager implements CredentialManager {
         return List.of();
     }
 
-    @Override
-    public boolean add(Credential credential) {
+    private boolean addOrUpdate(Credential credential, PreserveType preserveType) {
         var win32Credential = CredentialConverter.toInternalCredentialReference(credential);
         if (!win32Credential.isPresent()) {
             return false;
         }
 
         try {
-            nativeInteropBridge.credWrite(win32Credential.get(), PreserveType.NONE);
+            nativeInteropBridge.credWrite(win32Credential.get(), preserveType);
             return true;
             
         } catch (LastErrorException e) {
-
             return false;
         }
     }
 
     @Override
+    public boolean add(Credential credential) {
+        return addOrUpdate(credential, PreserveType.NONE);
+    }
+
+    @Override
     public boolean update(Credential credential) {
-        return false;
+        return addOrUpdate(credential, PreserveType.PRESERVE_CREDENTIAL_BLOB);
     }
 
     @Override
     public boolean delete(Credential credential) {
-        return false;
+        if (credential == null) {
+            throw new IllegalArgumentException("credential is null");
+        }
+
+        return delete(credential.getId(), credential.getType());
     }
 
     @Override
     public boolean delete(String id, CredentialType type) {
-        return false;
+        try {
+            return nativeInteropBridge.credDelete(id, type.getValue(), 0);
+
+        } catch (LastErrorException e) {
+            return false;
+        }
     }
 
     @Override
     public Optional<Credential> find(String id, CredentialType type) {
-        // .. not implemented yet
-        return Optional.empty();
+
+        try (var win33Credential = nativeInteropBridge.credRead(id, type, 0)) {
+
+            return win33Credential
+                .value()
+                .flatMap(CredentialConverter::fromInternalCredential);
+
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     @Override
