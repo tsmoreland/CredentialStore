@@ -21,7 +21,7 @@ import moreland.win32.credentialstore.CredentialType;
 
 import moreland.win32.credentialstore.structures.Credential;
 
-interface NativeInteropBridge {
+public interface NativeInteropBridge {
     
     /**
      * Deletes a credential from the users credential set
@@ -33,7 +33,7 @@ interface NativeInteropBridge {
      * @param flags Reserved and must be zero.
      * @exception LastErrorException if operation fails
      */
-    void credDelete(String target, int type, int flags) throws LastErrorException;
+    boolean credDelete(String target, int type, int flags) throws LastErrorException;
 
     /**
      * Returns a list of credentials matching the provided filter
@@ -55,7 +55,7 @@ interface NativeInteropBridge {
      * @param handle Pointer to the buffer to be freed.
      * @exception LastErrorException if operation fails
      */
-    void credFree(Pointer handle) throws LastErrorException;
+    boolean credFree(Pointer handle) throws LastErrorException;
 
     /**
      * Returns {@code NativeCredential} containing the matching
@@ -76,6 +76,6 @@ interface NativeInteropBridge {
      * @param flags Flags that control the function's operation.
      * @exception LastErrorException if operation fails
      */
-    void credWrite(Credential.ByReference credential, PreserveType flags) throws LastErrorException;
+    boolean credWrite(Credential.ByReference credential, PreserveType flags) throws LastErrorException;
 
 }
