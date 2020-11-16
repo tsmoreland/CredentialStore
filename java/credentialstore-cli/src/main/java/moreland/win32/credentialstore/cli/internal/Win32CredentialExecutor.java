@@ -13,7 +13,10 @@
 package moreland.win32.credentialstore.cli.internal;
 
 import moreland.win32.credentialstore.Guard;
+
+import java.io.PrintStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import moreland.win32.credentialstore.CredentialManager;
@@ -21,18 +24,35 @@ import moreland.win32.credentialstore.CredentialManager;
 public final class Win32CredentialExecutor implements CredentialExecutor {
 
     private CredentialManager credentialManager;
+    private PrintStream outputStream;
+    private static Map<String, String> usage;
 
-    public Win32CredentialExecutor(CredentialManager credentialManager) {
+    static {
+        usage = Map.of(
+            "add", "Usage: credentialStore.Cli add <type> <target> <username>",
+            "remove", "Usage: credentialStore.Cli remove <target> (<type>)",
+            "find", "Usage: CredentialStore.Cli find <filter> (<search all, defaults true>)", 
+            "list", "Usage: CredentialStore.Cli list"
+        );
+    }
+
+    public Win32CredentialExecutor(CredentialManager credentialManager, PrintStream outputStream) {
         Guard.againstNull(credentialManager, "credentialManager");
+        Guard.againstNull(outputStream, "outputStream");
 
         this.credentialManager = credentialManager;
+        this.outputStream = outputStream;
         // ...
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<CredentialStoreOperation> getOperation(String name) {
         switch (name.toLowerCase()) {
             case "add":
+                // long winded approach just to have it once
                 return Optional.of(new CredentialStoreOperation(){
                     @Override
                     public boolean process(List<String> args) {
@@ -50,24 +70,59 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean add(List<String> args) {
+        if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
+            outputStream.println(usage.get("add"));
+            return true;
+        }
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean remove(List<String> args) {
+        if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
+            outputStream.println(usage.get("remove"));
+            return true;
+        }
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean find(List<String> args) {
+        if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
+            outputStream.println(usage.get("find"));
+            return true;
+        }
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
+    @SuppressWarnings({"java:S3516"})
     public boolean list(List<String> args) {
-        return false;
+        if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
+            outputStream.println(usage.get("list"));
+            return true;
+        }
+
+        credentialManager
+            .getAll()
+            .stream()
+            .map(credential -> String.format("%s - %s:%s", credential.getId(), credential.getUsername(), credential.getSecret()))
+            .forEach(outputStream::println);
+        return true;
     }
     
 }
