@@ -133,10 +133,11 @@ public final class Credential {
 
         Credential that = (Credential) o;
 
-        return id.equals(that.id) &&
-                username.equals(that.username) &&
-                type == that.type &&
-                persistenceType == that.persistenceType;
+        return 
+            id.equals(that.id) &&
+            username.equals(that.username) &&
+            type == that.type &&
+            persistenceType == that.persistenceType;
     }
 
     /**

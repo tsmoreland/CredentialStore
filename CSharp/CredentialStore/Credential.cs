@@ -56,7 +56,7 @@ namespace Moreland.Security.Win32.CredentialStore
             highBits <<= 32;
             LastUpdated = DateTime.FromFileTime(highBits + (uint)credential.LastWritten.dwLowDateTime);
 
-            if (!string.IsNullOrEmpty(GetInvalidArgumentNameOrEmpty()))
+            if (GetInvalidArgumentNameOrEmpty() is not { Length: 0})
                 throw new ArgumentException("invalid settings", nameof(credential));
         }
 

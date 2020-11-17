@@ -12,46 +12,37 @@
 //
 package moreland.win32.credentialstore.internal;
 
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.PointerByReference;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import moreland.win32.credentialstore.Guard;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-public class Win32CriticalCredentialHandleFactory implements CriticalCredentialHandleFactory {
+@ExtendWith(MockitoExtension.class)
+class Win32CriticalCredentialHandleFactoryTests {
+    
+    @Mock
+    private Advapi32Library advapi32;
+    private Win32CriticalCredentialHandleFactory factory;
 
-    private final Advapi32Library advapi32;
-
-    public Win32CriticalCredentialHandleFactory() {
-        this(Advapi32Library.INSTANCE);
+    @BeforeEach
+    void setup() {
+        factory = new Win32CriticalCredentialHandleFactory(advapi32);
     }
 
-    public Win32CriticalCredentialHandleFactory(Advapi32Library advapi32) {
-        Guard.againstNull(advapi32, "advapi32");
-        this.advapi32 = advapi32;
+    @Test
+    void constructor_throwsIllegalArgumentException_whenAdvapi32IsNull() {
+        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CriticalCredentialHandleFactory((Advapi32Library)null));
+        assertTrue(ex.getMessage().contains("advapi32"));
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CriticalCredentialHandle empty()
-    {
-        return new Win32CriticalCredentialHandle(advapi32, (PointerByReference) null);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CriticalCredentialHandle fromPointerByReference(PointerByReference handle) {
-        return new Win32CriticalCredentialHandle(advapi32, handle);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CriticalCredentialHandle fromPointer(Pointer pointer) {
-        return new Win32CriticalCredentialHandle(advapi32, pointer);
+    
+    @Test
+    void empty_returnsEmptyCriticalCredentialHandle_always() {
+        var emptyHandle = factory.empty();
+        assertFalse(emptyHandle.isPresent());
     }
 }

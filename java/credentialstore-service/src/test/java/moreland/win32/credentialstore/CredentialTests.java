@@ -116,6 +116,30 @@ class CredentialTests {
         assertNotEquals(first, second);
     }
 
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("equalsTestProvider")
+    void hashCode_returnsSameValueForEqualObjects(Pair<String, CredentialFlag> pair) {
+        var first = new Credential(id, username, pair.item1, pair.item2, type, CredentialPersistence.LOCAL_MACHINE, lastUpdated);
+        var second = new Credential(id, username, pair.item1, pair.item2, type, CredentialPersistence.LOCAL_MACHINE, lastUpdated.plus(1, ChronoUnit.DAYS));
+        
+        int firstHashCode = first.hashCode();
+        int secondHashCode = second.hashCode();
+
+        assertEquals(firstHashCode, secondHashCode);
+    }
+
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("equalsTestProvider")
+    void hashCode_returnsDifferentValuesForNonEqualObjects(Pair<String, CredentialFlag> pair) {
+        var first = new Credential(id, "user1", pair.item1, pair.item2, type, persistence, lastUpdated);
+        var second = new Credential(id, "user2", pair.item1, pair.item2, type, persistence, lastUpdated.plus(1, ChronoUnit.DAYS));
+
+        int firstHashCode = first.hashCode();
+        int secondHashCode = second.hashCode();
+
+        assertNotEquals(firstHashCode, secondHashCode);
+    }
+
     private static Stream<Pair<String, CredentialFlag>> equalsTestProvider() {
         return Arrays.stream(CredentialFlag.class.getEnumConstants())
                 .map(flag -> new Pair<>("alt password" + flag.toString(), flag));
