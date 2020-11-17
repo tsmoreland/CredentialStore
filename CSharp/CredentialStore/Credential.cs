@@ -86,7 +86,7 @@ namespace Moreland.Security.Win32.CredentialStore
             LastUpdated = lastUpdated;
 
             var invalidPropertyName = GetInvalidArgumentNameOrEmpty();
-            if (invalidPropertyName is not { Length: 0 })
+            if (!string.IsNullOrEmpty(invalidPropertyName))
                 throw new ArgumentException("one or more parameters have invalid values", invalidPropertyName);
         }
 
