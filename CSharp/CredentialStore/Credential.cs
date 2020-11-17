@@ -56,7 +56,7 @@ namespace Moreland.Security.Win32.CredentialStore
             highBits <<= 32;
             LastUpdated = DateTime.FromFileTime(highBits + (uint)credential.LastWritten.dwLowDateTime);
 
-            if (GetInvalidArgumentNameOrEmpty() is not { Length: > 0})
+            if (GetInvalidArgumentNameOrEmpty() is not { Length: 0})
                 throw new ArgumentException("invalid settings", nameof(credential));
         }
 
@@ -86,7 +86,7 @@ namespace Moreland.Security.Win32.CredentialStore
             LastUpdated = lastUpdated;
 
             var invalidPropertyName = GetInvalidArgumentNameOrEmpty();
-            if (invalidPropertyName is not { Length: > 0 })
+            if (invalidPropertyName is not { Length: 0 })
                 throw new ArgumentException("one or more parameters have invalid values", invalidPropertyName);
         }
 
