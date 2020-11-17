@@ -35,7 +35,7 @@ public final class Win32CriticalCredentialHandle implements CriticalCredentialHa
             ? credentialPtr.getValue()
             : Pointer.NULL;
 
-        this.credential = !ptr.equals(Pointer.NULL)
+        this.credential = ptr != null 
             ? Optional.of(new Credential(ptr))
             : Optional.empty();
     }

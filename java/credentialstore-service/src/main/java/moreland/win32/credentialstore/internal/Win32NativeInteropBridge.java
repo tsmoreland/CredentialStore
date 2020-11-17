@@ -23,7 +23,7 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.WString;
 
 import moreland.win32.credentialstore.CredentialType;
-
+import moreland.win32.credentialstore.Guard;
 import moreland.win32.credentialstore.structures.Credential;
 
 final class Win32NativeInteropBridge implements NativeInteropBridge {
@@ -43,15 +43,12 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
      */
     public Win32NativeInteropBridge(Advapi32Library advapi32, CriticalCredentialHandleFactory criticalCredentialHandleFactory) {
         super();
+
+        Guard.againstNull(advapi32, "advapi32");
+        Guard.againstNull(criticalCredentialHandleFactory, "criticalCredentialHandleFactory");
+
         this.advapi32 = advapi32;
         this.criticalCredentialHandleFactory = criticalCredentialHandleFactory;
-
-        if (this.advapi32 == null) {
-            throw new IllegalArgumentException("advapi cannot be null");
-        }
-        if (this.criticalCredentialHandleFactory == null) {
-            throw new IllegalArgumentException("critcicalCredentialFactory is null");
-        }
     }
 
     /**
