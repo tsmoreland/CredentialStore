@@ -12,35 +12,34 @@
 //
 package moreland.win32.credentialstore.internal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Arrays;
+import java.util.stream.Stream;
 
-public enum PreserveType {
-    /**
-     * None
-     */
-    NONE(0),
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-    /**
-     * The credential BLOB from an existing credential is preserved with
-     * the same credential name and credential type. The CredentialBlobSize
-     * of the passed in Credential structure must be zero.
-     */
-    PRESERVE_CREDENTIAL_BLOB(0x1);
+class PreserveTypeTests {
+ 
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("preserveTypeValueProvider")
+    void fromInteger_returnsMatchingPreserveType_IfFound(PreserveType expected) {
 
-    public int getValue() {
-        return value;
+        var actual = PreserveType.fromInteger(expected.getValue());
+
+        assertEquals(expected, actual);
     }
 
-    public static PreserveType fromInteger(int value) {
-        var match = Arrays.stream(PreserveType.class.getEnumConstants())
-            .filter(enumValue -> enumValue.getValue() == value)
-            .findFirst();
-        return match.orElse(PreserveType.NONE);
+    @Test
+    void fromInteger_returnsNone_IfNotFound() {
+        var actual = PreserveType.fromInteger(42);
+
+        assertEquals(PreserveType.NONE, actual);
     }
 
-    private final int value;
-
-    private PreserveType(int value) {
-        this.value = value;
+    private static Stream<PreserveType> preserveTypeValueProvider() {
+        return Arrays.stream(PreserveType.class.getEnumConstants());
     }
 }
