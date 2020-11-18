@@ -19,13 +19,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import moreland.win32.credentialstore.structures.Credential;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.sun.jna.WString;
 import com.sun.jna.ptr.PointerByReference;
 
 @ExtendWith(MockitoExtension.class)
