@@ -12,97 +12,15 @@
 //
 package moreland.win32.credentialstore.converters;
 
-import java.io.UnsupportedEncodingException;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
-import com.sun.jna.Memory;
-import com.sun.jna.WString;
-
 import moreland.win32.credentialstore.Credential;
-import moreland.win32.credentialstore.CredentialFlag;
-import moreland.win32.credentialstore.CredentialPersistence;
-import moreland.win32.credentialstore.CredentialType;
 
-public final class CredentialConverter {
-
-    private CredentialConverter() {
-        // ... hidden constructor ...
-    }
-
-    public static Optional<Credential> fromInternalCredential(moreland.win32.credentialstore.structures.Credential source) {
-        try {
-
-            var secret = source.credentialBlobSize > 0
-                ? new String(source.credentialBlob.getByteArray(0, source.credentialBlobSize) , "UTF-16LE" ) 
-                : "";
-
-            return Optional.of(new Credential(
-                fromNullOrWString(source.targetName),
-                fromNullOrWString(source.userName),
-                secret,
-                CredentialFlag.fromInteger(source.flags),
-                CredentialType.fromInteger(source.type),
-                CredentialPersistence.fromInteger(source.persist),
-                LocalDateTime.now()));
-
-        } catch (IllegalArgumentException | NullPointerException | UnsupportedEncodingException e) {
-            return Optional.empty();
-        }
-    }
+public interface CredentialConverter {
     
-    public static Optional<moreland.win32.credentialstore.structures.Credential> toInternalCredential(Credential source) {
-        if (source == null) {
-            return Optional.empty();
-        }
+    Optional<Credential> fromInternalCredential(moreland.win32.credentialstore.structures.Credential source);
 
-        try {
-            var credential = new moreland.win32.credentialstore.structures.Credential(); 
+    Optional<moreland.win32.credentialstore.structures.Credential> toInternalCredential(Credential source);
 
-            populateInternalCredential(credential, source);
-            return Optional.of(credential);
-
-        } catch (UnsupportedEncodingException e) {
-            return Optional.empty();
-        }
-    }
-
-    public static Optional<moreland.win32.credentialstore.structures.Credential.ByReference> toInternalCredentialReference(Credential source) {
-        if (source == null) {
-            return Optional.empty();
-        }
-
-        try {
-            var credential = new moreland.win32.credentialstore.structures.Credential.ByReference(); 
-
-            populateInternalCredential(credential, source);
-            return Optional.of(credential);
-
-        } catch (UnsupportedEncodingException e) {
-            return Optional.empty();
-        }
-    }
-
-    private static void populateInternalCredential(moreland.win32.credentialstore.structures.Credential destination, Credential source) 
-        throws UnsupportedEncodingException {
-
-        destination.targetName = new WString(source.getId());
-        destination.userName = new WString(source.getUsername());
-        destination.type = source.getType().getValue();
-        destination.persist = source.getPersistenceType().getValue();
-
-        var credentialBlob = source.getSecret().getBytes("UTF-16LE");
-        var credentialBlobMemory = new Memory(credentialBlob.length);
-        credentialBlobMemory.write(0, credentialBlob, 0, credentialBlob.length);
-
-        destination.credentialBlob = credentialBlobMemory;
-        destination.credentialBlobSize = (int)credentialBlobMemory.size();
-
-    }
-
-    private static String fromNullOrWString(WString source) {
-        return source != null
-            ? source.toString()
-            : "";
-    }
+    Optional<moreland.win32.credentialstore.structures.Credential.ByReference> toInternalCredentialReference(Credential source);
 }

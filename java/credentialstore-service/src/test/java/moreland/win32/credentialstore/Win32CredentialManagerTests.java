@@ -20,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import moreland.win32.credentialstore.converters.CredentialConverter;
 import moreland.win32.credentialstore.internal.NativeInteropBridge;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,10 +29,18 @@ class Win32CredentialManagerTests {
     @Mock
     private NativeInteropBridge nativeInteropBridge;
 
+    @Mock
+    private CredentialConverter credentialConverter;
+
     @Test
     void ctor_throwsIllegalArgumentException_whenNativeInteropBridgeIsNull() {
-        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CredentialManager((NativeInteropBridge) null));
+        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CredentialManager((NativeInteropBridge) null, credentialConverter));
         assertTrue(ex.getMessage().contains("nativeInteropBridge"));
     }
 
+    @Test
+    void ctor_throwsIllegalArgumentException_whenCredentialConverterIsNull() {
+        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CredentialManager(nativeInteropBridge, (CredentialConverter) null));
+        assertTrue(ex.getMessage().contains("credentialConverter"));
+    }
 }

@@ -24,13 +24,18 @@ import moreland.win32.credentialstore.internal.PreserveType;
 public final class Win32CredentialManager implements CredentialManager {
 
     private NativeInteropBridge nativeInteropBridge;
+    private CredentialConverter credentialConverter;
 
-    Win32CredentialManager(NativeInteropBridge nativeInteropBridge) {
-		if (nativeInteropBridge == null) {
+    Win32CredentialManager(NativeInteropBridge nativeInteropBridge, CredentialConverter credentialConverter) {
+        if (nativeInteropBridge == null) {
             throw new IllegalArgumentException("nativeInteropBridge is null");
+        }
+        if (credentialConverter == null) {
+            throw new IllegalArgumentException("credentialConverter is null");
         }
 
         this.nativeInteropBridge = nativeInteropBridge;
+        this.credentialConverter = credentialConverter;
     }
 
     @Override
@@ -39,7 +44,7 @@ public final class Win32CredentialManager implements CredentialManager {
     }
 
     private boolean addOrUpdate(Credential credential, PreserveType preserveType) {
-        var win32Credential = CredentialConverter.toInternalCredentialReference(credential);
+        var win32Credential = credentialConverter.toInternalCredentialReference(credential);
         if (!win32Credential.isPresent()) {
             return false;
         }
@@ -89,7 +94,7 @@ public final class Win32CredentialManager implements CredentialManager {
 
             return win33Credential
                 .value()
-                .flatMap(CredentialConverter::fromInternalCredential);
+                .flatMap(credentialConverter::fromInternalCredential);
 
         } catch (Exception e) {
             return Optional.empty();
