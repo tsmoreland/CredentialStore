@@ -20,6 +20,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
+import com.sun.jna.LastErrorException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -78,6 +80,11 @@ class Win32CredentialManagerTests {
     }
 
     @Test
+    void add_returnsFalse_whenCredWriteThrowsLastErrorException() {
+        assertFalse(arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::add));
+    }
+
+    @Test
     void update_returnsFalse_whenCredentialConverterReturnsEmpty() {
         assertFalse(arrangeAndActUsingCredentialConverterReturnsEmpty(credentialManager::update));
     }
@@ -85,6 +92,11 @@ class Win32CredentialManagerTests {
     @Test
     void update_returnsFalse_whenCredWriteReturnsFalse() {
         assertFalse(arrangeAndActUsingCredWriteReturnsFalse(credentialManager::update));
+    }
+
+    @Test
+    void update_returnsFalse_whenCredWriteThrowsLastErrorException() {
+        assertFalse(arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::update));
     }
 
     private boolean arrangeAndActUsingCredentialConverterReturnsEmpty(ConsumerPredicate consumerPredicate) {
@@ -96,6 +108,13 @@ class Win32CredentialManagerTests {
         when(credentialConverter.toInternalCredentialReference(any(Credential.class)))
             .thenReturn(Optional.of(new moreland.win32.credentialstore.structures.Credential.ByReference()));
         when(nativeInteropBridge.credWrite(any(ByReference.class), any(PreserveType.class))).thenReturn(false);
+        return consumerPredicate.process(credential);
+    }
+    private boolean arrangeAndActUsingCredWriteThrowsLastErrorException(ConsumerPredicate consumerPredicate) {
+        when(credentialConverter.toInternalCredentialReference(any(Credential.class)))
+            .thenReturn(Optional.of(new moreland.win32.credentialstore.structures.Credential.ByReference()));
+        when(nativeInteropBridge.credWrite(any(ByReference.class), any(PreserveType.class)))
+            .thenThrow(new LastErrorException(42));
         return consumerPredicate.process(credential);
     }
 }
