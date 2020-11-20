@@ -50,8 +50,7 @@ public final class Win32CredentialManager implements CredentialManager {
         }
 
         try {
-            nativeInteropBridge.credWrite(win32Credential.get(), preserveType);
-            return true;
+            return nativeInteropBridge.credWrite(win32Credential.get(), preserveType);
             
         } catch (LastErrorException e) {
             return false;
