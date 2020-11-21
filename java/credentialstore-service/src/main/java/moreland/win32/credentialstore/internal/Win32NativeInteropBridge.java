@@ -14,6 +14,7 @@ package moreland.win32.credentialstore.internal;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.sun.jna.LastErrorException;
@@ -26,7 +27,7 @@ import moreland.win32.credentialstore.CredentialType;
 import moreland.win32.credentialstore.Guard;
 import moreland.win32.credentialstore.structures.Credential;
 
-final class Win32NativeInteropBridge implements NativeInteropBridge {
+public final class Win32NativeInteropBridge implements NativeInteropBridge {
 
     private Advapi32Library advapi32;
     private CriticalCredentialHandleFactory criticalCredentialHandleFactory;
@@ -65,13 +66,13 @@ final class Win32NativeInteropBridge implements NativeInteropBridge {
      * {@inheritDoc}
      */
     @Override
-    public List<Credential> credEnumerate(String filter, EnumerateFlag flag) throws LastErrorException {
+    public List<Credential> credEnumerate(Optional<String> filter, EnumerateFlag flag) throws LastErrorException {
 
         var count = new IntByReference();
         var credentialsPtr = new PointerByReference();
 
         synchronized(advapi32) {
-            if (!advapi32.CredEnumerateW(new WString(filter), flag.getValue(), count, credentialsPtr))
+            if (!advapi32.CredEnumerateW(filter.map(WString::new).orElse(null), flag.getValue(), count, credentialsPtr))
                 return List.of(); // in theory this should be unreachable
         }
         

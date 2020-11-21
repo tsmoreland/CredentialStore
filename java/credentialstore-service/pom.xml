@@ -21,6 +21,8 @@
                 <version>2.22.2</version>
                 <configuration>
                     <argLine>
+                        --add-opens com.sun.jna/com.sun.jna=ALL-UNNAMED
+                        --add-opens com.sun.jna.platform/com.sun.jna.platform=ALL-UNNAMED
                         --add-opens moreland.win32.credentialstore/moreland.win32.credentialstore=ALL-UNNAMED
                         --add-opens moreland.win32.credentialstore/moreland.win32.credentialstore.structures=ALL-UNNAMED
                         --add-opens moreland.win32.credentialstore/moreland.win32.credentialstore.internal=ALL-UNNAMED

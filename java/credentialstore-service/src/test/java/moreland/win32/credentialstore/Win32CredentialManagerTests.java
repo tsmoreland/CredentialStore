@@ -85,6 +85,11 @@ class Win32CredentialManagerTests {
     }
 
     @Test
+    void add_returnsTrue_whenCredWriteReturnsTrue() {
+        assertTrue(arrangeAndActUsingCredWriteReturnsTrue(credentialManager::add));
+    }
+
+    @Test
     void update_returnsFalse_whenCredentialConverterReturnsEmpty() {
         assertFalse(arrangeAndActUsingCredentialConverterReturnsEmpty(credentialManager::update));
     }
@@ -97,6 +102,11 @@ class Win32CredentialManagerTests {
     @Test
     void update_returnsFalse_whenCredWriteThrowsLastErrorException() {
         assertFalse(arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::update));
+    }
+
+    @Test
+    void update_returnsTrue_whenCredWriteReturnsTrue() {
+        assertTrue(arrangeAndActUsingCredWriteReturnsTrue(credentialManager::update));
     }
 
     private boolean arrangeAndActUsingCredentialConverterReturnsEmpty(ConsumerPredicate consumerPredicate) {
@@ -115,6 +125,12 @@ class Win32CredentialManagerTests {
             .thenReturn(Optional.of(new moreland.win32.credentialstore.structures.Credential.ByReference()));
         when(nativeInteropBridge.credWrite(any(ByReference.class), any(PreserveType.class)))
             .thenThrow(new LastErrorException(42));
+        return consumerPredicate.process(credential);
+    }
+    private boolean arrangeAndActUsingCredWriteReturnsTrue(ConsumerPredicate consumerPredicate) {
+        when(credentialConverter.toInternalCredentialReference(any(Credential.class)))
+            .thenReturn(Optional.of(new moreland.win32.credentialstore.structures.Credential.ByReference()));
+        when(nativeInteropBridge.credWrite(any(ByReference.class), any(PreserveType.class))).thenReturn(true);
         return consumerPredicate.process(credential);
     }
 }
