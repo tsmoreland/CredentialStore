@@ -186,7 +186,7 @@ namespace Moreland.Security.Win32.CredentialStore.Cli
             {
                 if (!Enum.TryParse(args[1], true, out CredentialType type))
                 {
-                    _logger.Error($"Unrecognized or unsupported type '{args[2]}'");
+                    _logger.Error($"Unrecognized or unsupported type '{args[1]}'");
                     return false;
                 }
 
