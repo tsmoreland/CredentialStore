@@ -14,11 +14,13 @@ package moreland.win32.credentialstore;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.sun.jna.LastErrorException;
 
 import moreland.win32.credentialstore.converters.CredentialConverter;
 import moreland.win32.credentialstore.converters.Win32CredentialConverter;
+import moreland.win32.credentialstore.internal.EnumerateFlag;
 import moreland.win32.credentialstore.internal.NativeInteropBridge;
 import moreland.win32.credentialstore.internal.PreserveType;
 import moreland.win32.credentialstore.internal.Win32NativeInteropBridge;
@@ -46,7 +48,17 @@ public final class Win32CredentialManager implements CredentialManager {
 
     @Override
     public List<Credential> getAll() {
-        return List.of();
+        try {
+            return nativeInteropBridge.credEnumerate(Optional.empty(), EnumerateFlag.ENUMERATE_ALL_CREDENTIALS)
+                .stream()
+                .map(credentialConverter::fromInternalCredential)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        } catch (LastErrorException e) {
+            return List.of();
+        }
     }
 
     private boolean addOrUpdate(Credential credential, PreserveType preserveType) {

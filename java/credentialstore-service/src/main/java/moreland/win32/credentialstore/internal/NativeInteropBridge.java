@@ -13,6 +13,7 @@
 package moreland.win32.credentialstore.internal;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Pointer;
@@ -48,7 +49,7 @@ public interface NativeInteropBridge {
      * @return collection of matching credentials
      * @exception LastErrorException if operation fails
      */
-    List<Credential> credEnumerate(String filter, EnumerateFlag flag) throws LastErrorException;
+    List<Credential> credEnumerate(Optional<String> filter, EnumerateFlag flag) throws LastErrorException;
 
     /**
      * Frees the buffer allocated by any of the credentials api functions.

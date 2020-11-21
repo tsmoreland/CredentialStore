@@ -18,6 +18,7 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import moreland.win32.credentialstore.CredentialManager;
 
@@ -82,7 +83,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
     @Override
     public boolean add(List<String> args) {
         if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
-            outputStream.println(usage.get("add"));
+            outputStream.println(usage.get(ADD));
             return true;
         }
         return false;
@@ -94,7 +95,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
     @Override
     public boolean remove(List<String> args) {
         if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
-            outputStream.println(usage.get("remove"));
+            outputStream.println(usage.get(REMOVE));
             return true;
         }
         return false;
@@ -106,7 +107,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
     @Override
     public boolean find(List<String> args) {
         if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
-            outputStream.println(usage.get("find"));
+            outputStream.println(usage.get(FIND));
             return true;
         }
         return false;
@@ -119,15 +120,21 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
     @SuppressWarnings({"java:S3516"})
     public boolean list(List<String> args) {
         if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
-            outputStream.println(usage.get("list"));
+            outputStream.println(usage.get(LIST));
             return true;
         }
 
-        credentialManager
+        var credentials = credentialManager
             .getAll()
             .stream()
             .map(credential -> String.format("%s - %s:%s", credential.getId(), credential.getUsername(), credential.getSecret()))
+            .collect(Collectors.toList());
+
+        outputStream.println(String.format("Found %d credentials:", credentials.size()));
+        credentials
+            .stream()
             .forEach(outputStream::println);
+
         return true;
     }
     
