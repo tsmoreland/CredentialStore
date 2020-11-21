@@ -10,17 +10,36 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-package moreland.win32.credentialstore.converters;
+package moreland.win32.credentialstore;
 
-import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import moreland.win32.credentialstore.Credential;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
-public interface CredentialConverter {
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+class CredentialFlagTests {
     
-    Optional<Credential> fromInternalCredential(moreland.win32.credentialstore.structures.Credential source);
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("credentialFlagValueProvider")
+    void fromInteger_returnsMatchingPreserveType_IfFound(CredentialFlag expected) {
+        var actual = CredentialFlag.fromInteger(expected.getValue());
+        assertEquals(expected, actual);
+    }
 
-    Optional<moreland.win32.credentialstore.structures.Credential> toInternalCredential(Credential source);
+    @Test
+    void fromInteger_returnsNone_IfNotFound() {
+        var actual = CredentialFlag.fromInteger(42);
 
-    Optional<moreland.win32.credentialstore.structures.Credential.ByReference> toInternalCredentialReference(Credential source);
+        assertEquals(CredentialFlag.NONE, actual);
+    }
+
+
+    private static Stream<CredentialFlag> credentialFlagValueProvider() {
+        return Arrays.stream(CredentialFlag.class.getEnumConstants());
+    }
+
 }

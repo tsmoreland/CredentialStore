@@ -10,17 +10,34 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-package moreland.win32.credentialstore.converters;
+package moreland.win32.credentialstore;
 
-import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import moreland.win32.credentialstore.Credential;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
-public interface CredentialConverter {
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+class CredentialTypeTests {
     
-    Optional<Credential> fromInternalCredential(moreland.win32.credentialstore.structures.Credential source);
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("credentialTypeValueProvider")
+    void fromInteger_returnsMatchingPreserveType_IfFound(CredentialType expected) {
+        var actual = CredentialType.fromInteger(expected.getValue());
+        assertEquals(expected, actual);
+    }
 
-    Optional<moreland.win32.credentialstore.structures.Credential> toInternalCredential(Credential source);
+    @Test
+    void fromInteger_returnsUnknown_IfNotFound() {
+        var actual = CredentialType.fromInteger(42);
 
-    Optional<moreland.win32.credentialstore.structures.Credential.ByReference> toInternalCredentialReference(Credential source);
+        assertEquals(CredentialType.UNKNOWN, actual);
+    }
+
+    private static Stream<CredentialType> credentialTypeValueProvider() {
+        return Arrays.stream(CredentialType.class.getEnumConstants());
+    }
 }

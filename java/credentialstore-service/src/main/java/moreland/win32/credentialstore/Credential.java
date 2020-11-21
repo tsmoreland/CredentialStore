@@ -19,7 +19,7 @@ import java.util.Objects;
 /**
  * Credential Entity as populated by Win32 api
  */
-public final class Credential {
+public class Credential {
 
     private final String id;
     private final String username;
