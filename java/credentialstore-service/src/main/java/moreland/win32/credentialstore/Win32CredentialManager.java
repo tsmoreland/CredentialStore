@@ -18,13 +18,19 @@ import java.util.Optional;
 import com.sun.jna.LastErrorException;
 
 import moreland.win32.credentialstore.converters.CredentialConverter;
+import moreland.win32.credentialstore.converters.Win32CredentialConverter;
 import moreland.win32.credentialstore.internal.NativeInteropBridge;
 import moreland.win32.credentialstore.internal.PreserveType;
+import moreland.win32.credentialstore.internal.Win32NativeInteropBridge;
 
 public final class Win32CredentialManager implements CredentialManager {
 
     private NativeInteropBridge nativeInteropBridge;
     private CredentialConverter credentialConverter;
+
+    public Win32CredentialManager() {
+        this(new Win32NativeInteropBridge(), new Win32CredentialConverter());
+    }
 
     Win32CredentialManager(NativeInteropBridge nativeInteropBridge, CredentialConverter credentialConverter) {
         if (nativeInteropBridge == null) {

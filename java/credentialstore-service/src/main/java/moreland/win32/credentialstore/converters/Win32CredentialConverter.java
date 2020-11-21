@@ -27,10 +27,6 @@ import moreland.win32.credentialstore.CredentialType;
 
 public final class Win32CredentialConverter implements CredentialConverter {
 
-    private Win32CredentialConverter() {
-        // ... hidden constructor ...
-    }
-
     @Override
     public Optional<Credential> fromInternalCredential(moreland.win32.credentialstore.structures.Credential source) {
         try {

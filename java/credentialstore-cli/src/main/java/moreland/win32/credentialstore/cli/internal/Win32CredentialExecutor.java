@@ -27,12 +27,18 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
     private PrintStream outputStream;
     private static Map<String, String> usage;
 
+    private static final String ADD = "add";
+    private static final String REMOVE = "remove";
+    private static final String FIND = "find";
+    private static final String LIST = "list";
+
+
     static {
         usage = Map.of(
-            "add", "Usage: credentialStore.Cli add <type> <target> <username>",
-            "remove", "Usage: credentialStore.Cli remove <target> (<type>)",
-            "find", "Usage: CredentialStore.Cli find <filter> (<search all, defaults true>)", 
-            "list", "Usage: CredentialStore.Cli list"
+            ADD, "Usage: credentialStore.Cli add <type> <target> <username>",
+            REMOVE, "Usage: credentialStore.Cli remove <target> (<type>)",
+            FIND, "Usage: CredentialStore.Cli find <filter> (<search all, defaults true>)", 
+            LIST, "Usage: CredentialStore.Cli list"
         );
     }
 
@@ -51,7 +57,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
     @Override
     public Optional<CredentialStoreOperation> getOperation(String name) {
         switch (name.toLowerCase()) {
-            case "add":
+            case ADD:
                 // long winded approach just to have it once
                 return Optional.of(new CredentialStoreOperation(){
                     @Override
@@ -59,11 +65,11 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
                         return add(args);
                     }
                 });
-            case "remove":
+            case REMOVE:
                 return Optional.of(args -> remove(args));
-            case "find":
+            case FIND:
                 return Optional.of(args -> find(args));
-            case "list":
+            case LIST:
                 return Optional.of(args -> list(args));
             default:
                 return Optional.empty();

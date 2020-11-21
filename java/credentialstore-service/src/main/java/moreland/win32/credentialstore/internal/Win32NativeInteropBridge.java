@@ -26,7 +26,7 @@ import moreland.win32.credentialstore.CredentialType;
 import moreland.win32.credentialstore.Guard;
 import moreland.win32.credentialstore.structures.Credential;
 
-final class Win32NativeInteropBridge implements NativeInteropBridge {
+public final class Win32NativeInteropBridge implements NativeInteropBridge {
 
     private Advapi32Library advapi32;
     private CriticalCredentialHandleFactory criticalCredentialHandleFactory;
