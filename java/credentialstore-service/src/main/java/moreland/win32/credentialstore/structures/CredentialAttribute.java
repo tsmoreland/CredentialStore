@@ -25,7 +25,7 @@ public class CredentialAttribute extends Structure {
 
     /**
      * Name of the application-specific attribute. 
-     * Names should be of the form <CompanyName>_<Name>. 
+     * Names should be of the form &lt;CompanyName&gt;_&lt;Name&gt;. 
      * This member cannot be longer than CRED_MAX_STRING_LENGTH 
      * (256) characters.
      */

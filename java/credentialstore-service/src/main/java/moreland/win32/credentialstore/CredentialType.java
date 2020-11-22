@@ -14,6 +14,7 @@
 package moreland.win32.credentialstore;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * https://docs.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala
@@ -95,11 +96,28 @@ public enum CredentialType {
         return value;
     }
 
+    /**
+     * convert integer to matching CredentialType if found, 
+     * @param value value to convert
+     * @return converted value or UNKONWN if no match found
+     */
     public static CredentialType fromInteger(int value) {
         return Arrays.stream(CredentialType.class.getEnumConstants())
             .filter(e -> e.value == value)
             .findFirst()
             .orElse(CredentialType.UNKNOWN);
+    }
+
+    /**
+     * convert string to matching CredentialType if found
+     * @param value value to convert
+     * @return Optional of converted value or empty if no match found
+     */
+    public static Optional<CredentialType> fromString(String value) {
+        final String upperValue = value.toUpperCase();
+        return Arrays.stream(CredentialType.class.getEnumConstants())
+            .filter(e -> e.toString().equals(upperValue))
+            .findFirst();
     }
 
 
