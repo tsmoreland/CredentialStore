@@ -15,12 +15,17 @@ package moreland.win32.credentialstore.cli.internal;
 import moreland.win32.credentialstore.Guard;
 
 import java.io.PrintStream;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import moreland.win32.credentialstore.Credential;
+import moreland.win32.credentialstore.CredentialFlag;
 import moreland.win32.credentialstore.CredentialManager;
+import moreland.win32.credentialstore.CredentialPersistence;
+import moreland.win32.credentialstore.CredentialType;
 
 public final class Win32CredentialExecutor implements CredentialExecutor {
 
@@ -50,6 +55,10 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
         this.credentialManager = credentialManager;
         this.outputStream = outputStream;
         // ...
+    }
+
+    private static String formatOutput(Credential credential) {
+        return String.format("%s - %s:%s", credential.getId(), credential.getUsername(), credential.getSecret());
     }
 
     /**
@@ -82,11 +91,31 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
      */
     @Override
     public boolean add(List<String> args) {
-        if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
+        if ((!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) || args.size() < 3) {
             outputStream.println(usage.get(ADD));
             return true;
         }
-        return false;
+
+        var type = CredentialType.fromString(args.get(0));
+        if (!type.isPresent()) {
+            // log not reognized type
+            return false;
+        }
+
+        var target = args.get(1);
+        var username = args.get(2);
+        var secret = "secret"; // replace with call to an input handler, an obsucred one
+
+        // maybe filter type for supported ones, ignore any we don't support - everything but generic and domain password
+
+        return credentialManager.add(new Credential(
+            target, 
+            username, 
+            secret, 
+            CredentialFlag.NONE, 
+            CredentialType.GENERIC, 
+            CredentialPersistence.LOCAL_MACHINE,
+            LocalDateTime.now()));
     }
 
     /**
@@ -94,11 +123,27 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
      */
     @Override
     public boolean remove(List<String> args) {
-        if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
+        if (args.isEmpty() || "help".equalsIgnoreCase(args.get(0))) {
             outputStream.println(usage.get(REMOVE));
             return true;
         }
-        return false;
+
+        final var target = args.get(0);
+
+        if (args.size() > 1) {
+            var type = CredentialType.fromString(args.get(1));
+            if (!type.isPresent()) {
+                // log not reognized type
+                return false;
+            }
+            return credentialManager.delete(target, type.get());
+        } else {
+            var credential = credentialManager.getAll()
+                .stream()
+                .filter(c -> c.getId().equals(target))
+                .findFirst();
+            return credential.isPresent() && credentialManager.delete(credential.get());
+        }
     }
 
     /**
@@ -110,7 +155,28 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
             outputStream.println(usage.get(FIND));
             return true;
         }
-        return false;
+
+        final var id = args.get(0);
+        if (args.size() > 1) {
+            var type = CredentialType.fromString(args.get(1));
+            if (!type.isPresent()) {
+                // log not reognized type
+                return false;
+            }
+
+            var credential = credentialManager.find(id, type.get());
+            outputStream.println(credential
+                .map(Win32CredentialExecutor::formatOutput)
+                .orElse(String.format("%s not found.", id)));
+            return credential.isPresent();
+
+        } else {
+            var credentials = credentialManager.find(id, true);
+            credentials
+                .stream()
+                .forEach(c -> outputStream.println(formatOutput(c)));
+            return credentials.size() > 0;
+        }
     }
 
     /**
@@ -127,7 +193,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
         var credentials = credentialManager
             .getAll()
             .stream()
-            .map(credential -> String.format("%s - %s:%s", credential.getId(), credential.getUsername(), credential.getSecret()))
+            .map(Win32CredentialExecutor::formatOutput)
             .collect(Collectors.toList());
 
         outputStream.println(String.format("Found %d credentials:", credentials.size()));
