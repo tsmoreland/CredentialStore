@@ -69,7 +69,7 @@ public class Credential extends Structure {
      * cannot be larger than <see cref="Limits.MaxCredentialBlobSize"/> bytes
      */
     @SuppressWarnings({"java:S1104"})
-    public int credentialBlobSize = 256;
+    public int credentialBlobSize;
 
     /**
      * Secret data for the credential. The CredentialBlob member can be 

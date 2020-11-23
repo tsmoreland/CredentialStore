@@ -14,7 +14,6 @@ package moreland.win32.credentialstore;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * Win32 Credential Manager (Credential Repository) providing CRUD 
