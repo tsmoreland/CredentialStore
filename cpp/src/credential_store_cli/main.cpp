@@ -25,7 +25,6 @@ using win32::credential_store::cli::credential_executor;
 
 int main(int const argc, char const* argv[])
 {
-
     try {
         using win32::credential_store::cli::cli_result_code;
         using win32::credential_store::cli::read_secret;
@@ -39,7 +38,7 @@ int main(int const argc, char const* argv[])
 
          auto const* raw_verb = argc >= 2
              ? argv[1]
-             : "add";
+             : "list";
 
         std::vector<std::string_view> arguments;
         int i = 2;

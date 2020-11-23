@@ -198,7 +198,6 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
 
         outputStream.println(String.format("Found %d credentials:", credentials.size()));
         credentials
-            .stream()
             .forEach(outputStream::println);
 
         return true;

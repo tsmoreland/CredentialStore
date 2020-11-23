@@ -13,8 +13,8 @@
 package moreland.win32.credentialstore.converters;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import com.sun.jna.Memory;
@@ -27,24 +27,32 @@ import moreland.win32.credentialstore.CredentialType;
 
 public final class Win32CredentialConverter implements CredentialConverter {
 
+    private static final String TARGET_NAME_PREFIX = "LegacyGeneric:target=";
+
     @Override
     public Optional<Credential> fromInternalCredential(moreland.win32.credentialstore.structures.Credential source) {
         try {
 
-            var secret = source.credentialBlobSize > 0
-                ? new String(source.credentialBlob.getByteArray(0, source.credentialBlobSize) , StandardCharsets.UTF_16LE) 
-                : "";
+            final var id = fromNullOrWString(source.targetName).replace(TARGET_NAME_PREFIX, "");
+            final var type = CredentialType.fromInteger(source.type);
+            var typesWithSecret = List.of(CredentialType.DOMAIN_PASSWORD, CredentialType.GENERIC);
+
+            String secret = "";
+            if (typesWithSecret.contains(type) && source.credentialBlobSize > 0) {
+                final var byteArray = source.credentialBlob.getByteArray(0, source.credentialBlobSize);
+                secret = new String(byteArray, "UTF-16LE");
+            }
 
             return Optional.of(new Credential(
-                fromNullOrWString(source.targetName),
+                id, //fromNullOrWString(source.targetName).replace(TARGET_NAME_PREFIX, ""),
                 fromNullOrWString(source.userName),
                 secret,
                 CredentialFlag.fromInteger(source.flags),
-                CredentialType.fromInteger(source.type),
+                type,
                 CredentialPersistence.fromInteger(source.persist),
                 LocalDateTime.now()));
 
-        } catch (IllegalArgumentException | NullPointerException e) {
+        } catch (IllegalArgumentException | NullPointerException | UnsupportedEncodingException e) {
             return Optional.empty();
         }
     }
