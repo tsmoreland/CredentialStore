@@ -12,7 +12,6 @@
 //
 package moreland.win32.credentialstore.internal;
 
-import java.util.List;
 import java.util.Optional;
 
 import com.sun.jna.LastErrorException;
