@@ -27,16 +27,23 @@ import moreland.win32.credentialstore.CredentialType;
 
 public final class Win32CredentialConverter implements CredentialConverter {
 
+    private static final String TARGET_NAME_PREFIX = "LegacyGeneric:target=";
+
     @Override
     public Optional<Credential> fromInternalCredential(moreland.win32.credentialstore.structures.Credential source) {
         try {
 
-            var secret = source.credentialBlobSize > 0
-                ? new String(source.credentialBlob.getByteArray(0, source.credentialBlobSize) , StandardCharsets.UTF_16LE) 
-                : "";
+            final var id = fromNullOrWString(source.targetName).replace(TARGET_NAME_PREFIX, "");
+
+            String secret = "";
+
+            if (source.credentialBlobSize > 0) {
+                final var byteArray = source.credentialBlob.getByteArray(0, source.credentialBlobSize);
+                secret = new String(byteArray, "UTF-16LE");
+            }
 
             return Optional.of(new Credential(
-                fromNullOrWString(source.targetName),
+                id, //fromNullOrWString(source.targetName).replace(TARGET_NAME_PREFIX, ""),
                 fromNullOrWString(source.userName),
                 secret,
                 CredentialFlag.fromInteger(source.flags),
@@ -44,7 +51,7 @@ public final class Win32CredentialConverter implements CredentialConverter {
                 CredentialPersistence.fromInteger(source.persist),
                 LocalDateTime.now()));
 
-        } catch (IllegalArgumentException | NullPointerException e) {
+        } catch (IllegalArgumentException | NullPointerException | UnsupportedEncodingException e) {
             return Optional.empty();
         }
     }
