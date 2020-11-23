@@ -12,10 +12,7 @@
 //
 package moreland.win32.credentialstore.internal;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Pointer;
@@ -66,24 +63,15 @@ public final class Win32NativeInteropBridge implements NativeInteropBridge {
      * {@inheritDoc}
      */
     @Override
-    public List<Credential> credEnumerate(Optional<String> filter, EnumerateFlag flag) throws LastErrorException {
+    public CredentialList credEnumerate(Optional<String> filter, EnumerateFlag flag) throws LastErrorException {
 
         var count = new IntByReference();
         var credentialsPtr = new PointerByReference();
 
         synchronized(advapi32) {
-            if (!advapi32.CredEnumerateW(filter.map(WString::new).orElse(null), flag.getValue(), count, credentialsPtr))
-                return List.of(); // in theory this should be unreachable
-            try {
-                return Arrays.stream(credentialsPtr.getValue().getPointerArray(0, count.getValue()))
-                    .map(Credential::new)
-                    .collect(Collectors.toList());
-            } finally {
-                // we can't free here, if we do then we may mail fail to convert because it gets garbage collected, 
-                // will need to wrap in another 'critical handle' that we return along side the list or as part of a 
-                // new class that contains both the list and the handle
-                advapi32.CredFree(credentialsPtr.getValue());
-            }
+            return advapi32.CredEnumerateW(filter.map(WString::new).orElse(null), flag.getValue(), count, credentialsPtr)
+                ? new CredentialList(credentialsPtr.getPointer(), count.getValue(), advapi32)
+                : CredentialList.empty();
         }
     }
 

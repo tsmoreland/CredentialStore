@@ -49,7 +49,7 @@ public interface NativeInteropBridge {
      * @return collection of matching credentials
      * @exception LastErrorException if operation fails
      */
-    List<Credential> credEnumerate(Optional<String> filter, EnumerateFlag flag) throws LastErrorException;
+    CredentialList credEnumerate(Optional<String> filter, EnumerateFlag flag) throws LastErrorException;
 
     /**
      * Frees the buffer allocated by any of the credentials api functions.
