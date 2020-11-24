@@ -48,14 +48,14 @@ public final class Win32CredentialManager implements CredentialManager {
     }
 
     private Stream<Credential> getAll(EnumerateFlag flag) {
-        try {
-            return nativeInteropBridge.credEnumerate(Optional.empty(), flag)
+        try (var credentials = nativeInteropBridge.credEnumerate(Optional.empty(), flag)) {
+            return credentials
                 .stream()
                 .map(credentialConverter::fromInternalCredential)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
 
-        } catch (LastErrorException e) {
+        } catch (Exception e) {
             return Stream.empty();
         }
     }

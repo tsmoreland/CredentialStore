@@ -20,12 +20,9 @@ import moreland.win32.credentialstore.Win32CredentialManager;
 import moreland.win32.credentialstore.cli.internal.Win32CredentialExecutor;
 
 public class Application {
+
+    @SuppressWarnings({"java:S106"})
     public static void main(String[] args) {
-
-        long pid = ProcessHandle.current().pid();
-        System.out.println(String.format("Process id: %d", pid));
-
-
         if (args.length < 1) {
             System.out.println("usage: credentialstore.cli <verb> (optional arguments)");
             return;

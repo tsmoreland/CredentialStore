@@ -13,6 +13,7 @@
 package moreland.win32.credentialstore.converters;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +41,7 @@ public final class Win32CredentialConverter implements CredentialConverter {
             String secret = "";
             if (typesWithSecret.contains(type) && source.credentialBlobSize > 0) {
                 final var byteArray = source.credentialBlob.getByteArray(0, source.credentialBlobSize);
-                secret = new String(byteArray, "UTF-16LE");
+                secret = new String(byteArray, StandardCharsets.UTF_16LE);
             }
 
             return Optional.of(new Credential(
@@ -52,7 +53,7 @@ public final class Win32CredentialConverter implements CredentialConverter {
                 CredentialPersistence.fromInteger(source.persist),
                 LocalDateTime.now()));
 
-        } catch (IllegalArgumentException | NullPointerException | UnsupportedEncodingException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Optional.empty();
         }
     }
