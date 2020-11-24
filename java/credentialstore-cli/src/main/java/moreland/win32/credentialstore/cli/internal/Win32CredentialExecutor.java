@@ -57,6 +57,15 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
         // ...
     }
 
+    public static Optional<String> getHelp(final String operation) {
+        var key = operation.toLowerCase();
+        if (usage.containsKey(key)) {
+            return Optional.of(usage.get(key));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     private static String formatOutput(Credential credential) {
         return String.format("%s - %s:%s", credential.getId(), credential.getUsername(), credential.getSecret());
     }

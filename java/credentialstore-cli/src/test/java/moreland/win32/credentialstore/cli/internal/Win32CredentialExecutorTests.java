@@ -15,8 +15,11 @@ package moreland.win32.credentialstore.cli.internal;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.PrintStream;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,4 +91,69 @@ class Win32CredentialExecutorTests {
         var operation = credentialExecutor.getOperation(name);
         assertFalse(operation.isPresent());
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"help", "Help", "HELP"})
+    void add_printsUsage_whenFirstArgumentIsHelp(String argument) {
+        var arguments = List.of(argument);
+        credentialExecutor.add(arguments);
+        verify(outputStream, times(1))
+            .println(Win32CredentialExecutor.getHelp("add").orElse("error"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"help", "Help", "HELP"})
+    void add_returnsTrue_whenFirstArgumentIsHelp(String argument) {
+        var arguments = List.of(argument);
+        assertTrue(credentialExecutor.add(arguments));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"help", "Help", "HELP"})
+    void remove_printsUsage_whenFirstArgumentIsHelp(String argument) {
+        var arguments = List.of(argument);
+        credentialExecutor.remove(arguments);
+        verify(outputStream, times(1))
+            .println(Win32CredentialExecutor.getHelp("remove").orElse("error"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"help", "Help", "HELP"})
+    void remove_returnsTrue_whenFirstArgumentIsHelp(String argument) {
+        var arguments = List.of(argument);
+        assertTrue(credentialExecutor.remove(arguments));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"help", "Help", "HELP"})
+    void find_printsUsage_whenFirstArgumentIsHelp(String argument) {
+        var arguments = List.of(argument);
+        credentialExecutor.find(arguments);
+        verify(outputStream, times(1))
+            .println(Win32CredentialExecutor.getHelp("find").orElse("error"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"help", "Help", "HELP"})
+    void find_returnsTrue_whenFirstArgumentIsHelp(String argument) {
+        var arguments = List.of(argument);
+        assertTrue(credentialExecutor.find(arguments));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"help", "Help", "HELP"})
+    void list_printsUsage_whenFirstArgumentIsHelp(String argument) {
+        var arguments = List.of(argument);
+        credentialExecutor.list(arguments);
+        verify(outputStream, times(1))
+            .println(Win32CredentialExecutor.getHelp("list").orElse("error"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"help", "Help", "HELP"})
+    void list_returnsTrue_whenFirstArgumentIsHelp(String argument) {
+        var arguments = List.of(argument);
+        assertTrue(credentialExecutor.list(arguments));
+    }
+
 }
