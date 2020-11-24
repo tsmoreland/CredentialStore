@@ -37,7 +37,7 @@ public class CredentialList implements Iterable<Credential>, AutoCloseable {
         this.pointer = pointer;
         this.count = count;
 
-        if (pointer == null || count == 0)
+        if (pointer == null || count <= 0)
             return;
 
         credentials = Arrays.stream(this.pointer.getPointerArray(0, count))
@@ -55,6 +55,10 @@ public class CredentialList implements Iterable<Credential>, AutoCloseable {
 
     public boolean isEmpty() {
         return count == 0;
+    }
+
+    public int size() {
+        return credentials.size();
     }
 
     public Stream<Credential> stream() {
