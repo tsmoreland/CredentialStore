@@ -35,7 +35,7 @@ public class CredentialList implements Iterable<Credential>, AutoCloseable {
 
         this.advapi32 = advapi32;
         this.pointer = pointer;
-        this.count = count;
+        this.count = Math.max(0, count);
 
         if (pointer == null || count <= 0)
             return;
@@ -54,7 +54,7 @@ public class CredentialList implements Iterable<Credential>, AutoCloseable {
     }
 
     public boolean isEmpty() {
-        return count == 0;
+        return credentials.isEmpty();
     }
 
     public int size() {
