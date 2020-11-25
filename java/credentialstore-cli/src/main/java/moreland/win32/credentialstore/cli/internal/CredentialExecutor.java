@@ -26,7 +26,7 @@ public interface CredentialExecutor {
      * @return Optional of matching {@code CredentialStoreOperation} if found;
      *         otherwise, empty
      */
-    Optional<CredentialStoreOperation> getOperation(String name);
+    Optional<CredentialStoreOperation> getOperation(final String name);
 
     /**
      * Adds a new credential using the supplied arguments
@@ -35,7 +35,7 @@ public interface CredentialExecutor {
      * @return true if credential was added or help was requested;
      *         otherwise false
      */
-    boolean add(List<String> args);
+    boolean add(final List<String> args);
 
     /**
      * Deletes a credential matching the supplied arguments
@@ -43,7 +43,7 @@ public interface CredentialExecutor {
      * @return true if credential exists and is removed, or doesn't exist
      *         or using help; otherwise, false
      */
-    boolean remove(List<String> args);
+    boolean remove(final List<String> args);
 
     /**
      * Searches for credentials match a given filter
@@ -52,14 +52,14 @@ public interface CredentialExecutor {
      *             is not set when calling native api
      * @return true if at least one match was found
      */
-    boolean find(List<String> args);
+    boolean find(final List<String> args);
 
     /**
      * prints out all credentials for the current user
      * @param args none
      * @return true
      */
-    boolean list(List<String> args);
+    boolean list(final List<String> args);
    
 
 }

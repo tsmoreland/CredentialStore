@@ -27,15 +27,17 @@ public class CredentialList implements Iterable<Credential>, AutoCloseable {
 
     private final Advapi32Library advapi32;
     private final Pointer pointer;
-    private final int count;
     private List<Credential> credentials = List.of();
 
+    /**
+     * instantiates a new instance of the CredentialList class
+     * @exception IllegalArgumentException when advapi32 is null
+     */
     public CredentialList(Pointer pointer, int count, Advapi32Library advapi32) {
         Guard.againstNull(advapi32, "advapi32");
 
         this.advapi32 = advapi32;
         this.pointer = pointer;
-        this.count = Math.max(0, count);
 
         if (pointer == null || count <= 0)
             return;
@@ -49,18 +51,34 @@ public class CredentialList implements Iterable<Credential>, AutoCloseable {
         static final CredentialList instance = new CredentialList(Pointer.NULL, 0, Advapi32Library.INSTANCE);
     }
 
+    /**
+     * null object instance
+     * @return null object singleton
+     */
     public static CredentialList empty() {
         return EmptyHolder.instance;
     }
 
+    /**
+     * Returns true if the list contains no elements
+     * @return true if this list contains no elements
+     */
     public boolean isEmpty() {
         return credentials.isEmpty();
     }
 
+    /**
+     * Returns the number of elements in the list
+     * @return the number of elements in the list
+     */
     public int size() {
         return credentials.size();
     }
 
+    /**
+     * Returns a sequential {@code Stream} with this collection as its source.
+     * @return a sequential {@code Stream} over the elements in this collection
+     */
     public Stream<Credential> stream() {
         return credentials.stream();
     }

@@ -17,8 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.PrintStream;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +31,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import moreland.win32.credentialstore.Credential;
+import moreland.win32.credentialstore.CredentialFlag;
 import moreland.win32.credentialstore.CredentialManager;
+import moreland.win32.credentialstore.CredentialPersistence;
+import moreland.win32.credentialstore.CredentialType;
 
 @ExtendWith(MockitoExtension.class)
 class Win32CredentialExecutorTests {
@@ -156,4 +162,44 @@ class Win32CredentialExecutorTests {
         assertTrue(credentialExecutor.list(arguments));
     }
 
+    @Test
+    void list_printsCredentialsSize_whenArgumentsNotHelp() {
+        var credentials = List.of(
+            new Credential("id1", "username1", "secret1", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
+            new Credential("id2", "username2", "secret2", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
+            new Credential("id3", "username3", "secret3", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now())
+        );
+        when(credentialManager.getAll()).thenReturn(credentials);
+
+        credentialExecutor.list(List.of());
+
+        verify(outputStream, times(1))
+            .println(String.format("Found %d credentials:", credentials.size()));
+
+
+    }
+
+    @Test
+    void list_printsCredentials_whenArgumentsNotHelp() {
+        var credentials = List.of(
+            new Credential("id1", "username1", "secret1", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
+            new Credential("id2", "username2", "secret2", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
+            new Credential("id3", "username3", "secret3", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now())
+        );
+        when(credentialManager.getAll()).thenReturn(credentials);
+        var expectedOutput = credentials
+            .stream()
+            .map(Win32CredentialExecutor::formatOutput);
+
+        credentialExecutor.list(List.of());
+
+        expectedOutput
+            .forEach(s -> verify(outputStream, times(1)).println(s));
+    }
+
+    @Test
+    void list_returnsTrue_whenArgumentsAreEmpty() {
+        when(credentialManager.getAll()).thenReturn(List.of());
+        assertTrue(credentialExecutor.list(List.of()));
+    }
 }
