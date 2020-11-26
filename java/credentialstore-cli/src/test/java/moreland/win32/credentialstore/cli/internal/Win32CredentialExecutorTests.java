@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -144,6 +145,13 @@ class Win32CredentialExecutorTests {
     void find_returnsTrue_whenFirstArgumentIsHelp(String argument) {
         var arguments = List.of(argument);
         assertTrue(credentialExecutor.find(arguments));
+    }
+
+    @Test
+    void find_returnsFalse_whenMatchNotFoundUsingTypeAndId() {
+        var arguments = List.of("test-id", "generic");
+        when(credentialManager.find("test-id", CredentialType.GENERIC)).thenReturn(Optional.empty());
+        assertFalse(credentialExecutor.find(arguments));
     }
 
     @ParameterizedTest
