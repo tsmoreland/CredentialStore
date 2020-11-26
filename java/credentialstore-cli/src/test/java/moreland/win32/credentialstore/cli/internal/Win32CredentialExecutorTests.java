@@ -12,6 +12,7 @@
 //
 package moreland.win32.credentialstore.cli.internal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -152,6 +153,61 @@ class Win32CredentialExecutorTests {
         var arguments = List.of("test-id", "generic");
         when(credentialManager.find("test-id", CredentialType.GENERIC)).thenReturn(Optional.empty());
         assertFalse(credentialExecutor.find(arguments));
+    }
+
+    @Test
+    void find_returnsFalse_whenMatchNotFoundUsingId() {
+        var arguments = List.of("test-id");
+        when(credentialManager.find("test-id", true)).thenReturn(List.of());
+        assertFalse(credentialExecutor.find(arguments));
+    }
+
+    @Test
+    void find_returnsTrue_whenMatchFoundUsingIdAndType() {
+        var credential = new Credential("id1", "username1", "secret1", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now());
+        var arguments = List.of("id1", "generic");
+        when(credentialManager.find("id1", CredentialType.GENERIC)).thenReturn(Optional.of(credential));
+        assertTrue(credentialExecutor.find(arguments));
+    }
+
+    @Test
+    void find_returnsTrue_whenMatchFoundUsingId() {
+        var credentials = List.of(
+            new Credential("id1", "username1", "secret1", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
+            new Credential("id2", "username2", "secret2", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
+            new Credential("id3", "username3", "secret3", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now())
+        );
+
+        var arguments = List.of("id1");
+        when(credentialManager.find("id1", true)).thenReturn(credentials);
+
+        assertTrue(credentialExecutor.find(arguments));
+    }
+
+    @Test
+    void find_printsExpectedResult_whenMatchFoundUsingIdAndType() {
+        var credential = new Credential("id1", "username1", "secret1", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now());
+        var arguments = List.of("id1", "generic");
+        when(credentialManager.find("id1", CredentialType.GENERIC)).thenReturn(Optional.of(credential));
+
+        credentialExecutor.find(arguments);
+
+        verify(outputStream, times(1)).println(Win32CredentialExecutor.formatOutput(credential));
+    }
+
+    @Test
+    void find_printsExpectedResult_whenMatchFoundUsingId() {
+        var credentials = List.of(
+            new Credential("id1", "username1", "secret1", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
+            new Credential("id2", "username2", "secret2", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
+            new Credential("id3", "username3", "secret3", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now())
+        );
+        var arguments = List.of("id1");
+        when(credentialManager.find("id1", true)).thenReturn(credentials);
+
+        credentialExecutor.find(arguments);
+
+        verify(outputStream, times(1)).println(Win32CredentialExecutor.formatOutput(credentials.get(0)));
     }
 
     @ParameterizedTest
