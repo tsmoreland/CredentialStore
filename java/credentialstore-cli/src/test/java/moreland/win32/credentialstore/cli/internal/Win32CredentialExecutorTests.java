@@ -133,6 +133,33 @@ class Win32CredentialExecutorTests {
     }
 
     @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void remove_returnsExpected_whenDeleteUsingIdAndTypeSucceeds(boolean expected) {
+        var arguments = List.of("id1", "generic");
+        when(credentialManager.delete("id1", CredentialType.GENERIC)).thenReturn(expected);
+
+        var actual = credentialExecutor.remove(arguments);
+
+        assertEquals(expected, actual);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void remove_returnsExpected_whenDeleteUsingIdSucceeds(boolean expected) {
+        var credentials = List.of(
+            new Credential("id1", "username1", "secret1", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
+            new Credential("id2", "username2", "secret2", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
+            new Credential("id3", "username3", "secret3", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now())
+        );
+        when(credentialManager.getAll()).thenReturn(credentials);
+        when(credentialManager.delete(credentials.get(0))).thenReturn(expected);
+        var arguments = List.of("id1");
+
+        assertEquals(expected, credentialExecutor.remove(arguments));
+    }
+
+
+    @ParameterizedTest
     @ValueSource(strings = {"help", "Help", "HELP"})
     void find_printsUsage_whenFirstArgumentIsHelp(String argument) {
         var arguments = List.of(argument);
