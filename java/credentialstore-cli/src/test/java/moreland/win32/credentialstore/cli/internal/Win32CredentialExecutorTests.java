@@ -49,21 +49,29 @@ class Win32CredentialExecutorTests {
     @Mock
     private PrintStream outputStream;
 
+    @Mock
+    private PasswordReaderFacade passwordReaderFacade;
+
     private Win32CredentialExecutor credentialExecutor;
 
     @BeforeEach
     void beforeEach() {
-        credentialExecutor = new Win32CredentialExecutor(credentialManager, outputStream);
+        credentialExecutor = new Win32CredentialExecutor(credentialManager, outputStream, passwordReaderFacade);
     }
 
     @Test
     void ctor_throwsIllegalArgumentException_whenCredentialManagerIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor((CredentialManager) null, outputStream));
+        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor((CredentialManager) null, outputStream, passwordReaderFacade));
     }
 
     @Test
     void ctor_throwsIllegalArgumentException_whenOutputStreamIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor(credentialManager, (PrintStream) null));
+        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor(credentialManager, (PrintStream) null, passwordReaderFacade));
+    }
+
+    @Test
+    void ctor_throwsIllegalArgumentException_whenPasswordReaderFacadeIsNull() {
+        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor(credentialManager, outputStream, (PasswordReaderFacade)null));
     }
 
     @ParameterizedTest

@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import moreland.win32.credentialstore.Win32CredentialManager;
+import moreland.win32.credentialstore.cli.internal.ConsolePasswordReaderFacade;
 import moreland.win32.credentialstore.cli.internal.Win32CredentialExecutor;
 
 public class Application {
@@ -29,7 +30,7 @@ public class Application {
         }
 
         var credentialManager = new Win32CredentialManager();
-        var executor = new Win32CredentialExecutor(credentialManager, System.out);
+        var executor = new Win32CredentialExecutor(credentialManager, System.out, new ConsolePasswordReaderFacade());
 
         var operation = executor.getOperation(args[0]).orElse(arguments -> false);
 
