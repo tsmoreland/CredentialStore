@@ -29,8 +29,9 @@ import moreland.win32.credentialstore.CredentialType;
 
 public final class Win32CredentialExecutor implements CredentialExecutor {
 
-    private CredentialManager credentialManager;
-    private PrintStream outputStream;
+    private final CredentialManager credentialManager;
+    private final PrintStream outputStream;
+    private final PasswordReaderFacade passwordReaderFacade;
     private static Map<String, String> usage;
 
     private static final String ADD = "add";
@@ -38,22 +39,22 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
     private static final String FIND = "find";
     private static final String LIST = "list";
 
-
     static {
-        usage = Map.of(
-            ADD, "Usage: credentialStore.Cli add <type> <target> <username>",
-            REMOVE, "Usage: credentialStore.Cli remove <target> (<type>)",
-            FIND, "Usage: CredentialStore.Cli find <filter> (<search all, defaults true>)", 
-            LIST, "Usage: CredentialStore.Cli list"
-        );
+        usage = Map.of(ADD, "Usage: credentialStore.Cli add <type> <target> <username>", REMOVE,
+                "Usage: credentialStore.Cli remove <target> (<type>)", FIND,
+                "Usage: CredentialStore.Cli find <filter> (<search all, defaults true>)", LIST,
+                "Usage: CredentialStore.Cli list");
     }
 
-    public Win32CredentialExecutor(CredentialManager credentialManager, PrintStream outputStream) {
+    public Win32CredentialExecutor(CredentialManager credentialManager, PrintStream outputStream,
+            PasswordReaderFacade passwordReaderFacade) {
         Guard.againstNull(credentialManager, "credentialManager");
         Guard.againstNull(outputStream, "outputStream");
+        Guard.againstNull(passwordReaderFacade, "passwordReaderFacade");
 
         this.credentialManager = credentialManager;
         this.outputStream = outputStream;
+        this.passwordReaderFacade = passwordReaderFacade;
         // ...
     }
 
@@ -113,7 +114,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
 
         var target = args.get(1);
         var username = args.get(2);
-        var secret = "secret"; // replace with call to an input handler, an obsucred one
+        var secret = passwordReaderFacade.readPassword();
 
         // maybe filter type for supported ones, ignore any we don't support - everything but generic and domain password
 
