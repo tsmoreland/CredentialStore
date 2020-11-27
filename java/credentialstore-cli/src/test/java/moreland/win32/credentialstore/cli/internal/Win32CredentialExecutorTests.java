@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -117,6 +118,17 @@ class Win32CredentialExecutorTests {
     }
 
     @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void add_returnsExpected_whenCredentialManagerAddReturnsExpected(boolean expected) {
+        when(credentialManager.add(any(Credential.class))).thenReturn(expected);
+
+        var arguments = List.of("generic", "id1", "username1");
+        var actual = credentialExecutor.add(arguments);
+
+        assertEquals(expected, actual);
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"help", "Help", "HELP"})
     void remove_printsUsage_whenFirstArgumentIsHelp(String argument) {
         var arguments = List.of(argument);
@@ -134,7 +146,7 @@ class Win32CredentialExecutorTests {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
-    void remove_returnsExpected_whenDeleteUsingIdAndTypeSucceeds(boolean expected) {
+    void remove_returnsExpected_whenDeleteUsingIdAndTypeReturnsExpected(boolean expected) {
         var arguments = List.of("id1", "generic");
         when(credentialManager.delete("id1", CredentialType.GENERIC)).thenReturn(expected);
 
@@ -145,7 +157,7 @@ class Win32CredentialExecutorTests {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
-    void remove_returnsExpected_whenDeleteUsingIdSucceeds(boolean expected) {
+    void remove_returnsExpected_whenDeleteUsingIdReturnsExpected(boolean expected) {
         var credentials = List.of(
             new Credential("id1", "username1", "secret1", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
             new Credential("id2", "username2", "secret2", CredentialFlag.NONE, CredentialType.GENERIC, CredentialPersistence.LOCAL_MACHINE, LocalDateTime.now()),
@@ -157,7 +169,6 @@ class Win32CredentialExecutorTests {
 
         assertEquals(expected, credentialExecutor.remove(arguments));
     }
-
 
     @ParameterizedTest
     @ValueSource(strings = {"help", "Help", "HELP"})
