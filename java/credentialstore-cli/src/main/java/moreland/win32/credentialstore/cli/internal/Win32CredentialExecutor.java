@@ -66,7 +66,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
         }
     }
 
-    private static String formatOutput(Credential credential) {
+    static String formatOutput(Credential credential) {
         return String.format("%s - %s:%s", credential.getId(), credential.getUsername(), credential.getSecret());
     }
 
@@ -74,7 +74,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
      * {@inheritDoc}
      */
     @Override
-    public Optional<CredentialStoreOperation> getOperation(String name) {
+    public Optional<CredentialStoreOperation> getOperation(final String name) {
         switch (name.toLowerCase()) {
             case ADD:
                 // long winded approach just to have it once
@@ -99,7 +99,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
      * {@inheritDoc}
      */
     @Override
-    public boolean add(List<String> args) {
+    public boolean add(final List<String> args) {
         if ((!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) || args.size() < 3) {
             outputStream.println(usage.get(ADD));
             return true;
@@ -131,7 +131,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
      * {@inheritDoc}
      */
     @Override
-    public boolean remove(List<String> args) {
+    public boolean remove(final List<String> args) {
         if (args.isEmpty() || "help".equalsIgnoreCase(args.get(0))) {
             outputStream.println(usage.get(REMOVE));
             return true;
@@ -159,7 +159,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
      * {@inheritDoc}
      */
     @Override
-    public boolean find(List<String> args) {
+    public boolean find(final List<String> args) {
         if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
             outputStream.println(usage.get(FIND));
             return true;
@@ -193,7 +193,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
      */
     @Override
     @SuppressWarnings({"java:S3516"})
-    public boolean list(List<String> args) {
+    public boolean list(final List<String> args) {
         if (!args.isEmpty() && "help".equalsIgnoreCase(args.get(0))) {
             outputStream.println(usage.get(LIST));
             return true;
