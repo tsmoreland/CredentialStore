@@ -40,10 +40,11 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
     private static final String LIST = "list";
 
     static {
-        usage = Map.of(ADD, "Usage: credentialStore.Cli add <type> <target> <username>", REMOVE,
-                "Usage: credentialStore.Cli remove <target> (<type>)", FIND,
-                "Usage: CredentialStore.Cli find <filter> (<search all, defaults true>)", LIST,
-                "Usage: CredentialStore.Cli list");
+        usage = Map.of(
+            ADD, "Usage: credentialStore.Cli add <type> <target> <username>", 
+            REMOVE, "Usage: credentialStore.Cli remove <target> (<type>)", 
+            FIND, "Usage: CredentialStore.Cli find <filter> (<search all, defaults true>)", 
+            LIST, "Usage: CredentialStore.Cli list");
     }
 
     public Win32CredentialExecutor(CredentialManager credentialManager, PrintStream outputStream,
@@ -60,11 +61,9 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
 
     public static Optional<String> getHelp(final String operation) {
         var key = operation.toLowerCase();
-        if (usage.containsKey(key)) {
-            return Optional.of(usage.get(key));
-        } else {
-            return Optional.empty();
-        }
+        return usage.containsKey(key)
+            ? Optional.of(usage.get(key))
+            : Optional.empty();
     }
 
     static String formatOutput(Credential credential) {
