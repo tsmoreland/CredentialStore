@@ -10,22 +10,32 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-module moreland.win32.credentialstore {
-    requires java.base;
-    requires transitive com.sun.jna;
-    requires transitive com.sun.jna.platform;
+package moreland.win32.credentialstore;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import moreland.win32.credentialstore.converters.CredentialConverter;
+import moreland.win32.credentialstore.converters.Win32CredentialConverter;
+import moreland.win32.credentialstore.internal.NativeInteropBridge;
+import moreland.win32.credentialstore.internal.Win32NativeInteropBridge;
+
+@Configuration
+public class ServiceConfiguration {
     
-    requires transitive spring.beans;
-    requires transitive spring.context;
-    requires transitive spring.core;
-    requires transitive spring.aop;
-    requires transitive spring.expression;
+    @Bean(name = "credentialManager")
+    public CredentialManager getCredentialManager() {
+        return new Win32CredentialManager(getNativeInteropBridge(), getCredentialConverter());
+    }
 
+    @Bean(name = "nativeInteropBean")
+    NativeInteropBridge getNativeInteropBridge() {
+        return new Win32NativeInteropBridge();
+    }
 
-    opens moreland.win32.credentialstore to spring.core;
-    
+    @Bean(name = "credentialConverter")
+    CredentialConverter getCredentialConverter() {
+        return new Win32CredentialConverter();
+    }
 
-
-    exports moreland.win32.credentialstore;
-    exports moreland.win32.credentialstore.structures;
 }

@@ -16,9 +16,9 @@ package moreland.win32.credentialstore.cli;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import moreland.win32.credentialstore.Win32CredentialManager;
-import moreland.win32.credentialstore.cli.internal.ConsolePasswordReaderFacade;
-import moreland.win32.credentialstore.cli.internal.Win32CredentialExecutor;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import moreland.win32.credentialstore.cli.internal.CredentialExecutor;
 
 public class Application {
 
@@ -29,18 +29,18 @@ public class Application {
             return;
         }
 
-        var credentialManager = new Win32CredentialManager();
-        var executor = new Win32CredentialExecutor(credentialManager, System.out, new ConsolePasswordReaderFacade());
+        try (var context = new AnnotationConfigApplicationContext(ApplicationConfiguration.class)) {
+            var executor = context.getBean("credentialExecutor", CredentialExecutor.class);
+            var operation = executor.getOperation(args[0]).orElse(arguments -> false);
 
-        var operation = executor.getOperation(args[0]).orElse(arguments -> false);
+            var operationArgs = IntStream
+                .range(1, args.length)
+                .mapToObj(i -> args[i])
+                .collect(Collectors.toList());
 
-        var operationArgs = IntStream
-            .range(1, args.length)
-            .mapToObj(i -> args[i])
-            .collect(Collectors.toList());
-
-        if (!operation.process(operationArgs)) {
-            System.err.println(String.format("Operation '%s' failed", args[0]));
+            if (!operation.process(operationArgs)) {
+                System.err.println(String.format("Operation '%s' failed", args[0]));
+            }
         }
 
     }    
