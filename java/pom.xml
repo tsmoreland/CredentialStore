@@ -98,12 +98,6 @@
             <version>1.7.26</version>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.14</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
             <artifactId>commons-logging</artifactId>
             <groupId>commons-logging</groupId>
             <version>1.2</version>
