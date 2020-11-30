@@ -67,7 +67,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
     }
 
     static String formatOutput(Credential credential) {
-        return String.format("%s - %s:%s", credential.getId(), credential.getUsername(), credential.getSecret());
+        return String.format("(%s) %s - %s:%s", credential.getType(), credential.getId(), credential.getUsername(), credential.getSecret());
     }
 
     /**

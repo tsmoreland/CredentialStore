@@ -70,7 +70,7 @@ public final class Win32NativeInteropBridge implements NativeInteropBridge {
 
         synchronized(advapi32) {
             return advapi32.CredEnumerateW(filter.map(WString::new).orElse(null), flag.getValue(), count, credentialsPtr)
-                ? new CredentialList(credentialsPtr.getPointer(), count.getValue(), advapi32)
+                ? new CredentialList(credentialsPtr.getValue(), count.getValue(), advapi32)
                 : CredentialList.empty();
         }
     }

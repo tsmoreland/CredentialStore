@@ -1,4 +1,5 @@
 module moreland.win32.credentialstore.cli {
+    requires java.logging;
     requires moreland.win32.credentialstore;
     
     requires spring.beans;
@@ -8,7 +9,6 @@ module moreland.win32.credentialstore.cli {
     requires spring.expression;
 
     requires commons.logging;
-
     opens moreland.win32.credentialstore.cli to spring.core;
 
     exports moreland.win32.credentialstore.cli;
