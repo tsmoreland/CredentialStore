@@ -25,6 +25,10 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>moreland.win32.credentialstore.cli.Application</mainClass>
+                            <argLine>
+                                --add-opens commons-logging/org.apache.commons.logging=ALL-UNNAMED
+                                --add-exports org.apache.commons.logging/org.apache.commons.logging.impl=org.apache.commons.configuration2
+                            </argLine>
                         </manifest>
                     </archive>
                 </configuration>
