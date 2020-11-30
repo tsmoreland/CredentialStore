@@ -17,6 +17,14 @@ module moreland.win32.credentialstore {
     
     requires transitive spring.beans;
     requires transitive spring.context;
+    requires transitive spring.core;
+    requires transitive spring.aop;
+    requires transitive spring.expression;
+
+
+    opens moreland.win32.credentialstore to spring.core;
+    
+
 
     exports moreland.win32.credentialstore;
     exports moreland.win32.credentialstore.structures;
