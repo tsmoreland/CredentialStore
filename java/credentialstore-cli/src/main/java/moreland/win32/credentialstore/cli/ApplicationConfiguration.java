@@ -18,7 +18,6 @@ import moreland.win32.credentialstore.cli.internal.Win32CredentialExecutor;
 @Configuration
 @SuppressWarnings({"java:S125"})
 @ComponentScan({"moreland.win32.credentialstore"})
-//@Import(ServiceConfiguration.class) // -- if using explicit import rather than ComponentScan
 public class ApplicationConfiguration {
     
     @Autowired
