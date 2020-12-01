@@ -28,11 +28,13 @@ import moreland.win32.credentialstore.internal.Win32NativeInteropBridge;
 @SuppressWarnings({"java:S125"})
 public class ServiceConfiguration {
     
+    /*
     @Bean(name = "credentialManager")
     @Scope(value=BeanDefinition.SCOPE_PROTOTYPE) // no particular need, just leaving it here for sake of reference
     public CredentialManager getCredentialManager() {
         return new Win32CredentialManager(getNativeInteropBridge(), getCredentialConverter());
     }
+    */
 
     @Bean(name = "nativeInteropBean")
     @Scope(value=BeanDefinition.SCOPE_SINGLETON)
