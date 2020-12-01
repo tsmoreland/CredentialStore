@@ -10,7 +10,7 @@ module moreland.win32.credentialstore.cli {
 
     requires commons.logging;
     opens moreland.win32.credentialstore.cli to spring.core, spring.beans, spring.aop;
-    exports moreland.win32.credentialstore.cli.internal to spring.beans;
+    exports moreland.win32.credentialstore.cli.internal to spring.core, spring.context, spring.aop, spring.beans;
 
     exports moreland.win32.credentialstore.cli;
 }

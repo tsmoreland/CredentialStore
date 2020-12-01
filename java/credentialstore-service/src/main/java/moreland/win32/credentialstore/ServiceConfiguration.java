@@ -24,7 +24,7 @@ import moreland.win32.credentialstore.internal.NativeInteropBridge;
 import moreland.win32.credentialstore.internal.Win32NativeInteropBridge;
 
 @Configuration
-//@ComponentScan({"moreland.win32.credentialstore"})
+@ComponentScan({"moreland.win32.credentialstore"})
 @SuppressWarnings({"java:S125"})
 public class ServiceConfiguration {
     

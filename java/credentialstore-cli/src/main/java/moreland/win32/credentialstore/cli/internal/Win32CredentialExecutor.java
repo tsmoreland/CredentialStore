@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import moreland.win32.credentialstore.Credential;
 import moreland.win32.credentialstore.CredentialFlag;
@@ -29,6 +30,7 @@ import moreland.win32.credentialstore.CredentialManager;
 import moreland.win32.credentialstore.CredentialPersistence;
 import moreland.win32.credentialstore.CredentialType;
 
+@Service("credentialExecutor")
 public final class Win32CredentialExecutor implements CredentialExecutor {
 
     private final CredentialManager credentialManager;
