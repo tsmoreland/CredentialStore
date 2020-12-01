@@ -14,43 +14,16 @@ package moreland.win32.credentialstore.cli;
 
 import java.io.PrintStream;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
-import moreland.win32.credentialstore.ServiceConfiguration;
-
 @Configuration
-@SuppressWarnings({"java:S125"})
 @ComponentScan({"moreland.win32.credentialstore"})
 public class ApplicationConfiguration {
     
-    @Autowired
-    ServiceConfiguration serviceConfiguration;
-
-    /*
-     * exmamples of how to handle this without @Service / @Component annotations
-     * will remove this comment once fully working
-    @Bean(name = "credentialExecutor")
-    @Scope(value=BeanDefinition.SCOPE_SINGLETON)
-    @SuppressWarnings({"java:S106"})
-    CredentialExecutor getCredentialExecutor() {
-        return new Win32CredentialExecutor(
-            serviceConfiguration.getCredentialManager(),
-            System.out, 
-            getPasswordReaderFacade());
-    }
-
-    @Bean(name = "passwordReaderFacade")
-    @Scope(value=BeanDefinition.SCOPE_SINGLETON)
-    PasswordReaderFacade getPasswordReaderFacade() {
-        return new ConsolePasswordReaderFacade();
-    }
-    */
-
     @Bean(name = "printStream")
     @Scope(value = BeanDefinition.SCOPE_SINGLETON)
     @SuppressWarnings({"java:S106"})
