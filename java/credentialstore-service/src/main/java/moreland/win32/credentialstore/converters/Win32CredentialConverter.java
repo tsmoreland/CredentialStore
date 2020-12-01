@@ -21,14 +21,21 @@ import java.util.Optional;
 import com.sun.jna.Memory;
 import com.sun.jna.WString;
 
+import org.springframework.stereotype.Component;
+
 import moreland.win32.credentialstore.Credential;
 import moreland.win32.credentialstore.CredentialFlag;
 import moreland.win32.credentialstore.CredentialPersistence;
 import moreland.win32.credentialstore.CredentialType;
 
+@Component("credentialConverter")
 public final class Win32CredentialConverter implements CredentialConverter {
 
     private static final String TARGET_NAME_PREFIX = "LegacyGeneric:target=";
+
+    public Win32CredentialConverter() {
+        // ... provided for spring to find ...
+    }
 
     @Override
     public Optional<Credential> fromInternalCredential(moreland.win32.credentialstore.structures.Credential source) {

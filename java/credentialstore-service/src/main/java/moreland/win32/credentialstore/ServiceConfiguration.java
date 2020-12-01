@@ -12,8 +12,11 @@
 //
 package moreland.win32.credentialstore;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 import moreland.win32.credentialstore.converters.CredentialConverter;
 import moreland.win32.credentialstore.converters.Win32CredentialConverter;
@@ -21,21 +24,25 @@ import moreland.win32.credentialstore.internal.NativeInteropBridge;
 import moreland.win32.credentialstore.internal.Win32NativeInteropBridge;
 
 @Configuration
+//@ComponentScan({"moreland.win32.credentialstore"})
+@SuppressWarnings({"java:S125"})
 public class ServiceConfiguration {
     
     @Bean(name = "credentialManager")
+    @Scope(value=BeanDefinition.SCOPE_PROTOTYPE) // no particular need, just leaving it here for sake of reference
     public CredentialManager getCredentialManager() {
         return new Win32CredentialManager(getNativeInteropBridge(), getCredentialConverter());
     }
 
     @Bean(name = "nativeInteropBean")
+    @Scope(value=BeanDefinition.SCOPE_SINGLETON)
     NativeInteropBridge getNativeInteropBridge() {
         return new Win32NativeInteropBridge();
     }
 
     @Bean(name = "credentialConverter")
+    @Scope(value=BeanDefinition.SCOPE_PROTOTYPE)
     CredentialConverter getCredentialConverter() {
         return new Win32CredentialConverter();
     }
-
 }

@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import moreland.win32.credentialstore.Credential;
 import moreland.win32.credentialstore.CredentialFlag;
 import moreland.win32.credentialstore.CredentialManager;
@@ -47,6 +49,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
             LIST, "Usage: CredentialStore.Cli list");
     }
 
+    @Autowired
     public Win32CredentialExecutor(CredentialManager credentialManager, PrintStream outputStream,
             PasswordReaderFacade passwordReaderFacade) {
         Guard.againstNull(credentialManager, "credentialManager");

@@ -15,6 +15,9 @@ package moreland.win32.credentialstore.cli.internal;
 import java.io.Console;
 import java.util.Arrays;
 
+import org.springframework.stereotype.Component;
+
+@Component("passwordReaderFacade")
 public class ConsolePasswordReaderFacade implements PasswordReaderFacade {
 
     private Console console;

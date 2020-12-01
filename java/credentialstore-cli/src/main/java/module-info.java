@@ -9,7 +9,7 @@ module moreland.win32.credentialstore.cli {
     requires spring.expression;
 
     requires commons.logging;
-    opens moreland.win32.credentialstore.cli to spring.core;
+    opens moreland.win32.credentialstore.cli to spring.core, spring.beans, spring.aop;
 
     exports moreland.win32.credentialstore.cli;
 }
