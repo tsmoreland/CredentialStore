@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 import com.sun.jna.LastErrorException;
 
+import org.slf4j.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,20 +31,23 @@ import moreland.win32.credentialstore.internal.PreserveType;
 @Service("credentialManager")
 public final class Win32CredentialManager implements CredentialManager {
 
+    private Logger logger;
     private NativeInteropBridge nativeInteropBridge;
     private CredentialConverter credentialConverter;
 
     @Autowired
-    Win32CredentialManager(NativeInteropBridge nativeInteropBridge, CredentialConverter credentialConverter) {
-        if (nativeInteropBridge == null) {
-            throw new IllegalArgumentException("nativeInteropBridge is null");
-        }
-        if (credentialConverter == null) {
-            throw new IllegalArgumentException("credentialConverter is null");
-        }
+    Win32CredentialManager(
+        NativeInteropBridge nativeInteropBridge, 
+        CredentialConverter credentialConverter,
+        Logger logger) {
+
+        Guard.againstNull(nativeInteropBridge, "nativeInteropBridge");
+        Guard.againstNull(credentialConverter, "credentialConverter");
+        Guard.againstNull(logger, "logger");
 
         this.nativeInteropBridge = nativeInteropBridge;
         this.credentialConverter = credentialConverter;
+        this.logger = logger;
     }
 
     private List<Credential> getAll(EnumerateFlag flag) {
@@ -53,6 +58,10 @@ public final class Win32CredentialManager implements CredentialManager {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
+
+        } catch (LastErrorException e) {
+            logger.error(String.format("API Error(%d) occurred.", e.getErrorCode()), e);
+            return List.of();
 
         } catch (Exception e) {
             return List.of();
