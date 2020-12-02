@@ -41,6 +41,8 @@ public class Application {
             if (!operation.process(operationArgs)) {
                 System.err.println(String.format("Operation '%s' failed", args[0]));
             }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
         }
 
     }    

@@ -10,28 +10,34 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-package moreland.win32.credentialstore.cli.internal;
+package moreland.win32.credentialstore;
 
-import java.io.Console;
 import java.util.Arrays;
+import java.util.Optional;
 
-import org.springframework.stereotype.Component;
+/**
+ * Expected WIN32 error codes
+ * @param value expected integer value
+ */
+public enum ExpectedErrorCode {
+    NONE(0),
+    NOT_FOUND(0x00000490),
+    NO_SUCH_LOGON_SESSION(0x000005200),
+    INVALID_FLAGS(0x000003eC),
+    INVALID_ARGUMENT(87);
 
-@Component("passwordReaderFacade")
-public class ConsolePasswordReaderFacade implements PasswordReaderFacade {
-
-    private Console console;
-
-    public ConsolePasswordReaderFacade() {
-        console = System.console();
+    private final int value;
+    public int getValue() {
+        return value;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String readPassword() {
-        return Arrays.toString(console.readPassword());
+    public static Optional<ExpectedErrorCode> getExpectedErrorCode(int value) {
+        return Arrays.stream(ExpectedErrorCode.class.getEnumConstants())
+            .filter(e -> e.getValue() == value)
+            .findFirst();
     }
-    
+
+    ExpectedErrorCode(int value) {
+        this.value = value;
+    }
 }

@@ -10,28 +10,12 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-package moreland.win32.credentialstore.cli.internal;
+package moreland.win32.credentialstore;
 
-import java.io.Console;
-import java.util.Arrays;
+import java.util.Optional;
 
-import org.springframework.stereotype.Component;
-
-@Component("passwordReaderFacade")
-public class ConsolePasswordReaderFacade implements PasswordReaderFacade {
-
-    private Console console;
-
-    public ConsolePasswordReaderFacade() {
-        console = System.console();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String readPassword() {
-        return Arrays.toString(console.readPassword());
-    }
+public interface ErrorToStringService {
     
+    Optional<String> getMessageFor(ExpectedErrorCode errorCode);
+    Optional<String> getMessageFor(int errorCode); 
 }

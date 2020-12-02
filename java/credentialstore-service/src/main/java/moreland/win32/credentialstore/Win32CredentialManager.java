@@ -18,22 +18,21 @@ import java.util.stream.Collectors;
 
 import com.sun.jna.LastErrorException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import moreland.win32.credentialstore.converters.CredentialConverter;
-import moreland.win32.credentialstore.converters.Win32CredentialConverter;
 import moreland.win32.credentialstore.internal.EnumerateFlag;
 import moreland.win32.credentialstore.internal.NativeInteropBridge;
 import moreland.win32.credentialstore.internal.PreserveType;
-import moreland.win32.credentialstore.internal.Win32NativeInteropBridge;
 
+@Service("credentialManager")
 public final class Win32CredentialManager implements CredentialManager {
 
     private NativeInteropBridge nativeInteropBridge;
     private CredentialConverter credentialConverter;
 
-    public Win32CredentialManager() {
-        this(new Win32NativeInteropBridge(), new Win32CredentialConverter());
-    }
-
+    @Autowired
     Win32CredentialManager(NativeInteropBridge nativeInteropBridge, CredentialConverter credentialConverter) {
         if (nativeInteropBridge == null) {
             throw new IllegalArgumentException("nativeInteropBridge is null");

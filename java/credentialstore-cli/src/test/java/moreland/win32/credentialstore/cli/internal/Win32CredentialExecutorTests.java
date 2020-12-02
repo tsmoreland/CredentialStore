@@ -33,6 +33,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
 
 import moreland.win32.credentialstore.Credential;
 import moreland.win32.credentialstore.CredentialFlag;
@@ -52,26 +53,34 @@ class Win32CredentialExecutorTests {
     @Mock
     private PasswordReaderFacade passwordReaderFacade;
 
+    @Mock
+    private Logger logger;
+
     private Win32CredentialExecutor credentialExecutor;
 
     @BeforeEach
     void beforeEach() {
-        credentialExecutor = new Win32CredentialExecutor(credentialManager, outputStream, passwordReaderFacade);
+        credentialExecutor = new Win32CredentialExecutor(credentialManager, outputStream, passwordReaderFacade, logger);
     }
 
     @Test
     void ctor_throwsIllegalArgumentException_whenCredentialManagerIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor((CredentialManager) null, outputStream, passwordReaderFacade));
+        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor((CredentialManager) null, outputStream, passwordReaderFacade, logger));
     }
 
     @Test
     void ctor_throwsIllegalArgumentException_whenOutputStreamIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor(credentialManager, (PrintStream) null, passwordReaderFacade));
+        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor(credentialManager, (PrintStream) null, passwordReaderFacade, logger));
     }
 
     @Test
     void ctor_throwsIllegalArgumentException_whenPasswordReaderFacadeIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor(credentialManager, outputStream, (PasswordReaderFacade)null));
+        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor(credentialManager, outputStream, (PasswordReaderFacade)null, logger));
+    }
+
+    @Test
+    void ctor_throwsIllegalArgumentException_whenLoggerIsNull() {
+        assertThrows(IllegalArgumentException.class, () -> new Win32CredentialExecutor(credentialManager, outputStream, passwordReaderFacade, (Logger)null));
     }
 
     @ParameterizedTest

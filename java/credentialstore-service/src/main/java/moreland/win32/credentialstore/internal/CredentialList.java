@@ -98,8 +98,11 @@ public class CredentialList implements Iterable<Credential>, AutoCloseable {
      */
     @Override
     public void close() throws Exception {
-        if (pointer != null)
-            advapi32.CredFree(pointer);
+        if (pointer != null) {
+            synchronized(advapi32) {
+                advapi32.CredFree(pointer);
+            }
+        }
     }
 
 }

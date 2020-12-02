@@ -18,12 +18,16 @@ import com.sun.jna.LastErrorException;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
+
+import org.springframework.stereotype.Component;
+
 import com.sun.jna.WString;
 
 import moreland.win32.credentialstore.CredentialType;
 import moreland.win32.credentialstore.Guard;
 import moreland.win32.credentialstore.structures.Credential;
 
+@Component("nativeInteropBridge")
 public final class Win32NativeInteropBridge implements NativeInteropBridge {
 
     private Advapi32Library advapi32;

@@ -21,42 +21,51 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import moreland.win32.credentialstore.Credential;
 import moreland.win32.credentialstore.CredentialFlag;
 import moreland.win32.credentialstore.CredentialManager;
 import moreland.win32.credentialstore.CredentialPersistence;
 import moreland.win32.credentialstore.CredentialType;
 
+@Service("credentialExecutor")
 public final class Win32CredentialExecutor implements CredentialExecutor {
 
     private final CredentialManager credentialManager;
     private final PrintStream outputStream;
     private final PasswordReaderFacade passwordReaderFacade;
-    private static Map<String, String> usage;
+    private final Logger logger;
 
     private static final String ADD = "add";
     private static final String REMOVE = "remove";
     private static final String FIND = "find";
     private static final String LIST = "list";
 
+    private static Map<String, String> usage;
     static {
-        usage = Map.of(
-            ADD, "Usage: credentialStore.Cli add <type> <target> <username>", 
-            REMOVE, "Usage: credentialStore.Cli remove <target> (<type>)", 
-            FIND, "Usage: CredentialStore.Cli find <filter> (<search all, defaults true>)", 
-            LIST, "Usage: CredentialStore.Cli list");
+        usage = Map.of(ADD, "Usage: credentialStore.Cli add <type> <target> <username>", REMOVE,
+                "Usage: credentialStore.Cli remove <target> (<type>)", FIND,
+                "Usage: CredentialStore.Cli find <filter> (<search all, defaults true>)", LIST,
+                "Usage: CredentialStore.Cli list");
     }
 
+    @Autowired
     public Win32CredentialExecutor(CredentialManager credentialManager, PrintStream outputStream,
-            PasswordReaderFacade passwordReaderFacade) {
+            PasswordReaderFacade passwordReaderFacade, Logger logger) {
         Guard.againstNull(credentialManager, "credentialManager");
         Guard.againstNull(outputStream, "outputStream");
         Guard.againstNull(passwordReaderFacade, "passwordReaderFacade");
+        Guard.againstNull(logger, "logger");
 
         this.credentialManager = credentialManager;
         this.outputStream = outputStream;
         this.passwordReaderFacade = passwordReaderFacade;
-        // ...
+        this.logger = logger;
+
+        logger.error("Hello");
     }
 
     public static Optional<String> getHelp(final String operation) {
@@ -170,6 +179,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
             var type = CredentialType.fromString(args.get(1));
             if (!type.isPresent()) {
                 // log not reognized type
+                logger.error(String.format("Unrecognized type: '%s'", args.get(1)));
                 return false;
             }
 

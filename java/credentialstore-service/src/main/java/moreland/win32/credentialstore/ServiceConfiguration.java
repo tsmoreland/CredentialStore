@@ -12,30 +12,11 @@
 //
 package moreland.win32.credentialstore;
 
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import moreland.win32.credentialstore.converters.CredentialConverter;
-import moreland.win32.credentialstore.converters.Win32CredentialConverter;
-import moreland.win32.credentialstore.internal.NativeInteropBridge;
-import moreland.win32.credentialstore.internal.Win32NativeInteropBridge;
-
 @Configuration
+@ComponentScan({"moreland.win32.credentialstore"})
 public class ServiceConfiguration {
     
-    @Bean(name = "credentialManager")
-    public CredentialManager getCredentialManager() {
-        return new Win32CredentialManager(getNativeInteropBridge(), getCredentialConverter());
-    }
-
-    @Bean(name = "nativeInteropBean")
-    NativeInteropBridge getNativeInteropBridge() {
-        return new Win32NativeInteropBridge();
-    }
-
-    @Bean(name = "credentialConverter")
-    CredentialConverter getCredentialConverter() {
-        return new Win32CredentialConverter();
-    }
-
 }
