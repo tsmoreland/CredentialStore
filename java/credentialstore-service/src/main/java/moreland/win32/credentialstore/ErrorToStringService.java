@@ -10,38 +10,12 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-package moreland.win32.credentialstore.cli;
+package moreland.win32.credentialstore;
 
-import java.io.PrintStream;
+import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InjectionPoint;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-
-@Configuration
-@ComponentScan({"moreland.win32.credentialstore"})
-public class ApplicationConfiguration {
+public interface ErrorToStringService {
     
-    @Bean(name = "printStream")
-    @Scope(value = BeanDefinition.SCOPE_SINGLETON)
-    @SuppressWarnings({"java:S106"})
-    PrintStream getPrintStream() {
-        return System.out;
-    }
-
-    @Bean
-    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-    public Logger logger(final InjectionPoint ip) {
-        var type = ip.getMethodParameter().getContainingClass();
-        if (type == null) {
-            type = Application.class;
-        }
-        return LoggerFactory.getLogger(type);
-    }
-
+    Optional<String> getMessageFor(ExpectedErrorCode errorCode);
+    Optional<String> getMessageFor(int errorCode); 
 }

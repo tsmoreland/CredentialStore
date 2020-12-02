@@ -10,38 +10,34 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-package moreland.win32.credentialstore.cli;
+package moreland.win32.credentialstore;
 
-import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InjectionPoint;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
+/**
+ * Expected WIN32 error codes
+ * @param value expected integer value
+ */
+public enum ExpectedErrorCode {
+    NONE(0),
+    NOT_FOUND(0x00000490),
+    NO_SUCH_LOGON_SESSION(0x000005200),
+    INVALID_FLAGS(0x000003eC),
+    INVALID_ARGUMENT(87);
 
-@Configuration
-@ComponentScan({"moreland.win32.credentialstore"})
-public class ApplicationConfiguration {
-    
-    @Bean(name = "printStream")
-    @Scope(value = BeanDefinition.SCOPE_SINGLETON)
-    @SuppressWarnings({"java:S106"})
-    PrintStream getPrintStream() {
-        return System.out;
+    private final int value;
+    public int getValue() {
+        return value;
     }
 
-    @Bean
-    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-    public Logger logger(final InjectionPoint ip) {
-        var type = ip.getMethodParameter().getContainingClass();
-        if (type == null) {
-            type = Application.class;
-        }
-        return LoggerFactory.getLogger(type);
+    public static Optional<ExpectedErrorCode> getExpectedErrorCode(int value) {
+        return Arrays.stream(ExpectedErrorCode.class.getEnumConstants())
+            .filter(e -> e.getValue() == value)
+            .findFirst();
     }
 
+    ExpectedErrorCode(int value) {
+        this.value = value;
+    }
 }
