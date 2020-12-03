@@ -31,7 +31,7 @@ public enum ExpectedErrorCode {
         return value;
     }
 
-    public static Optional<ExpectedErrorCode> getExpectedErrorCode(int value) {
+    public static Optional<ExpectedErrorCode> fromInteger(int value) {
         return Arrays.stream(ExpectedErrorCode.class.getEnumConstants())
             .filter(e -> e.getValue() == value)
             .findFirst();

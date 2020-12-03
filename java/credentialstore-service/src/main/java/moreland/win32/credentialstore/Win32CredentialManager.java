@@ -31,22 +31,24 @@ import moreland.win32.credentialstore.internal.PreserveType;
 @Service("credentialManager")
 public final class Win32CredentialManager implements CredentialManager {
 
-    private Logger logger;
+    private static final String UNKONWN_ERROR = "Unknown error occurred";
     private NativeInteropBridge nativeInteropBridge;
     private CredentialConverter credentialConverter;
+    private ErrorToStringService errorToStringService;
+    private Logger logger;
 
     @Autowired
-    Win32CredentialManager(
-        NativeInteropBridge nativeInteropBridge, 
-        CredentialConverter credentialConverter,
-        Logger logger) {
+    Win32CredentialManager(NativeInteropBridge nativeInteropBridge, CredentialConverter credentialConverter,
+            ErrorToStringService errorToStringService, Logger logger) {
 
         Guard.againstNull(nativeInteropBridge, "nativeInteropBridge");
         Guard.againstNull(credentialConverter, "credentialConverter");
+        Guard.againstNull(errorToStringService, "errorToStringService");
         Guard.againstNull(logger, "logger");
 
         this.nativeInteropBridge = nativeInteropBridge;
         this.credentialConverter = credentialConverter;
+        this.errorToStringService = errorToStringService;
         this.logger = logger;
     }
 
@@ -83,6 +85,7 @@ public final class Win32CredentialManager implements CredentialManager {
             return nativeInteropBridge.credWrite(win32Credential.get(), preserveType);
             
         } catch (LastErrorException e) {
+            logger.error(errorToStringService.getMessageFor(e.getErrorCode()).orElse(UNKONWN_ERROR), e);
             return false;
         }
     }
@@ -102,7 +105,6 @@ public final class Win32CredentialManager implements CredentialManager {
         if (credential == null) {
             throw new IllegalArgumentException("credential is null");
         }
-
         return delete(credential.getId(), credential.getType());
     }
 
@@ -112,19 +114,24 @@ public final class Win32CredentialManager implements CredentialManager {
             return nativeInteropBridge.credDelete(id, type.getValue(), 0);
 
         } catch (LastErrorException e) {
+            logger.error(errorToStringService.getMessageFor(e.getErrorCode()).orElse(UNKONWN_ERROR), e);
             return false;
         }
     }
 
     @Override
     public Optional<Credential> find(String id, CredentialType type) {
-
         try (var win33Credential = nativeInteropBridge.credRead(id, type, 0)) {
-
             return win33Credential
                 .value()
                 .flatMap(credentialConverter::fromInternalCredential);
 
+        } catch (LastErrorException e) {
+            var error = ExpectedErrorCode.fromInteger(e.getErrorCode()).orElse(ExpectedErrorCode.NOT_FOUND);
+            if (error != ExpectedErrorCode.NOT_FOUND) {
+                logger.error(errorToStringService.getMessageFor(error).orElse(UNKONWN_ERROR), e);
+            }
+            return Optional.empty();
         } catch (Exception e) {
             return Optional.empty();
         }
