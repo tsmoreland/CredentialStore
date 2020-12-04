@@ -14,21 +14,27 @@ package moreland.win32.credentialstore.internal;
 
 import java.util.Optional;
 
+import com.sun.jna.LastErrorException;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
 
+import org.slf4j.Logger;
+
+import moreland.win32.credentialstore.ErrorToStringService;
+import moreland.win32.credentialstore.Guard;
 import moreland.win32.credentialstore.structures.Credential;
 
 public final class Win32CriticalCredentialHandle implements CriticalCredentialHandle {
 
     private final Advapi32Library advapi32;
     private final Optional<Credential> credential;
+    private final ErrorToStringService errorToStringService;
+    private final Logger logger;
 
-    public Win32CriticalCredentialHandle(PointerByReference credentialPtr) {
-        this(Advapi32Library.INSTANCE, credentialPtr);
-    }
+    public Win32CriticalCredentialHandle(Advapi32Library advapi32, PointerByReference credentialPtr,
+            ErrorToStringService errorToStringService, Logger logger) throws Exception {
 
-    public Win32CriticalCredentialHandle(Advapi32Library advapi32, PointerByReference credentialPtr) {
+        Guard.againstNull(advapi32, "advapi32");
         this.advapi32 = advapi32;
 
         Pointer ptr = credentialPtr != null
@@ -38,29 +44,40 @@ public final class Win32CriticalCredentialHandle implements CriticalCredentialHa
         this.credential = ptr != null 
             ? Optional.of(new Credential(ptr))
             : Optional.empty();
+
+        try {
+            Guard.againstNull(errorToStringService, "errorToStringService");
+            Guard.againstNull(logger, "logger");
+
+        } catch (Exception e) {
+            close();
+            throw e;
+        }
+
+        this.errorToStringService = errorToStringService;
+        this.logger = logger;
+
     }
 
-    public Win32CriticalCredentialHandle(Pointer credentialPtr) {
-        this(Advapi32Library.INSTANCE, credentialPtr);
-    }
-
-    public Win32CriticalCredentialHandle(Advapi32Library advapi32, Pointer credentialPtr) {
+    public Win32CriticalCredentialHandle(Advapi32Library advapi32, Pointer credentialPtr, 
+            ErrorToStringService errorToStringService, Logger logger) throws Exception {
+        Guard.againstNull(advapi32, "advapi32");
         this.advapi32 = advapi32;
-
         this.credential = credentialPtr != null
             ? Optional.of(new Credential(credentialPtr))
             : Optional.empty();
-    }
 
+        try {
+            Guard.againstNull(errorToStringService, "errorToStringService");
+            Guard.againstNull(logger, "logger");
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void close() throws Exception {
-        if (credential.isPresent()) {
-            advapi32.CredFree(credential.get().getPointer());
+        } catch (Exception e) {
+            close();
+            throw e;
         }
+
+        this.errorToStringService = errorToStringService;
+        this.logger = logger;
     }
 
     /**
@@ -78,4 +95,22 @@ public final class Win32CriticalCredentialHandle implements CriticalCredentialHa
     public Optional<Credential> value() {
         return credential;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void close() throws Exception {
+        try {
+            if (credential.isPresent()) {
+                advapi32.CredFree(credential.get().getPointer());
+            }
+
+        } catch (LastErrorException e) {
+            if (logger != null && errorToStringService != null)  {
+                logger.error(errorToStringService.getMessageFor(e.getErrorCode()).orElse("Unknown error occurred."), e);
+            }
+        }
+    }
+
 }

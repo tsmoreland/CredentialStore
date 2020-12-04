@@ -12,37 +12,44 @@
 //
 package moreland.win32.credentialstore.internal;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+
+import moreland.win32.credentialstore.ErrorToStringService;
 
 @ExtendWith(MockitoExtension.class)
 class Win32CriticalCredentialHandleFactoryTests {
     
     @Mock
     private Advapi32Library advapi32;
-    private Win32CriticalCredentialHandleFactory factory;
 
-    @BeforeEach
-    void setup() {
-        factory = new Win32CriticalCredentialHandleFactory(advapi32);
-    }
+    @Mock
+    private ErrorToStringService errorToStringService;
+
+    @Mock
+    private Logger logger;
 
     @Test
     void constructor_throwsIllegalArgumentException_whenAdvapi32IsNull() {
-        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CriticalCredentialHandleFactory((Advapi32Library)null));
+        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CriticalCredentialHandleFactory((Advapi32Library)null, errorToStringService, logger));
         assertTrue(ex.getMessage().contains("advapi32"));
     }
     
     @Test
-    void empty_returnsEmptyCriticalCredentialHandle_always() {
-        var emptyHandle = factory.empty();
-        assertFalse(emptyHandle.isPresent());
+    void constructor_throwsIllegalArgumentException_whenErrorToStringServiceIsNull() {
+        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CriticalCredentialHandleFactory(advapi32, (ErrorToStringService) null, logger));
+        assertTrue(ex.getMessage().contains("errorToStringService"));
+    }
+
+    @Test
+    void constructor_throwsIllegalArgumentException_whenLoggerIsNull() {
+        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CriticalCredentialHandleFactory(advapi32, errorToStringService, (Logger) null));
+        assertTrue(ex.getMessage().contains("logger"));
     }
 }

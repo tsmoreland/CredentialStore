@@ -12,46 +12,57 @@
 //
 package moreland.win32.credentialstore.internal;
 
+import java.util.Optional;
+
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
 
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import moreland.win32.credentialstore.ErrorToStringService;
 import moreland.win32.credentialstore.Guard;
 
+@Component("criticalCredentialHandleFactory")
 public class Win32CriticalCredentialHandleFactory implements CriticalCredentialHandleFactory {
 
     private final Advapi32Library advapi32;
+    private final ErrorToStringService errorToStringService;
+    private final Logger logger;
 
-    public Win32CriticalCredentialHandleFactory() {
-        this(Advapi32Library.INSTANCE);
-    }
-
-    public Win32CriticalCredentialHandleFactory(Advapi32Library advapi32) {
+    public Win32CriticalCredentialHandleFactory(Advapi32Library advapi32, ErrorToStringService errorToStringService,
+            Logger logger) {
         Guard.againstNull(advapi32, "advapi32");
+        Guard.againstNull(errorToStringService, "errorToStringService");
+        Guard.againstNull(logger, "logger");
+
         this.advapi32 = advapi32;
+        this.errorToStringService = errorToStringService;
+        this.logger = logger;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public CriticalCredentialHandle empty()
-    {
-        return new Win32CriticalCredentialHandle(advapi32, (PointerByReference) null);
+    public Optional<CriticalCredentialHandle> fromPointerByReference(PointerByReference handle) {
+        try {
+            return Optional.of(new Win32CriticalCredentialHandle(advapi32, handle, errorToStringService, logger));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public CriticalCredentialHandle fromPointerByReference(PointerByReference handle) {
-        return new Win32CriticalCredentialHandle(advapi32, handle);
-    }
+    public Optional<CriticalCredentialHandle> fromPointer(Pointer pointer) {
+        try {
+            return Optional.of(new Win32CriticalCredentialHandle(advapi32, pointer, errorToStringService, logger));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CriticalCredentialHandle fromPointer(Pointer pointer) {
-        return new Win32CriticalCredentialHandle(advapi32, pointer);
     }
 }
