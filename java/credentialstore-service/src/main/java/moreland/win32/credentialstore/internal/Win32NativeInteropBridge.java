@@ -33,10 +33,6 @@ public final class Win32NativeInteropBridge implements NativeInteropBridge {
     private Advapi32Library advapi32;
     private CriticalCredentialHandleFactory criticalCredentialHandleFactory;
 
-    public Win32NativeInteropBridge() {
-        this(Advapi32Library.INSTANCE, new Win32CriticalCredentialHandleFactory(Advapi32Library.INSTANCE));
-    }
-
     /**
      * creates a new instance of the Win32NativeInteropBridge class
      * 
@@ -93,12 +89,12 @@ public final class Win32NativeInteropBridge implements NativeInteropBridge {
      * {@inheritDoc}
      */
     @Override
-    public CriticalCredentialHandle credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException {
+    public Optional<CriticalCredentialHandle> credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException {
 
         var credentialPtr = new PointerByReference();
         synchronized(advapi32) {
             if (!advapi32.CredReadW(new WString(target), type.getValue(), reservedFlag, credentialPtr))
-                return criticalCredentialHandleFactory.empty();
+                return Optional.empty();
         }
         return criticalCredentialHandleFactory.fromPointerByReference(credentialPtr);
     }

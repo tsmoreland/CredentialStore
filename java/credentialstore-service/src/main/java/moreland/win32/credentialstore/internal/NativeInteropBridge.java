@@ -68,7 +68,7 @@ public interface NativeInteropBridge {
      * @return the matching {@code Credential}
      * @exception LastErrorException on error, including not found
      */
-    CriticalCredentialHandle credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException;
+    Optional<CriticalCredentialHandle> credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException;
 
     /**
      * Creates or updates a credential

@@ -12,11 +12,22 @@
 //
 package moreland.win32.credentialstore;
 
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+
+import moreland.win32.credentialstore.internal.Advapi32Library;
 
 @Configuration
 @ComponentScan({"moreland.win32.credentialstore"})
 public class ServiceConfiguration {
     
+    @Bean(name="advapi32")
+    @Scope(value=BeanDefinition.SCOPE_SINGLETON)
+    Advapi32Library getAdvapi32Library() {
+        return Advapi32Library.INSTANCE;
+    }
+
 }

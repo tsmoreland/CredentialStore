@@ -16,7 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
 
+import moreland.win32.credentialstore.ErrorToStringService;
 import moreland.win32.credentialstore.structures.Credential;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -27,14 +29,20 @@ import static org.mockito.Mockito.verify;
 import com.sun.jna.ptr.PointerByReference;
 
 @ExtendWith(MockitoExtension.class)
-class Win32CriticalCredentialTests {
+class Win32CriticalCredentialHandleTests {
     
     @Mock
     private Advapi32Library advapi32;
 
+    @Mock
+    private ErrorToStringService errorToStringService;
+
+    @Mock
+    private Logger logger;
+
     @Test
     void isPresent_returnsFalse_WhenConstructedWithNullPointer() {
-        try (var handle = new Win32CriticalCredentialHandle(advapi32, (PointerByReference) null)) {
+        try (var handle = new Win32CriticalCredentialHandle(advapi32, (PointerByReference) null, errorToStringService, logger)) {
             assertFalse(handle.isPresent());
 
         } catch (Exception e) {
@@ -44,7 +52,7 @@ class Win32CriticalCredentialTests {
 
     @Test
     void value_returnsEmpty_WhenConstructedWithNullPointer() {
-        try (var handle = new Win32CriticalCredentialHandle(advapi32, (PointerByReference) null)) {
+        try (var handle = new Win32CriticalCredentialHandle(advapi32, (PointerByReference) null, errorToStringService, logger)) {
             assertFalse(handle.value().isPresent());
 
         } catch (Exception e) {
@@ -55,7 +63,7 @@ class Win32CriticalCredentialTests {
     @Test
     void isPresent_returnsFalse_WhenPointerByReferenceContainsNull() {
         var byRef = new PointerByReference();
-        try (var handle = new Win32CriticalCredentialHandle(advapi32, byRef)) {
+        try (var handle = new Win32CriticalCredentialHandle(advapi32, byRef, errorToStringService, logger)) {
             assertFalse(handle.isPresent());
 
         } catch (Exception e) {
@@ -66,7 +74,7 @@ class Win32CriticalCredentialTests {
     @Test
     void value_returnsEmpty_WhenPointerByReferenceContainsNull() {
         var byRef = new PointerByReference();
-        try (var handle = new Win32CriticalCredentialHandle(advapi32, byRef)) {
+        try (var handle = new Win32CriticalCredentialHandle(advapi32, byRef, errorToStringService, logger)) {
             assertFalse(handle.value().isPresent());
 
         } catch (Exception e) {
@@ -80,7 +88,7 @@ class Win32CriticalCredentialTests {
         var ptr = credential.getPointer();
         var byRef = new PointerByReference(ptr);
 
-        try (var handle = new Win32CriticalCredentialHandle(advapi32, byRef)) {
+        try (var handle = new Win32CriticalCredentialHandle(advapi32, byRef, errorToStringService, logger)) {
             // ... nothing to do here ...
 
         } catch (Exception e) {
@@ -96,7 +104,7 @@ class Win32CriticalCredentialTests {
         var ptr = credential.getPointer();
         var byRef = new PointerByReference(ptr);
 
-        try (var handle = new Win32CriticalCredentialHandle(advapi32, byRef)) {
+        try (var handle = new Win32CriticalCredentialHandle(advapi32, byRef, errorToStringService, logger)) {
             var value = handle.value();
             assertTrue(value.isPresent());
         } catch (Exception e) {

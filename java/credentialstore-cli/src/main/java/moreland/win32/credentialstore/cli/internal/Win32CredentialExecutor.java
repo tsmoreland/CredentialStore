@@ -64,8 +64,6 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
         this.outputStream = outputStream;
         this.passwordReaderFacade = passwordReaderFacade;
         this.logger = logger;
-
-        logger.error("Hello");
     }
 
     public static Optional<String> getHelp(final String operation) {
@@ -116,7 +114,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
 
         var type = CredentialType.fromString(args.get(0));
         if (!type.isPresent()) {
-            // log not reognized type
+            logger.error(String.format("Unrecognized type '%s'", args.get(0)));
             return false;
         }
 
@@ -151,7 +149,7 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
         if (args.size() > 1) {
             var type = CredentialType.fromString(args.get(1));
             if (!type.isPresent()) {
-                // log not reognized type
+                logger.error(String.format("Unrecognized type '%s'", args.get(1)));
                 return false;
             }
             return credentialManager.delete(target, type.get());
@@ -178,7 +176,6 @@ public final class Win32CredentialExecutor implements CredentialExecutor {
         if (args.size() > 1) {
             var type = CredentialType.fromString(args.get(1));
             if (!type.isPresent()) {
-                // log not reognized type
                 logger.error(String.format("Unrecognized type: '%s'", args.get(1)));
                 return false;
             }

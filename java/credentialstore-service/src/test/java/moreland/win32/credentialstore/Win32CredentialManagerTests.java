@@ -22,6 +22,8 @@ import java.util.Optional;
 
 import com.sun.jna.LastErrorException;
 
+import org.slf4j.Logger;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,23 +52,41 @@ class Win32CredentialManagerTests {
     @Mock
     private Credential credential;
 
+    @Mock
+    private ErrorToStringService errorToStringService;
+
+    @Mock
+    private Logger logger;
+
     private Win32CredentialManager credentialManager;
 
     @BeforeEach
     void beforeEach() {
-        credentialManager = new Win32CredentialManager(nativeInteropBridge, credentialConverter);
+        credentialManager = new Win32CredentialManager(nativeInteropBridge, credentialConverter, errorToStringService, logger);
     }
 
     @Test
     void ctor_throwsIllegalArgumentException_whenNativeInteropBridgeIsNull() {
-        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CredentialManager((NativeInteropBridge) null, credentialConverter));
+        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CredentialManager((NativeInteropBridge) null, credentialConverter, errorToStringService, logger));
         assertTrue(ex.getMessage().contains("nativeInteropBridge"));
     }
 
     @Test
     void ctor_throwsIllegalArgumentException_whenCredentialConverterIsNull() {
-        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CredentialManager(nativeInteropBridge, (CredentialConverter) null));
+        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CredentialManager(nativeInteropBridge, (CredentialConverter) null, errorToStringService, logger));
         assertTrue(ex.getMessage().contains("credentialConverter"));
+    }
+
+    @Test
+    void ctor_throwsIllegalArgumentException_whenErrorToStringServiceIsNull() {
+        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CredentialManager(nativeInteropBridge, credentialConverter, errorToStringService, (Logger)null));
+        assertTrue(ex.getMessage().contains("logger"));
+    }
+
+    @Test
+    void ctor_throwsIllegalArgumentException_whenLoggerIsNull() {
+        var ex = assertThrows(IllegalArgumentException.class, () -> new Win32CredentialManager(nativeInteropBridge, credentialConverter, (ErrorToStringService)null, logger));
+        assertTrue(ex.getMessage().contains("errorToStringService"));
     }
 
     @Test
