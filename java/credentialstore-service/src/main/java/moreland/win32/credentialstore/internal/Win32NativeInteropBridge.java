@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import com.sun.jna.WString;
 
+import moreland.win32.credentialstore.BadInjectionException;
 import moreland.win32.credentialstore.CredentialType;
 import moreland.win32.credentialstore.Guard;
 import moreland.win32.credentialstore.structures.Credential;
@@ -89,12 +90,12 @@ public final class Win32NativeInteropBridge implements NativeInteropBridge {
      * {@inheritDoc}
      */
     @Override
-    public Optional<CriticalCredentialHandle> credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException {
+    public CriticalCredentialHandle credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException, BadInjectionException {
 
         var credentialPtr = new PointerByReference();
         synchronized(advapi32) {
             if (!advapi32.CredReadW(new WString(target), type.getValue(), reservedFlag, credentialPtr))
-                return Optional.empty();
+                return criticalCredentialHandleFactory.empty();
         }
         return criticalCredentialHandleFactory.fromPointerByReference(credentialPtr);
     }

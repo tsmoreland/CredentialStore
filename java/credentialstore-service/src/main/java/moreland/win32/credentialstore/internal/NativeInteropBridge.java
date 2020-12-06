@@ -17,6 +17,7 @@ import java.util.Optional;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Pointer;
 
+import moreland.win32.credentialstore.BadInjectionException;
 import moreland.win32.credentialstore.CredentialType;
 
 import moreland.win32.credentialstore.structures.Credential;
@@ -68,7 +69,7 @@ public interface NativeInteropBridge {
      * @return the matching {@code Credential}
      * @exception LastErrorException on error, including not found
      */
-    Optional<CriticalCredentialHandle> credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException;
+    CriticalCredentialHandle credRead(String target, CredentialType type, int reservedFlag) throws LastErrorException, BadInjectionException;
 
     /**
      * Creates or updates a credential

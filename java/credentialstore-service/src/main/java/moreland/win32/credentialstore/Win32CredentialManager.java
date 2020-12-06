@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import moreland.win32.credentialstore.converters.CredentialConverter;
-import moreland.win32.credentialstore.internal.CriticalCredentialHandle;
 import moreland.win32.credentialstore.internal.EnumerateFlag;
 import moreland.win32.credentialstore.internal.NativeInteropBridge;
 import moreland.win32.credentialstore.internal.PreserveType;
@@ -77,6 +76,10 @@ public final class Win32CredentialManager implements CredentialManager {
     }
 
     private boolean addOrUpdate(Credential credential, PreserveType preserveType) {
+        if (credential == null) {
+            throw new IllegalArgumentException("credential is null");
+        }
+
         var win32Credential = credentialConverter.toInternalCredentialReference(credential);
         if (!win32Credential.isPresent()) {
             return false;
@@ -122,13 +125,10 @@ public final class Win32CredentialManager implements CredentialManager {
 
     @Override
     public Optional<Credential> find(String id, CredentialType type) {
-        Optional<CriticalCredentialHandle> win32Credential = Optional.empty();
-        try {
-            win32Credential = nativeInteropBridge.credRead(id, type, 0);
+        try (var win32Credential = nativeInteropBridge.credRead(id, type, 0)){
             return win32Credential
-                .map(CriticalCredentialHandle::value)
-                .filter(Optional::isPresent)
-                .flatMap(c -> credentialConverter.fromInternalCredential(c.get()));
+                .value()
+                .flatMap(credentialConverter::fromInternalCredential);
 
         } catch (LastErrorException e) {
             var error = ExpectedErrorCode.fromInteger(e.getErrorCode()).orElse(ExpectedErrorCode.NOT_FOUND);
@@ -139,18 +139,7 @@ public final class Win32CredentialManager implements CredentialManager {
         } catch (Exception e) {
             return Optional.empty();
 
-        } finally {
-            // ToDo: move this into NativeInteropBridge
-            try {
-                if (win32Credential.isPresent())
-                    win32Credential.get().close();
-
-            } catch (LastErrorException e) {
-                logger.error(errorToStringService.getMessageFor(e.getErrorCode()).orElse(UNKONWN_ERROR), e);
-            } catch (Exception e) {
-                logger.error(e.getLocalizedMessage(), e);
-            }
-        }
+        } 
     }
 
     @Override
