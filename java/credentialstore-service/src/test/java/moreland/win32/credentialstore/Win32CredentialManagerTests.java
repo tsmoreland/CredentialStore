@@ -12,6 +12,8 @@
 //
 package moreland.win32.credentialstore;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,6 +33,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import moreland.win32.credentialstore.converters.CredentialConverter;
+import moreland.win32.credentialstore.internal.CriticalCredentialHandle;
 import moreland.win32.credentialstore.internal.NativeInteropBridge;
 import moreland.win32.credentialstore.internal.PreserveType;
 import moreland.win32.credentialstore.structures.Credential.ByReference;
@@ -57,6 +60,12 @@ class Win32CredentialManagerTests {
 
     @Mock
     private Logger logger;
+
+    @Mock
+    private CriticalCredentialHandle credentialHandle;
+    
+    @Mock
+    private moreland.win32.credentialstore.structures.Credential nativeCredential;
 
     private Win32CredentialManager credentialManager;
 
@@ -129,11 +138,33 @@ class Win32CredentialManagerTests {
         assertTrue(arrangeAndActUsingCredWriteReturnsTrue(credentialManager::update));
     }
 
+    @Test
+    void find_doesNotThrow_whenFindSucceeds() {
+        arrangeUsingCredReadReturnsCred(FindResult.SUCCESS, null);
+        assertDoesNotThrow(() -> credentialManager.find("id", CredentialType.GENERIC));
+    }
+
+    @Test
+    void find_isPresent_whenFindSucceeds() {
+        arrangeUsingCredReadReturnsCred(FindResult.SUCCESS, null);
+
+        var actualValue = credentialManager.find("id", CredentialType.GENERIC);
+
+        assertTrue(actualValue.isPresent());
+    }
+
+    @Test
+    void find_returnsExpectedValue_whenFindSucceeds() {
+        arrangeUsingCredReadReturnsCred(FindResult.SUCCESS, null);
+        var actualValue = credentialManager.find("id", CredentialType.GENERIC);
+        assertEquals(credential, actualValue.get());
+    }
+
+
     private boolean arrangeAndActUsingCredentialConverterReturnsEmpty(ConsumerPredicate consumerPredicate) {
         when(credentialConverter.toInternalCredentialReference(any(Credential.class))).thenReturn(Optional.empty());
         return consumerPredicate.process(credential);
     }
-
     private boolean arrangeAndActUsingCredWriteReturnsFalse(ConsumerPredicate consumerPredicate) {
         when(credentialConverter.toInternalCredentialReference(any(Credential.class)))
             .thenReturn(Optional.of(new moreland.win32.credentialstore.structures.Credential.ByReference()));
@@ -152,5 +183,51 @@ class Win32CredentialManagerTests {
             .thenReturn(Optional.of(new moreland.win32.credentialstore.structures.Credential.ByReference()));
         when(nativeInteropBridge.credWrite(any(ByReference.class), any(PreserveType.class))).thenReturn(true);
         return consumerPredicate.process(credential);
+    }
+
+    private static enum FindResult
+    {
+        SUCCESS,
+        CONVERTER_FAILS,
+        READ_FAILS,
+        READ_THROWS,
+    }
+
+    private void arrangeUsingCredReadReturnsCred(FindResult result, LastErrorException e) {
+        try {
+            switch (result) {
+                case SUCCESS:
+                    when(nativeInteropBridge.credRead(any(String.class), any(CredentialType.class), any(Integer.class)))
+                        .thenReturn(credentialHandle);
+                    when(credentialHandle.value())
+                        .thenReturn(Optional.of(nativeCredential));
+                    when(credentialConverter.fromInternalCredential(nativeCredential))
+                        .thenReturn(Optional.of(credential));
+                    break;
+                case CONVERTER_FAILS:
+                    when(nativeInteropBridge.credRead(any(String.class), any(CredentialType.class), any(Integer.class)))
+                        .thenReturn(credentialHandle);
+                    when(credentialHandle.value())
+                        .thenReturn(Optional.of(nativeCredential));
+                    when(credentialConverter.fromInternalCredential(nativeCredential))
+                        .thenReturn(Optional.empty());
+                    break;
+                case READ_FAILS:
+                    when(nativeInteropBridge.credRead(any(String.class), any(CredentialType.class), any(Integer.class)))
+                        .thenReturn(credentialHandle);
+                    when(credentialHandle.value())
+                        .thenReturn(Optional.empty());
+                    when(credentialConverter.fromInternalCredential(nativeCredential))
+                        .thenThrow(e); // to force that it's not reachable
+                    break;
+                case READ_THROWS:
+                    when(nativeInteropBridge.credRead(any(String.class), any(CredentialType.class), any(Integer.class)))
+                        .thenThrow(e);
+                    break;
+            }
+        } catch (Exception ex) {
+            assertFalse(true, ex.getLocalizedMessage());
+        }
+
     }
 }
