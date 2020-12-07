@@ -118,7 +118,10 @@ public final class Win32CredentialManager implements CredentialManager {
             return nativeInteropBridge.credDelete(id, type.getValue(), 0);
 
         } catch (LastErrorException e) {
-            logger.error(errorToStringService.getMessageFor(e.getErrorCode()).orElse(UNKONWN_ERROR), e);
+            var error = ExpectedErrorCode.fromInteger(e.getErrorCode()).orElse(ExpectedErrorCode.NOT_FOUND);
+            if (error != ExpectedErrorCode.NOT_FOUND) {
+                logger.error(errorToStringService.getMessageFor(e.getErrorCode()).orElse(UNKONWN_ERROR), e);
+            }
             return false;
         }
     }
