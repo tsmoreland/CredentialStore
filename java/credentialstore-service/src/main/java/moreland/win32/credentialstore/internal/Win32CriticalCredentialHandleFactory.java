@@ -12,14 +12,13 @@
 //
 package moreland.win32.credentialstore.internal;
 
-import java.util.Optional;
-
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import moreland.win32.credentialstore.BadInjectionException;
 import moreland.win32.credentialstore.ErrorToStringService;
 import moreland.win32.credentialstore.Guard;
 
@@ -45,11 +44,11 @@ public class Win32CriticalCredentialHandleFactory implements CriticalCredentialH
      * {@inheritDoc}
      */
     @Override
-    public Optional<CriticalCredentialHandle> fromPointerByReference(PointerByReference handle) {
+    public CriticalCredentialHandle fromPointerByReference(PointerByReference handle) throws BadInjectionException {
         try {
-            return Optional.of(new Win32CriticalCredentialHandle(advapi32, handle, errorToStringService, logger));
+            return new Win32CriticalCredentialHandle(advapi32, handle, errorToStringService, logger);
         } catch (Exception e) {
-            return Optional.empty();
+            throw new BadInjectionException(e);
         }
     }
 
@@ -57,12 +56,24 @@ public class Win32CriticalCredentialHandleFactory implements CriticalCredentialH
      * {@inheritDoc}
      */
     @Override
-    public Optional<CriticalCredentialHandle> fromPointer(Pointer pointer) {
+    public CriticalCredentialHandle fromPointer(Pointer pointer) throws BadInjectionException {
         try {
-            return Optional.of(new Win32CriticalCredentialHandle(advapi32, pointer, errorToStringService, logger));
+            return new Win32CriticalCredentialHandle(advapi32, pointer, errorToStringService, logger);
         } catch (Exception e) {
-            return Optional.empty();
+            throw new BadInjectionException(e);
         }
+    }
 
+    /**
+     * returns a new instance with an empty handle, used for error conditions
+     * @return empty handle
+     */
+    @Override
+    public CriticalCredentialHandle empty() throws BadInjectionException {
+        try {
+            return new Win32CriticalCredentialHandle(advapi32, Pointer.NULL, errorToStringService, logger);
+        } catch (Exception e) {
+            throw new BadInjectionException(e);
+        }
     }
 }
