@@ -176,6 +176,8 @@ class Win32CredentialManagerTests {
     @Test
     void find_logsError_whenCredReadThrowsLastErrorInvalidArgument() {
         var e = new LastErrorException(ExpectedErrorCode.INVALID_ARGUMENT.getValue());
+        when(errorToStringService.getMessageFor(ExpectedErrorCode.INVALID_ARGUMENT))
+            .thenReturn(Optional.of("ERROR_INVALID"));
         arrangeUsingCredReadReturnsCred(FindResult.READ_THROWS, e);
         credentialManager.find("id", CredentialType.GENERIC);
 
@@ -215,9 +217,6 @@ class Win32CredentialManagerTests {
     }
 
     private void arrangeUsingCredReadReturnsCred(FindResult result, LastErrorException e) {
-        when(errorToStringService.getMessageFor(ExpectedErrorCode.INVALID_ARGUMENT))
-            .thenReturn(Optional.of("ERROR_INVALID"));
-
         try {
             switch (result) {
                 case SUCCESS:
