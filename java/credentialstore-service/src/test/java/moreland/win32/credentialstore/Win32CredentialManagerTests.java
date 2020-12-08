@@ -18,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -147,9 +149,7 @@ class Win32CredentialManagerTests {
     @Test
     void find_isPresent_whenFindSucceeds() {
         arrangeUsingCredReadReturnsCred(FindResult.SUCCESS, null);
-
         var actualValue = credentialManager.find("id", CredentialType.GENERIC);
-
         assertTrue(actualValue.isPresent());
     }
 
@@ -160,6 +160,27 @@ class Win32CredentialManagerTests {
         assertEquals(credential, actualValue.get());
     }
 
+    @Test
+    void find_doesNotThrow_whenCredReadThrowsLastError42() {
+        arrangeUsingCredReadReturnsCred(FindResult.READ_THROWS, new LastErrorException(42));
+        assertDoesNotThrow(() -> credentialManager.find("id", CredentialType.GENERIC));
+    }
+
+    @Test
+    void find_isNotPresent_whenCredReadThrowsLastError42() {
+        arrangeUsingCredReadReturnsCred(FindResult.READ_THROWS, new LastErrorException(42));
+        var actualValue = credentialManager.find("id", CredentialType.GENERIC);
+        assertFalse(actualValue.isPresent());
+    }
+
+    @Test
+    void find_logsError_whenCredReadThrowsLastErrorInvalidArgument() {
+        var e = new LastErrorException(ExpectedErrorCode.INVALID_ARGUMENT.getValue());
+        arrangeUsingCredReadReturnsCred(FindResult.READ_THROWS, e);
+        credentialManager.find("id", CredentialType.GENERIC);
+
+        verify(logger, times(1)).error("ERROR_INVALID", e);
+    }
 
     private boolean arrangeAndActUsingCredentialConverterReturnsEmpty(ConsumerPredicate consumerPredicate) {
         when(credentialConverter.toInternalCredentialReference(any(Credential.class))).thenReturn(Optional.empty());
@@ -194,6 +215,9 @@ class Win32CredentialManagerTests {
     }
 
     private void arrangeUsingCredReadReturnsCred(FindResult result, LastErrorException e) {
+        when(errorToStringService.getMessageFor(ExpectedErrorCode.INVALID_ARGUMENT))
+            .thenReturn(Optional.of("ERROR_INVALID"));
+
         try {
             switch (result) {
                 case SUCCESS:
