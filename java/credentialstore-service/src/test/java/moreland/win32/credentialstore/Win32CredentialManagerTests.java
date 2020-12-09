@@ -22,6 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.sun.jna.LastErrorException;
@@ -35,6 +36,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import moreland.win32.credentialstore.converters.CredentialConverter;
+import moreland.win32.credentialstore.internal.CredentialList;
 import moreland.win32.credentialstore.internal.CriticalCredentialHandle;
 import moreland.win32.credentialstore.internal.NativeInteropBridge;
 import moreland.win32.credentialstore.internal.PreserveType;
@@ -68,6 +70,10 @@ class Win32CredentialManagerTests {
     
     @Mock
     private moreland.win32.credentialstore.structures.Credential nativeCredential;
+
+    @Mock
+    private CredentialList credentialsList;
+
 
     private Win32CredentialManager credentialManager;
 
@@ -251,6 +257,20 @@ class Win32CredentialManagerTests {
         } catch (Exception ex) {
             assertFalse(true, ex.getLocalizedMessage());
         }
+    }
+
+    private void arrangeFilteredCredEnumerateReturns() {
+        arrangeFilteredCredEnumerateReturns(null);
+    }
+    private void arrangeFilteredCredEnumerateReturns(LastErrorException e) {
+        if (e == null) {
+            when(nativeInteropBridge.credEnumerate(any(), any()))
+                .thenReturn(credentialsList);
+        } else {
+            when(nativeInteropBridge.credEnumerate(any(), any()))
+                .thenThrow(e);
+        }
 
     }
+
 }
