@@ -22,6 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.sun.jna.LastErrorException;
@@ -31,10 +32,13 @@ import org.slf4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import moreland.win32.credentialstore.converters.CredentialConverter;
+import moreland.win32.credentialstore.internal.CredentialList;
 import moreland.win32.credentialstore.internal.CriticalCredentialHandle;
 import moreland.win32.credentialstore.internal.NativeInteropBridge;
 import moreland.win32.credentialstore.internal.PreserveType;
@@ -69,11 +73,19 @@ class Win32CredentialManagerTests {
     @Mock
     private moreland.win32.credentialstore.structures.Credential nativeCredential;
 
+    @Mock
+    private CredentialList credentialsList;
+
+    private List<moreland.win32.credentialstore.structures.Credential> credentials;
+
+
     private Win32CredentialManager credentialManager;
 
     @BeforeEach
     void beforeEach() {
         credentialManager = new Win32CredentialManager(nativeInteropBridge, credentialConverter, errorToStringService, logger);
+
+        credentials = List.of(nativeCredential);
     }
 
     @Test
@@ -184,6 +196,47 @@ class Win32CredentialManagerTests {
         verify(logger, times(1)).error("ERROR_INVALID", e);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void find_searchAll_returnsOneMatch_whenMatchFound(boolean searchAll) {
+        arrangeFilteredCredEnumerateReturns();
+        when(credential.getId()).thenReturn("test-id");
+
+        var actualValue = credentialManager.find("test-id", searchAll);
+
+        assertEquals(1,  actualValue.size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void find_searchAll_returnsExpectedValue_whenMatchFound(boolean searchAll) {
+        arrangeFilteredCredEnumerateReturns();
+        when(credential.getId()).thenReturn("test-id");
+
+        var actualValue = credentialManager.find("test-id", searchAll);
+
+        assertEquals(credential, actualValue.get(0));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void find_searchAll_returnsEmpty_whenFindFails(boolean searchAll) {
+        arrangeFilteredCredEnumerateReturns();
+        when(credential.getId()).thenReturn("test-id-not-found");
+
+        var actualValue = credentialManager.find("test-id", searchAll);
+
+        assertEquals(0,  actualValue.size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void find_searchAll_returnsEmpty_whenCredEnumerateThrows(boolean searchAll) {
+        arrangeFilteredCredEnumerateReturns(new LastErrorException(ExpectedErrorCode.INVALID_ARGUMENT.getValue()));
+        var actualValue = credentialManager.find("test-id", searchAll);
+        assertEquals(0,  actualValue.size());
+    }
+
     private boolean arrangeAndActUsingCredentialConverterReturnsEmpty(ConsumerPredicate consumerPredicate) {
         when(credentialConverter.toInternalCredentialReference(any(Credential.class))).thenReturn(Optional.empty());
         return consumerPredicate.process(credential);
@@ -251,6 +304,26 @@ class Win32CredentialManagerTests {
         } catch (Exception ex) {
             assertFalse(true, ex.getLocalizedMessage());
         }
+    }
+
+    private void arrangeFilteredCredEnumerateReturns() {
+        arrangeFilteredCredEnumerateReturns(null);
+    }
+    private void arrangeFilteredCredEnumerateReturns(LastErrorException e) {
+        if (e == null) {
+            when(nativeInteropBridge.credEnumerate(any(), any()))
+                .thenReturn(credentialsList);
+            when(credentialsList.stream())    
+                .thenReturn(credentials.stream());
+            when(credentialConverter.fromInternalCredential(nativeCredential))
+                .thenReturn(Optional.of(credential));
+
+
+        } else {
+            when(nativeInteropBridge.credEnumerate(any(), any()))
+                .thenThrow(e);
+        }
 
     }
+
 }
