@@ -248,6 +248,55 @@ class Win32CredentialManagerTests {
         verify(logger, times(1)).error(msg, e);
     }
 
+    @Test
+    void delete_byCredential_returnsTrue_whenCredDeleteReturnsTrue() {
+        arrangeCredDelelte(true, "test-id", CredentialType.GENERIC, true, null);
+        var actualValue = credentialManager.delete(credential);
+        assertTrue(actualValue);
+    }
+
+    @Test
+    void delete_byCredential_returnsFalse_whenCredDeleteReturnsFalse() {
+        arrangeCredDelelte(true, "test-id", CredentialType.GENERIC, false, null);
+        var actualValue = credentialManager.delete(credential);
+        assertFalse(actualValue);
+    }
+
+    @Test
+    void delete_byCredential_returnsFalse_whenCredDeleteThrows() {
+        var e = new LastErrorException(ExpectedErrorCode.INVALID_ARGUMENT.getValue());
+        arrangeCredDelelte(true, "test-id", CredentialType.GENERIC, true, e);
+
+        var actualValue = credentialManager.delete(credential);
+        assertFalse(actualValue);
+    }
+
+    @Test
+    void delete_byIdAndType_returnsTrue_whenCredDeleteReturnsTrue() {
+        var id = "test-id";
+        arrangeCredDelelte(false, id, CredentialType.GENERIC, true, null);
+        var actualValue = credentialManager.delete(id, CredentialType.GENERIC);
+        assertTrue(actualValue);
+    }
+
+    @Test
+    void delete_byIdAndType_returnsFalse_whenCredDeleteReturnsFalse() {
+        var id = "test-id";
+        arrangeCredDelelte(false, id, CredentialType.GENERIC, false, null);
+        var actualValue = credentialManager.delete(id, CredentialType.GENERIC);
+        assertFalse(actualValue);
+    }
+
+    @Test
+    void delete_byIdAndType_returnsFalse_whenCredDeleteThrows() {
+        var e = new LastErrorException(ExpectedErrorCode.INVALID_ARGUMENT.getValue());
+        var id = "test-id";
+        arrangeCredDelelte(false, id, CredentialType.GENERIC, true, e);
+
+        var actualValue = credentialManager.delete(id, CredentialType.GENERIC);
+        assertFalse(actualValue);
+    }
+
     private boolean arrangeAndActUsingCredentialConverterReturnsEmpty(ConsumerPredicate consumerPredicate) {
         when(credentialConverter.toInternalCredentialReference(any(Credential.class))).thenReturn(Optional.empty());
         return consumerPredicate.process(credential);
@@ -316,7 +365,6 @@ class Win32CredentialManagerTests {
             assertFalse(true, ex.getLocalizedMessage());
         }
     }
-
     private void arrangeFilteredCredEnumerateReturns() {
         arrangeFilteredCredEnumerateReturns(null);
     }
@@ -336,5 +384,19 @@ class Win32CredentialManagerTests {
         }
 
     }
+    private void arrangeCredDelelte(boolean byCredential, String target, CredentialType type, boolean result, LastErrorException e) {
+        if (byCredential) {
+            when(credential.getId()).thenReturn(target);
+            when(credential.getType()).thenReturn(type);
+        }
+        if (e != null) {
+            when(nativeInteropBridge.credDelete(target, type.getValue(), 0))
+                .thenThrow(e);
+        } else {
+            when(nativeInteropBridge.credDelete(target, type.getValue(), 0))
+                .thenReturn(result);
+        }
+    }
+
 
 }
