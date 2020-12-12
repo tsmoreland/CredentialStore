@@ -237,6 +237,17 @@ class Win32CredentialManagerTests {
         assertEquals(0,  actualValue.size());
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void find_searchAll_logsError_whenCredEnumerateThrowos(boolean searchAll) {
+        var e = new LastErrorException(ExpectedErrorCode.INVALID_ARGUMENT.getValue());
+        arrangeFilteredCredEnumerateReturns(e);
+        credentialManager.find("test-id", searchAll);
+
+        var msg = String.format("API Error(%d) occurred.", ExpectedErrorCode.INVALID_ARGUMENT.getValue());
+        verify(logger, times(1)).error(msg, e);
+    }
+
     private boolean arrangeAndActUsingCredentialConverterReturnsEmpty(ConsumerPredicate consumerPredicate) {
         when(credentialConverter.toInternalCredentialReference(any(Credential.class))).thenReturn(Optional.empty());
         return consumerPredicate.process(credential);
