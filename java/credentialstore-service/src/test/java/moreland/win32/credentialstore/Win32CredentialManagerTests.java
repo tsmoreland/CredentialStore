@@ -272,6 +272,19 @@ class Win32CredentialManagerTests {
     }
 
     @Test
+    void delete_byCredential_logsError_whenCredDeleteThrows() {
+        var e = new LastErrorException(ExpectedErrorCode.INVALID_ARGUMENT.getValue());
+        var errorMessage = "ERROR MESSAGE";
+        when(errorToStringService.getMessageFor(e.getErrorCode()))
+            .thenReturn(Optional.of(errorMessage));
+        arrangeCredDelelte(true, "test-id", CredentialType.GENERIC, true, e);
+
+        credentialManager.delete(credential);
+
+        verify(logger, times(1)).error(errorMessage, e);
+    }
+
+    @Test
     void delete_byIdAndType_returnsTrue_whenCredDeleteReturnsTrue() {
         var id = "test-id";
         arrangeCredDelelte(false, id, CredentialType.GENERIC, true, null);
