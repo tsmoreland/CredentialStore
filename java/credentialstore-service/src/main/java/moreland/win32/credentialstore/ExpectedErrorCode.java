@@ -24,6 +24,7 @@ public enum ExpectedErrorCode {
     NOT_FOUND(0x00000490),
     NO_SUCH_LOGON_SESSION(0x000005200),
     INVALID_FLAGS(0x000003eC),
+    NOT_SUPPORTED(0x00000032),
     INVALID_ARGUMENT(87);
 
     private final int value;

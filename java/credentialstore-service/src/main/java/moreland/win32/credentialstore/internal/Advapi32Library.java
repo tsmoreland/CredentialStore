@@ -27,7 +27,7 @@ import moreland.win32.credentialstore.structures.Credential;
 public interface Advapi32Library extends StdCallLibrary {
     Advapi32Library INSTANCE = Platform.isWindows()
         ? (Advapi32Library) Native.load("advapi32", Advapi32Library.class)
-        : null;
+        : new UnsupportedAdvapi32Library();
 
     /**
      * CreadReadW

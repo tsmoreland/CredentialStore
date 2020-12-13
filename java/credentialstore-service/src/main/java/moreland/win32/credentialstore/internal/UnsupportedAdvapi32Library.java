@@ -18,6 +18,10 @@ import com.sun.jna.WString;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import moreland.win32.credentialstore.ExpectedErrorCode;
 import moreland.win32.credentialstore.structures.Credential.ByReference;
 
 /**
@@ -25,14 +29,26 @@ import moreland.win32.credentialstore.structures.Credential.ByReference;
  */
 class UnsupportedAdvapi32Library implements Advapi32Library {
 
+    private static final String ERROR_MESSAGE = "Unsupported operating system, all operations will fail with this result in this environment";
+    private Logger logger;
+
+    /**
+     * Instantiates a new instance of the unsupported logger class
+     */
+    public UnsupportedAdvapi32Library() {
+        logger = LoggerFactory.getLogger(UnsupportedAdvapi32Library.class);
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public boolean CredReadW(WString target, int type, int reservedFlag, PointerByReference credential)
             throws LastErrorException {
-        // TODO Auto-generated method stub
-        return false;
+
+        logger.error(ERROR_MESSAGE);
+        credential.setPointer(Pointer.NULL);
+        throw new LastErrorException(ExpectedErrorCode.NOT_SUPPORTED.getValue());
     }
 
     /**
@@ -40,8 +56,8 @@ class UnsupportedAdvapi32Library implements Advapi32Library {
      */
     @Override
     public boolean CredWriteW(ByReference userCredential, int flags) throws LastErrorException {
-        // TODO Auto-generated method stub
-        return false;
+        logger.error(ERROR_MESSAGE);
+        throw new LastErrorException(ExpectedErrorCode.NOT_SUPPORTED.getValue());
     }
 
     /**
@@ -49,8 +65,8 @@ class UnsupportedAdvapi32Library implements Advapi32Library {
      */
     @Override
     public boolean CredFree(Pointer cred) throws LastErrorException {
-        // TODO Auto-generated method stub
-        return false;
+        logger.error(ERROR_MESSAGE);
+        throw new LastErrorException(ExpectedErrorCode.NOT_SUPPORTED.getValue());
     }
 
     /**
@@ -58,8 +74,8 @@ class UnsupportedAdvapi32Library implements Advapi32Library {
      */
     @Override
     public boolean CredDeleteW(WString target, int type, int flags) throws LastErrorException {
-        // TODO Auto-generated method stub
-        return false;
+        logger.error(ERROR_MESSAGE);
+        throw new LastErrorException(ExpectedErrorCode.NOT_SUPPORTED.getValue());
     }
 
     /**
@@ -68,7 +84,9 @@ class UnsupportedAdvapi32Library implements Advapi32Library {
     @Override
     public boolean CredEnumerateW(WString filter, int flag, IntByReference count, PointerByReference credentialsPtr)
             throws LastErrorException {
-        // TODO Auto-generated method stub
-        return false;
+
+        logger.error(ERROR_MESSAGE);
+        credentialsPtr.setValue(Pointer.NULL);
+        throw new LastErrorException(ExpectedErrorCode.NOT_SUPPORTED.getValue());
     }
 }
