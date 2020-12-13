@@ -321,6 +321,32 @@ class Win32CredentialManagerTests {
         assertFalse(actualValue);
     }
 
+    @Test
+    void delete_byIdAndType_logsError_whenCredDeleteThrows() {
+        var e = new LastErrorException(ExpectedErrorCode.INVALID_ARGUMENT.getValue());
+        var id = "test-id";
+        var errorMessage = "ERROR MESSAGE";
+        when(errorToStringService.getMessageFor(e.getErrorCode()))
+            .thenReturn(Optional.of(errorMessage));
+        arrangeCredDelelte(false, id, CredentialType.GENERIC, true, e);
+
+        credentialManager.delete(id, CredentialType.GENERIC);
+
+        verify(logger, times(1)).error(errorMessage, e);
+    }
+
+    @Test
+    void delete_byIdAndType_doesNotlogError_whenCredDeleteThrowsNotFound() {
+        var e = new LastErrorException(ExpectedErrorCode.NOT_FOUND.getValue());
+        var id = "test-id";
+        var errorMessage = "ERROR MESSAGE";
+        arrangeCredDelelte(false, id, CredentialType.GENERIC, true, e);
+
+        credentialManager.delete(id, CredentialType.GENERIC);
+
+        verify(logger, times(0)).error(errorMessage, e);
+    }
+
     private boolean arrangeAndActUsingCredentialConverterReturnsEmpty(ConsumerPredicate consumerPredicate) {
         when(credentialConverter.toInternalCredentialReference(any(Credential.class))).thenReturn(Optional.empty());
         return consumerPredicate.process(credential);
