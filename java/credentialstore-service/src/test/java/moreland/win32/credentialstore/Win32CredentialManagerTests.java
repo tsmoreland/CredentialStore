@@ -128,6 +128,20 @@ class Win32CredentialManagerTests {
     }
 
     @Test
+    void add_errorToStringServiceUsed_whenCredWriteThrowsLastErrorException() {
+        arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::add);
+
+        verify(errorToStringService, times(1)).getMessageFor(any(Integer.class));
+    }
+
+    @Test
+    void add_logsError_whenCredWriteThrowsLastErrorException() {
+        arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::add);
+
+        verify(logger, times(1)).error(any(String.class), any(LastErrorException.class));
+    }
+
+    @Test
     void add_returnsTrue_whenCredWriteReturnsTrue() {
         assertTrue(arrangeAndActUsingCredWriteReturnsTrue(credentialManager::add));
     }
@@ -150,6 +164,20 @@ class Win32CredentialManagerTests {
     @Test
     void update_returnsTrue_whenCredWriteReturnsTrue() {
         assertTrue(arrangeAndActUsingCredWriteReturnsTrue(credentialManager::update));
+    }
+
+    @Test
+    void update_errorToStringServiceUsed_whenCredWriteThrowsLastErrorException() {
+        arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::update);
+
+        verify(errorToStringService, times(1)).getMessageFor(any(Integer.class));
+    }
+
+    @Test
+    void update_logsError_whenCredWriteThrowsLastErrorException() {
+        arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::update);
+
+        verify(logger, times(1)).error(any(String.class), any(LastErrorException.class));
     }
 
     @Test
