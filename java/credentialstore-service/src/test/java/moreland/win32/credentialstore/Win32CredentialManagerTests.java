@@ -285,6 +285,17 @@ class Win32CredentialManagerTests {
     }
 
     @Test
+    void delete_byCredential_doesNotlogError_whenCredDeleteThrowsNotFound() {
+        var e = new LastErrorException(ExpectedErrorCode.NOT_FOUND.getValue());
+        var errorMessage = "ERROR MESSAGE";
+        arrangeCredDelelte(true, "test-id", CredentialType.GENERIC, true, e);
+
+        credentialManager.delete(credential);
+
+        verify(logger, times(0)).error(errorMessage, e);
+    }
+
+    @Test
     void delete_byIdAndType_returnsTrue_whenCredDeleteReturnsTrue() {
         var id = "test-id";
         arrangeCredDelelte(false, id, CredentialType.GENERIC, true, null);
