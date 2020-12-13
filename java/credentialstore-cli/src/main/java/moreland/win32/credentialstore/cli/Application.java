@@ -16,6 +16,7 @@ package moreland.win32.credentialstore.cli;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import moreland.win32.credentialstore.cli.internal.CredentialExecutor;
@@ -29,6 +30,8 @@ public class Application {
             return;
         }
 
+        var logger = LoggerFactory.getLogger(Application.class);
+
         try (var context = new AnnotationConfigApplicationContext(ApplicationConfiguration.class)) {
             var executor = context.getBean("credentialExecutor", CredentialExecutor.class);
             var operation = executor.getOperation(args[0]).orElse(arguments -> false);
@@ -39,10 +42,10 @@ public class Application {
                 .collect(Collectors.toList());
 
             if (!operation.process(operationArgs)) {
-                System.err.println(String.format("Operation '%s' failed", args[0]));
+                logger.warn(String.format("Operation '%s' failed", args[0]));
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            logger.error(String.format("Error occurred building the application context: %s", ex.getMessage()), ex);
         }
 
     }    
