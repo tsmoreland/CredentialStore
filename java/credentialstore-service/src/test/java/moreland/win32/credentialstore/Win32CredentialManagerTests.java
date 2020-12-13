@@ -128,6 +128,20 @@ class Win32CredentialManagerTests {
     }
 
     @Test
+    void add_errorToStringServiceUsed_whenCredWriteThrowsLastErrorException() {
+        arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::add);
+
+        verify(errorToStringService, times(1)).getMessageFor(any(Integer.class));
+    }
+
+    @Test
+    void add_logsError_whenCredWriteThrowsLastErrorException() {
+        arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::add);
+
+        verify(logger, times(1)).error(any(String.class), any(LastErrorException.class));
+    }
+
+    @Test
     void add_returnsTrue_whenCredWriteReturnsTrue() {
         assertTrue(arrangeAndActUsingCredWriteReturnsTrue(credentialManager::add));
     }
@@ -150,6 +164,20 @@ class Win32CredentialManagerTests {
     @Test
     void update_returnsTrue_whenCredWriteReturnsTrue() {
         assertTrue(arrangeAndActUsingCredWriteReturnsTrue(credentialManager::update));
+    }
+
+    @Test
+    void update_errorToStringServiceUsed_whenCredWriteThrowsLastErrorException() {
+        arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::update);
+
+        verify(errorToStringService, times(1)).getMessageFor(any(Integer.class));
+    }
+
+    @Test
+    void update_logsError_whenCredWriteThrowsLastErrorException() {
+        arrangeAndActUsingCredWriteThrowsLastErrorException(credentialManager::update);
+
+        verify(logger, times(1)).error(any(String.class), any(LastErrorException.class));
     }
 
     @Test
@@ -272,6 +300,30 @@ class Win32CredentialManagerTests {
     }
 
     @Test
+    void delete_byCredential_logsError_whenCredDeleteThrows() {
+        var e = new LastErrorException(ExpectedErrorCode.INVALID_ARGUMENT.getValue());
+        var errorMessage = "ERROR MESSAGE";
+        when(errorToStringService.getMessageFor(e.getErrorCode()))
+            .thenReturn(Optional.of(errorMessage));
+        arrangeCredDelelte(true, "test-id", CredentialType.GENERIC, true, e);
+
+        credentialManager.delete(credential);
+
+        verify(logger, times(1)).error(errorMessage, e);
+    }
+
+    @Test
+    void delete_byCredential_doesNotlogError_whenCredDeleteThrowsNotFound() {
+        var e = new LastErrorException(ExpectedErrorCode.NOT_FOUND.getValue());
+        var errorMessage = "ERROR MESSAGE";
+        arrangeCredDelelte(true, "test-id", CredentialType.GENERIC, true, e);
+
+        credentialManager.delete(credential);
+
+        verify(logger, times(0)).error(errorMessage, e);
+    }
+
+    @Test
     void delete_byIdAndType_returnsTrue_whenCredDeleteReturnsTrue() {
         var id = "test-id";
         arrangeCredDelelte(false, id, CredentialType.GENERIC, true, null);
@@ -295,6 +347,32 @@ class Win32CredentialManagerTests {
 
         var actualValue = credentialManager.delete(id, CredentialType.GENERIC);
         assertFalse(actualValue);
+    }
+
+    @Test
+    void delete_byIdAndType_logsError_whenCredDeleteThrows() {
+        var e = new LastErrorException(ExpectedErrorCode.INVALID_ARGUMENT.getValue());
+        var id = "test-id";
+        var errorMessage = "ERROR MESSAGE";
+        when(errorToStringService.getMessageFor(e.getErrorCode()))
+            .thenReturn(Optional.of(errorMessage));
+        arrangeCredDelelte(false, id, CredentialType.GENERIC, true, e);
+
+        credentialManager.delete(id, CredentialType.GENERIC);
+
+        verify(logger, times(1)).error(errorMessage, e);
+    }
+
+    @Test
+    void delete_byIdAndType_doesNotlogError_whenCredDeleteThrowsNotFound() {
+        var e = new LastErrorException(ExpectedErrorCode.NOT_FOUND.getValue());
+        var id = "test-id";
+        var errorMessage = "ERROR MESSAGE";
+        arrangeCredDelelte(false, id, CredentialType.GENERIC, true, e);
+
+        credentialManager.delete(id, CredentialType.GENERIC);
+
+        verify(logger, times(0)).error(errorMessage, e);
     }
 
     private boolean arrangeAndActUsingCredentialConverterReturnsEmpty(ConsumerPredicate consumerPredicate) {
