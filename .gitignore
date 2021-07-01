@@ -374,3 +374,4 @@ cpp/target
 # Maven
 **/log/
 **/target/
+java/setJavaHome.ps1
