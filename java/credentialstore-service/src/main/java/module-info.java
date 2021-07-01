@@ -22,8 +22,8 @@ module moreland.win32.credentialstore {
     requires transitive spring.expression;
 
     requires commons.logging;
-    requires transitive slf4j.api;
-    requires transitive slf4j.simple;
+    requires transitive org.slf4j;
+    requires transitive org.slf4j.simple;
 
     opens moreland.win32.credentialstore to spring.core;
     exports moreland.win32.credentialstore.converters to spring.beans;
