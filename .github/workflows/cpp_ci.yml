@@ -3,6 +3,12 @@ name: C++ Continuous Integration
 on:   
   push:
     branches: [ main, develop ]
+    paths-ignore:
+     - CSharp/**
+     - .github/dotnet-core.yml
+     - .github/java-ci.yml
+     - java/**
+     - .gitignore    
   pull_request:
     branches: [ main, develop ]
     paths-ignore:
@@ -10,12 +16,7 @@ on:
       - java/**
       - .github/**
       - .gitignore
-  
-#      paths-ignore:
-#      - CSharp/**
-#      - .github/**
-#      - java/**
-#      - .gitignore
+
 
 env:
   VCPKG_ROOT: c:\vcpkg\
@@ -42,12 +43,6 @@ jobs:
       working-directory: ./cpp
       run: |
         vcpkg install gtest:x64-windows
-
-    - name: output env variable
-      shell: powershell
-      run: | 
-        Write-Host $env:PATH
-        Write-Host $env:VCPKG_ROOT
 
     - name: Download Ninja and CMake
       id: cmake_and_ninja
