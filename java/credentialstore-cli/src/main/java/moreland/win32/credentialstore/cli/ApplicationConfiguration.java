@@ -13,6 +13,7 @@
 package moreland.win32.credentialstore.cli;
 
 import java.io.PrintStream;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +38,7 @@ public class ApplicationConfiguration {
     @Bean
     @Scope(BeanDefinition.SCOPE_PROTOTYPE)
     public Logger logger(final InjectionPoint ip) {
-        var type = ip.getMethodParameter().getContainingClass();
-        if (type == null) {
-            type = Application.class;
-        }
+        var type = Objects.requireNonNull(ip.getMethodParameter()).getContainingClass();
         return LoggerFactory.getLogger(type);
     }
 
