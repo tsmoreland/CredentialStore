@@ -39,7 +39,12 @@ jobs:
       working-directory: ./cpp
       run: |
         vcpkg install gtest:x64-windows
-        
+
+    - name: output env variable
+      shell: powershell
+      run: | 
+        Write-Output $VCPKG_ROOT
+
     - name: Download Ninja and CMake
       id: cmake_and_ninja
       shell: cmake -P {0}
