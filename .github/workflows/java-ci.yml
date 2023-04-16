@@ -38,7 +38,7 @@ jobs:
       # This step may duplicate efforts of package but is done to make the results of the test more clear
     - name: Test
       working-directory: ./java
-      run: mvn -B test
+      run: mvn -B -e test
     - name: Package
       working-directory: ./java
       run: mvn -B package
