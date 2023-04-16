@@ -43,7 +43,7 @@ jobs:
     - name: output env variable
       shell: powershell
       run: | 
-        Write-Output $VCPKG_ROOT
+        Write-Host $env:VCPKG_ROOT
 
     - name: Download Ninja and CMake
       id: cmake_and_ninja
