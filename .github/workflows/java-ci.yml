@@ -7,14 +7,16 @@ on:
     branches: [ main, develop ]
     paths-ignore:
       - cpp/**
-      - .github/**
+      - .github/dotnet-core.yml
+      - .github/cpp_ci.yml
       - CSharp/**
       - .gitignore
   pull_request:
     branches: [ main, develop ]
     paths-ignore:
       - cpp/**
-      - .github/**
+      - .github/dotnet-core.yml
+      - .github/cpp_ci.yml
       - CSharp/**
       - .gitignore
 
@@ -26,15 +28,19 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 1.17
-      uses: actions/setup-java@v1
+    - uses: actions/setup-java@v3
       with:
-          java-version: 1.17
+        distribution: 'zulu' # See 'Supported distributions' for available options
+        java-version: '17'
     - name: list files
       run: dir
     - name: Build with Maven
       working-directory: ./java
-      run: mvn -B package
+      run: mvn -B compile
       # This step may duplicate efforts of package but is done to make the results of the test more clear
     - name: Test
       working-directory: ./java
       run: mvn -B test
+    - name: Package
+      working-directory: ./java
+      run: mvn -B package
