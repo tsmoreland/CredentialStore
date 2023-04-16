@@ -4,10 +4,11 @@ on:
   push:
     branches: [ main, develop ]
     paths-ignore:
-      - CSharp/**
-      - .github/**
-      - java/**
-      - .gitignore
+     - CSharp/**
+     - .github/dotnet-core.yml
+     - .github/java-ci.yml
+     - java/**
+     - .gitignore    
   pull_request:
     branches: [ main, develop ]
     paths-ignore:
@@ -16,34 +17,33 @@ on:
       - .github/**
       - .gitignore
 
+
+env:
+  VCPKG_ROOT: c:\vcpkg\
+  
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019
       
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: true
-
-    - name: Bootstrap vcpkg
-      id: vckpg_bootstrap
-      shell: 'powershell'
-      working-directory: ./cpp
-      run: |
-        vcpkg/bootstrap-vcpkg.bat
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.3.1
     - name: Integrate vcpkg
       id: vckpkg_integrate
       shell: 'powershell'
       working-directory: ./cpp
       run: |
-        vcpkg/vcpkg.exe integrate install
+        vcpkg.exe integrate install
     - name: Install GTest package
       id: vckpkg_install_gtest
       shell: 'powershell'
       working-directory: ./cpp
       run: |
-        vcpkg/vcpkg.exe install gtest:x64-windows
-        
+        vcpkg install gtest:x64-windows
+
     - name: Download Ninja and CMake
       id: cmake_and_ninja
       shell: cmake -P {0}

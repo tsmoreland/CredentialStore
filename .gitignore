@@ -376,3 +376,6 @@ cpp/target
 **/log/
 **/target/
 java/setJavaHome.ps1
+
+# CMake Build output
+**/[Oo]ut/[Bb]uild/
