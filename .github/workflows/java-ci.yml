@@ -5,16 +5,14 @@ on:
     branches: [ main, develop ]
     paths-ignore:
       - cpp/**
-      - .github/dotnet-core.yml
-      - .github/cpp_ci.yml
+      - .github/**
       - CSharp/**
       - .gitignore
   pull_request:
     branches: [ main, develop ]
     paths-ignore:
       - cpp/**
-      - .github/dotnet-core.yml
-      - .github/cpp_ci.yml
+      - .github/**
       - CSharp/**
       - .gitignore
 
