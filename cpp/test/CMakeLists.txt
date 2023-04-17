@@ -1,6 +1,7 @@
 set(TEST_PROJECT_NAME ${CMAKE_PROJECT_NAME}_test)
 set (CMAKE_CXX_STANDARD 17)
 
+enable_testing()
 find_package(GTest REQUIRED)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
