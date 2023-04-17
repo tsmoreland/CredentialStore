@@ -5,8 +5,7 @@ on:
     branches: [ main, develop ]
     paths-ignore:
      - CSharp/**
-     - .github/dotnet-core.yml
-     - .github/java-ci.yml
+     - .github/**
      - java/**
      - .gitignore    
   pull_request:
