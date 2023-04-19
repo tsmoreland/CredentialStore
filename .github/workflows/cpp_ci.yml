@@ -64,7 +64,7 @@ jobs:
     - name: list path
       shell: 'powershell'
       run: |
-        ls 'C:/Program Files (x86)/Microsoft Visual Studio'
+        ls 'C:/Program Files (x86)/Microsoft Visual Studio/2019'
     - name: Configure
       shell: cmake -P {0}
       working-directory: ./cpp
