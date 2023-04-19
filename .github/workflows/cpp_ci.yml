@@ -45,7 +45,7 @@ jobs:
       shell: 'powershell'
       working-directory: ./cpp
       run: |
-        vcpkg install gtest:x64-windows --triplet x64-windows-rel
+        vcpkg install gtest:x64-windows
     - name: Build 
       working-directory: ./cpp
       shell: 'powershell'
@@ -57,7 +57,7 @@ jobs:
           -DCMAKE_CXX_FLAGS="/WX" `
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
           -DCMAKE_TOOLCHAIN_FILE="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-          -DVCPKG_TARGET_TRIPLET=x64-windows-rel `
+          -DVCPKG_TARGET_TRIPLET=x64-windows `
           -DVERBOSE_CONFIGURE=ON `
           --graphviz=build/target_graph.dot
         cmake --build build
