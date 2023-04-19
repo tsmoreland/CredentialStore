@@ -15,10 +15,6 @@ on:
       - java/**
       - .github/**
       - .gitignore
-
-
-env:
-  VCPKG_ROOT: c:/vcpkg
   
 jobs:
   build:
