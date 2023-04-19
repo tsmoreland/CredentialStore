@@ -5,7 +5,7 @@ on:
     branches: [ main, develop ]
     paths-ignore:
      - CSharp/**
-     - .github/**
+#     - .github/**
      - java/**
      - .gitignore    
   pull_request:
@@ -13,7 +13,7 @@ on:
     paths-ignore:
       - CSharp/**
       - java/**
-      - .github/**
+#      - .github/**
       - .gitignore
   
 jobs:
@@ -61,6 +61,10 @@ jobs:
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${cmake_dir}" cmake_dir)
         message("::set-output name=cmake_dir::${cmake_dir}")
 
+    - name: list path
+      shell: 'powershell'
+      run: |
+        ls 'C:/Program Files (x86)/Microsoft Visual Studio'
     - name: Configure
       shell: cmake -P {0}
       working-directory: ./cpp
