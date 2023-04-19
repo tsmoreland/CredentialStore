@@ -39,7 +39,6 @@ jobs:
     - name: Install build tools
       run: |
         choco install ninja
-
     - name: Install GTest package
       id: vckpkg_install_gtest
       shell: 'powershell'
