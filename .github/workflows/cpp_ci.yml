@@ -44,7 +44,7 @@ jobs:
     - name: Install GTest package
       id: vckpkg_install_gtest
       shell: 'powershell'
-      working-directory: ./cpp
+      working-directory: cpp
       run: |
         vcpkg install gtest:x64-windows
 
