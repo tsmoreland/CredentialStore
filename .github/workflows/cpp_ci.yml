@@ -61,16 +61,6 @@ jobs:
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${cmake_dir}" cmake_dir)
         message("::set-output name=cmake_dir::${cmake_dir}")
 
-    - name: list path
-      shell: 'powershell'
-      run: |
-        ls 'C:/Program Files (x86)/Microsoft Visual Studio/2019'
-    - name: Configure 1
-      shell: 'powershell'
-      working-directory: ./cpp
-      run: |
-        & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-        cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -S . -DCMAKE_BUILD_TYPE=Release -B build
     - name: Configure
       shell: cmake -P {0}
       working-directory: ./cpp
