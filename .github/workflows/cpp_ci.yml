@@ -48,7 +48,7 @@ jobs:
         vcpkg install gtest:x64-windows
     - name: Build 
       working-directory: ./cpp
-      shell: 'powershell'
+      shell: 'cmd.exe'
       run: |
         cmake `
           -B build `
