@@ -17,8 +17,8 @@ on:
       - .gitignore
 
 env:
-  CC: cl
-  CXX: cl
+  CC: cl.exe
+  CXX: cl.exe
 
 jobs:
   build:
