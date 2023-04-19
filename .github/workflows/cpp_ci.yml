@@ -42,6 +42,21 @@ jobs:
       working-directory: ./cpp
       run: |
         vcpkg install gtest:x64-windows
+    - name: Build 
+      working-directory: ./cpp
+      shell: 'powershell'
+      run: |
+        cmake `
+          -B build `
+          -G "Ninja" `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DCMAKE_CXX_FLAGS="/WX" `
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
+          -DCMAKE_TOOLCHAIN_FILE="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static-release `
+          -DVERBOSE_CONFIGURE=ON `
+          --graphviz=build/target_graph.dot
+        cmake --build build
 
     - name: Configure
       shell: cmake -P {0}
