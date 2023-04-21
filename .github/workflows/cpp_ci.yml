@@ -16,10 +16,10 @@ on:
 #      - .github/**
       - .gitignore
 
-
 env:
-  VCPKG_ROOT: c:/vcpkg
-  
+  CC: cl.exe
+  CXX: cl.exe
+
 jobs:
   build:
     runs-on: windows-2019
@@ -36,39 +36,30 @@ jobs:
       working-directory: ./cpp
       run: |
         vcpkg.exe integrate install
-    - name: find vcpkg
-      shell: 'powershell'
+    - name: Install build tools
       run: |
-        Get-Command vcpkg.exe
-        ls c:/vcpkg
+        choco install ninja
     - name: Install GTest package
       id: vckpkg_install_gtest
       shell: 'powershell'
       working-directory: cpp
       run: |
         vcpkg install gtest:x64-windows
-
-    - name: Download Ninja and CMake
-      id: cmake_and_ninja
-      shell: cmake -P {0}
+    - name: Build 
+      working-directory: ./cpp
+      shell: 'cmd'
       run: |
-        set(ninja_version "2.8.8")
-        set(cmake_version "3.26.3")
-       
-        message(STATUS "Using host CMake version: ${CMAKE_VERSION}")
-        set(ninja_suffix "win.zip")
-        set(cmake_suffix "win64-x64.zip")
-        set(cmake_dir "cmake-${cmake_version}-win64-x64/bin")
-        set(ninja_url "https://github.com/ninja-build/ninja/releases/download/v${ninja_version}/ninja-${ninja_suffix}")
-        file(DOWNLOAD "${ninja_url}" ./ninja.zip SHOW_PROGRESS)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ninja.zip)
-        set(cmake_url "https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}-${cmake_suffix}")
-        file(DOWNLOAD "${cmake_url}" ./cmake.zip SHOW_PROGRESS)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./cmake.zip)
-
-        # Save the path for other steps
-        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${cmake_dir}" cmake_dir)
-        message("::set-output name=cmake_dir::${cmake_dir}")
+        cmake `
+          -B build `
+          -G "Ninja" `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DCMAKE_CXX_FLAGS="/WX" `
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
+          -DCMAKE_TOOLCHAIN_FILE="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+          -DVCPKG_TARGET_TRIPLET=x64-windows `
+          -DVERBOSE_CONFIGURE=ON `
+          --graphviz=build/target_graph.dot
+        cmake --build build
 
     - name: Configure
       shell: cmake -P {0}
