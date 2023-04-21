@@ -39,18 +39,25 @@ jobs:
     - name: Install build tools
       run: |
         choco install ninja
+    - name: Debug setup 1
+      shell: 'powershell'
+      working-directory: cpp
+      run: |
+        Write-Output ${Env:PATH}
+        & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+        Write-Output ${Env:PATH}
+    - name: Debug setup
+      shell: 'cmd'
+      working-directory: cpp
+      run: |
+        echo %PATH%
+        "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
     - name: Install GTest package
       id: vckpkg_install_gtest
       shell: 'powershell'
       working-directory: cpp
       run: |
         vcpkg install gtest:x64-windows
-    - name: Debug setup
-      shell: 'cmd'
-      working-directory: cpp
-      run: |
-        echo $PATH
-        cl.exe --version
     - name: Build 
       working-directory: ./cpp
       shell: 'cmd'
