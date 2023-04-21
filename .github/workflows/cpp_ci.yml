@@ -45,6 +45,12 @@ jobs:
       working-directory: cpp
       run: |
         vcpkg install gtest:x64-windows
+    - name: Debug setup
+      shell: 'cmd'
+      working-directory: cpp
+      run: |
+        echo $PATH
+        cl.exe --version
     - name: Build 
       working-directory: ./cpp
       shell: 'cmd'
