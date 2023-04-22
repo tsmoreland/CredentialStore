@@ -64,20 +64,11 @@ jobs:
       run: |
         cmake --build build
 
-    - name: Run tests
-      shell: cmake -P {0}
-      working-directory: ./cpp
+    - name: Tests
+      shell: 'powershell'
+      working-directory: ./cpp/target/Release/x64
       run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-        execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/ctest -V -j ${N}
-          WORKING_DIRECTORY build
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Running tests failed!")
-        endif()
+        credential_store_test.exe
 
 #    - name: Install Strip
 #      run: ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake --install build --prefix instdir --strip
