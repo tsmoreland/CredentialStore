@@ -56,7 +56,6 @@ jobs:
           -G "Ninja" `
           -S . `
           -D CMAKE_BUILD_TYPE=Release
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
           -DCMAKE_TOOLCHAIN_FILE="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
           -DVERBOSE_CONFIGURE=ON 
 
