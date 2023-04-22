@@ -55,7 +55,7 @@ jobs:
           -B build `
           -G "Ninja" `
           -S . `
-          -D CMAKE_BUILD_TYPE=Release
+          -D CMAKE_BUILD_TYPE=Release `
           -DCMAKE_TOOLCHAIN_FILE="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
           -DVERBOSE_CONFIGURE=ON 
 
