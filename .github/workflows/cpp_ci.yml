@@ -44,10 +44,24 @@ jobs:
     - name: Install GTest package
       id: vckpkg_install_gtest
       shell: 'powershell'
-      working-directory: cpp
+      working-directory: ./cpp
       run: |
         vcpkg install gtest:x64-windows
     - name: Configure
+      working-directory: ./cpp
+      shell: 'cmd'
+      run: |
+        cmake `
+          -B build `
+          -G "Ninja" `
+          -D CMAKE_BUILD_TYPE=Release
+          -DCMAKE_CXX_FLAGS="/WX" `
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
+          -DCMAKE_TOOLCHAIN_FILE="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+
+          -DVERBOSE_CONFIGURE=ON `
+
+    - name: Configure (old)
       shell: cmake -P {0}
       working-directory: ./cpp
       run: |
@@ -72,7 +86,7 @@ jobs:
             -S .
             -B build
             -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
-            -D CMAKE_BUILD_TYPE=Release}
+            -D CMAKE_BUILD_TYPE=Release
             -G Ninja
             -D CMAKE_MAKE_PROGRAM=${ninja_program}
           RESULT_VARIABLE result
