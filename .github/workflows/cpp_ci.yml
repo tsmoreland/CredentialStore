@@ -5,7 +5,7 @@ on:
     branches: [ main, develop ]
     paths-ignore:
      - CSharp/**
-#     - .github/**
+     - .github/**
      - java/**
      - .gitignore    
   pull_request:
@@ -13,7 +13,7 @@ on:
     paths-ignore:
       - CSharp/**
       - java/**
-#      - .github/**
+      - .github/**
       - .gitignore
 
 env:
@@ -36,100 +36,39 @@ jobs:
       working-directory: ./cpp
       run: |
         vcpkg.exe integrate install
+    - name: Enable Developer Command Prompt
+      uses: ilammy/msvc-dev-cmd@v1.12.1
     - name: Install build tools
       run: |
         choco install ninja
     - name: Install GTest package
       id: vckpkg_install_gtest
       shell: 'powershell'
-      working-directory: cpp
+      working-directory: ./cpp
       run: |
         vcpkg install gtest:x64-windows
-    - name: Build 
+    - name: Configure
       working-directory: ./cpp
-      shell: 'cmd'
+      shell: 'powershell'
       run: |
         cmake `
           -B build `
           -G "Ninja" `
-          -DCMAKE_BUILD_TYPE=Release `
-          -DCMAKE_CXX_FLAGS="/WX" `
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
+          -S . `
+          -D CMAKE_BUILD_TYPE=Release `
           -DCMAKE_TOOLCHAIN_FILE="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-          -DVCPKG_TARGET_TRIPLET=x64-windows `
-          -DVERBOSE_CONFIGURE=ON `
-          --graphviz=build/target_graph.dot
+          -DVERBOSE_CONFIGURE=ON 
+    - name: Build
+      shell: 'powershell'
+      working-directory: ./cpp
+      run: |
         cmake --build build
 
-    - name: Configure
-      shell: cmake -P {0}
-      working-directory: ./cpp
+    - name: Tests
+      shell: 'powershell'
+      working-directory: ./cpp/target/Release/x64
       run: |
-        set(ENV{CC} cl)
-        set(ENV{CXX} cl)
-
-        execute_process(
-          COMMAND "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat" && set
-          OUTPUT_FILE environment_script_output.txt
-        )
-        file(STRINGS environment_script_output.txt output_lines)
-        foreach(line IN LISTS output_lines)
-          if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-            set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-          endif()
-          endforeach()
-
-        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
-
-        execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
-            -S .
-            -B build
-            -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
-            -D CMAKE_BUILD_TYPE=Release}
-            -G Ninja
-            -D CMAKE_MAKE_PROGRAM=${ninja_program}
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Bad exit status")
-        endif()      
-        
-    - name: Build
-      shell: cmake -P {0}
-      working-directory: ./cpp
-      run: |
-        set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
-
-        file(STRINGS environment_script_output.txt output_lines)
-        foreach(line IN LISTS output_lines)
-          if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-            set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-          endif()
-        endforeach()
-
-        execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake --build build
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Bad exit status")
-        endif()
-        
-    - name: Run tests
-      shell: cmake -P {0}
-      working-directory: ./cpp
-      run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-        execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/ctest -V -j ${N}
-          WORKING_DIRECTORY build
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Running tests failed!")
-        endif()
+        ./credential_store_test.exe
 
 #    - name: Install Strip
 #      run: ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake --install build --prefix instdir --strip
