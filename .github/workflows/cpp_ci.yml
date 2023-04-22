@@ -58,8 +58,13 @@ jobs:
           -D CMAKE_BUILD_TYPE=Release `
           -DCMAKE_TOOLCHAIN_FILE="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
           -DVERBOSE_CONFIGURE=ON 
-
     - name: Build
+      shell: 'powershell'
+      working-directory: ./cpp
+      run: |
+        cmake --build build
+
+    - name: Build (old)
       shell: cmake -P {0}
       working-directory: ./cpp
       run: |
