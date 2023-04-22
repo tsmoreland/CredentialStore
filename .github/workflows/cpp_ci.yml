@@ -59,7 +59,7 @@ jobs:
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
           -DCMAKE_TOOLCHAIN_FILE="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
 
-          -DVERBOSE_CONFIGURE=ON `
+          -DVERBOSE_CONFIGURE=ON 
 
     - name: Configure (old)
       shell: cmake -P {0}
