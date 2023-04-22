@@ -68,7 +68,6 @@ jobs:
       shell: 'powershell'
       working-directory: ./cpp/target/Release/x64
       run: |
-        ls
         ./credential_store_test.exe
 
 #    - name: Install Strip
