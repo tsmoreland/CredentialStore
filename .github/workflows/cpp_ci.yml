@@ -46,7 +46,10 @@ jobs:
         Write-Output ${Env:PATH}
         & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
         Write-Output ${Env:PATH}
-        cl.exe /?
+        ls  "C:\Program Files\Microsoft Visual Studio\"
+        ls  "C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC"
+        ls  "C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC\Tools"
+        ls  "C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC"
     - name: Debug setup
       shell: 'cmd'
       working-directory: cpp
