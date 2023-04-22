@@ -41,43 +41,12 @@ jobs:
     - name: Install build tools
       run: |
         choco install ninja
-    - name: Debug setup 1
-      shell: 'powershell'
-      working-directory: cpp
-      run: |
-        Write-Output ${Env:PATH}
-        & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-        Write-Output ${Env:PATH}
-        ls  "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.29.30133\"
-    - name: Debug setup
-      shell: 'cmd'
-      working-directory: cpp
-      run: |
-        echo %PATH%
-        "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-        cl.exe /?
     - name: Install GTest package
       id: vckpkg_install_gtest
       shell: 'powershell'
       working-directory: cpp
       run: |
         vcpkg install gtest:x64-windows
-    - name: Build 
-      working-directory: ./cpp
-      shell: 'cmd'
-      run: |
-        cmake `
-          -B build `
-          -G "Ninja" `
-          -DCMAKE_BUILD_TYPE=Release `
-          -DCMAKE_CXX_FLAGS="/WX" `
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
-          -DCMAKE_TOOLCHAIN_FILE="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-          -DVCPKG_TARGET_TRIPLET=x64-windows `
-          -DVERBOSE_CONFIGURE=ON `
-          --graphviz=build/target_graph.dot
-        cmake --build build
-
     - name: Configure
       shell: cmake -P {0}
       working-directory: ./cpp
