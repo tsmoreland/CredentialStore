@@ -68,7 +68,8 @@ jobs:
       shell: 'powershell'
       working-directory: ./cpp/target/Release/x64
       run: |
-        credential_store_test.exe
+        ls
+        ./credential_store_test.exe
 
 #    - name: Install Strip
 #      run: ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake --install build --prefix instdir --strip
