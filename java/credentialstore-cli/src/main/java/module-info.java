@@ -8,7 +8,7 @@ module moreland.win32.credentialstore.cli {
     requires spring.aop;
     requires spring.expression;
 
-    requires commons.logging;
+    //requires commons.logging; -- reporting as not found but commenting out doesn't seem to cause issues, yet
     requires transitive org.slf4j;
     requires transitive org.slf4j.simple;
 
